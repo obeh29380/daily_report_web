@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% block title %}マスタ管理{% endblock %}
+
+{% block body %}
+
+
+    <div class="d-flex align-items-start">
+        <div class="nav flex-column nav-pills flex-shrink-0 me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+          <button type="button" class="nav-link active" id="v-pills-car-tab" data-bs-toggle="pill" data-bs-target="#v-pills-car" role="tab" aria-controls="v-pills-car" aria-selected="true">車両</button>
+          <button type="button" class="nav-link" id="v-pills-staff-tab" data-bs-toggle="pill" data-bs-target="#v-pills-staff" role="tab" aria-controls="v-pills-staff" aria-selected="false">人員</button>
+          <button type="button" class="nav-link" id="v-pills-machine-tab" data-bs-toggle="pill" data-bs-target="#v-pills-machine" role="tab" aria-controls="v-pills-machine" aria-selected="false">重機</button>
+          <button type="button" class="nav-link" id="v-pills-lease-tab" data-bs-toggle="pill" data-bs-target="#v-pills-lease" role="tab" aria-controls="v-pills-lease" aria-selected="false">リース</button>
+          <button type="button" class="nav-link" id="v-pills-trash-tab" data-bs-toggle="pill" data-bs-target="#v-pills-trash" role="tab" aria-controls="v-pills-trash" aria-selected="false">廃材(処分先別)</button>
+          <button type="button" class="nav-link" id="v-pills-customer-tab" data-bs-toggle="pill" data-bs-target="#v-pills-customer" role="tab" aria-controls="v-pills-customer" aria-selected="false">受注先</button>
+          <button type="button" class="nav-link" id="v-pills-dest-tab" data-bs-toggle="pill" data-bs-target="#v-pills-dest" role="tab" aria-controls="v-pills-dest" aria-selected="false">処分先</button>
+          <button type="button" class="nav-link" id="v-pills-items-tab" data-bs-toggle="pill" data-bs-target="#v-pills-items" role="tab" aria-controls="v-pills-items" aria-selected="false">品名</button>
+        </div>
+        <div class="tab-content" id="v-pills-tabContent">
+            <div class="tab-pane fade show active" id="v-pills-car" role="tabpanel" aria-labelledby="v-pills-car-tab" tabindex="0">
+                <div id="tab-car">
+                    <div class="container">
+                        <div class="py-5 text-center">
+                            <h2>車両管理</h2>
+                        </div>
+                    
+                        <form name="carRegForm">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">車両</th>
+                                        <th scope="col">費用</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input type="text" class="form-control" id="name" placeholder="" value="" required>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" id="cost" placeholder="" value="" required>
+                                        </td>
+                                        <td>
+                                            <button id="reg_btn" class="btn btn-primary" type="submit">登録</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </form>
+                        <form name="carForm">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th scope="col">id</th>
+                                        <th scope="col">車両</th>
+                                        <th scope="col">費用</th>
+                                    </tr>
+                                    <div id="message_car" class="text-danger"></div>
+                                </thead>
+                                <tbody id="car_data">
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-staff" role="tabpanel" aria-labelledby="v-pills-staff-tab" tabindex="0">
+                <div id="tab-staff">
+                    <div class="container">
+                        <div class="py-5 text-center">
+                            <h2>人員管理</h2>
+                        </div>
+                    
+                        <form name="staffRegForm">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">名前</th>
+                                        <th scope="col">費用</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input type="text" class="form-control" id="name" placeholder="" value="" required>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" id="cost" placeholder="" value="" required>
+                                        </td>
+                                        <td>
+                                            <button id="reg_btn" class="btn btn-primary" type="submit">登録</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </form>
+                        <form name="staffForm">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th scope="col">id</th>
+                                        <th scope="col">名前</th>
+                                        <th scope="col">費用</th>
+                                    </tr>
+                                    <div id="message_staff" class="text-danger"></div>
+                                </thead>
+                                <tbody id="staff_data">
+                                </tbody>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-machine" role="tabpanel" aria-labelledby="v-pills-machine-tab" tabindex="0">
+                <div id="tab-machine">重機</div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-lease" role="tabpanel" aria-labelledby="v-pills-lease-tab" tabindex="0">
+                <div id="tab-lease">リース</div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-trash" role="tabpanel" aria-labelledby="v-pills-trash-tab" tabindex="0">
+                <div id="tab-trash">廃材(処分先)</div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-customer" role="tabpanel" aria-labelledby="v-pills-customer-tab" tabindex="0">
+                <div id="tab-customer">受注先</div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-dest" role="tabpanel" aria-labelledby="v-pills-dest-tab" tabindex="0">
+                <div id="tab-dest">処分先</div>
+            </div>
+            <div class="tab-pane fade" id="v-pills-items" role="tabpanel" aria-labelledby="v-pills-items-tab" tabindex="0">
+                <div id="tab-items">品名</div>
+            </div>
+        </div>
+    </div>
+    <div id="result"></div>
+    <script>
+        var reg_btn = document.getElementById('reg_btn');
+        var del_btn = document.getElementById('del_btn');
+        var btn_tab_staff = document.getElementById('v-pills-staff-tab');
+        var result = document.getElementById('result');
+        var staff_data = document.getElementById('staff_data');
+        var current_tab = '';
+        
+        btn_tab_staff.addEventListener('click', function(){
+            if (current_tab == 'tab_staff') {
+                return 0;
+            };
+            current_tab = 'tab_staff';
+            // Ajax通信を開始
+          $.ajax({
+            url: '/master/staff',
+            type: 'GET',
+            dataType: 'json',
+            // フォーム要素の内容をハッシュ形式に変換
+            data: {},
+            timeout: 5000,
+          })
+          .done(function(data) {
+              // 通信成功時の処理を記述
+              data.response.forEach(function(elem, index) {
+                $('#staff_data').append('<tr id=staff_row_' + index + '>');
+                $('#staff_data').append('</tr>');
+                $('#staff_row_' + index).append('<th scope="row">'+ index +'</th>');
+                $('#staff_row_' + index).append('<td>' + elem.id + '</td>');
+                $('#staff_row_' + index).append('<td>' + elem.name + '</td>');
+                $('#staff_row_' + index).append('<td>' + elem.cost + '</td>');
+                $('#staff_row_' + index).append('<td><button id="del_btn" onclick="removeList(this);" class="btn btn-danger" type="submit">削除</button></td>');
+                $('#result').text(index);
+              });
+              
+                
+          })
+          .fail(function(data) {
+              // 通信失敗時の処理を記述
+              alert('失敗')
+          });
+        });
+
+        reg_btn.addEventListener('click', function(){
+          event.preventDefault();
+
+          name = document.staffRegForm.name.value
+          if (name == ''){
+            $('#message_staff').text('名前を入力してください');
+            return 0;
+          };
+          cost = document.staffRegForm.cost.value
+          if (cost == ''){
+            $('#message_staff').text('費用を入力してください');
+            return 0;
+          };
+          // Ajax通信を開始
+          $.ajax({
+            url: '/master/staff',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+              'table': 'staff',
+              'values': {
+                'name': name,
+                'cost': cost
+              }
+            },
+            timeout: 5000,
+          })
+          .done(function(data) {
+              // 通信成功時の処理を記述
+              index = $('#result').text();
+              next_index = Number(index)+1;
+
+                $('#staff_data').append('<tr id=staff_row_' + next_index + '>');
+                $('#staff_data').append('</tr>');
+                $('#staff_row_' + next_index).append('<th scope="row">'+ next_index +'</th>');
+                $('#staff_row_' + next_index).append('<td>' + data.new_id + '</td>');
+                $('#staff_row_' + next_index).append('<td>' + data.name + '</td>');
+                $('#staff_row_' + next_index).append('<td>' + data.cost + '</td>');
+                $('#staff_row_' + next_index).append('<td><button id="del_btn" onclick="removeList(this);" class="btn btn-danger" type="submit">削除</button></td>');
+                $('#result').text(next_index);
+                $('#message_staff').text('');
+            })
+          .fail(function(data) {
+              // 通信失敗時の処理を記述
+              alert('登録失敗')
+          });
+        });
+       
+          
+
+        function removeList(obj) {
+            event.preventDefault();
+          
+            // objの親の親のノードを取得し（つまりtr要素）、変数「tr」に代入
+            var tr = obj.parentNode.parentNode;
+            id = tr.children[1].innerText;
+          $.ajax({
+            url: '/master/staff',
+            type: 'DELETE',
+            dataType: 'json',
+            data: {
+                'id': id
+            },
+            timeout: 5000,
+          })
+          .done(function(data) {
+              // 通信成功時の処理を記述
+              index = $('#result').text();
+              next_index = Number(index)-1;
+              $('#result').text(next_index);
+                
+                // 「tbody」の子ノード「tr」を削除
+                staff_data.removeChild(tr); 
+            })
+          .fail(function(data) {
+              // 通信失敗時の処理を記述
+              alert('登録失敗')
+          });
+
+        }
+    </script>
+
+{% endblock %}

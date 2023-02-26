@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新規登録フォーム</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <!-- CSSの設定ファイル -->
+  <link rel="stylesheet" href="static/css/sign-up.css">
+</head>
+
+<body class="bg-light">
+  <div class="container">
+    <main>
+      <div class="py-5 text-center">
+          <h2>新規登録フォーム</h2>
+          <p class="lead">以下は、Bootstrapのフォームコントロールで完全に構築されたサンプルフォーム。必要な各フォームグループには、フォームを完了せずに送信しようとすると切り替わる検証状態がついている。</p>
+      </div>
+
+      <div class="row g-5">
+        <div class="col-md-7 col-lg-8">
+          <h4 class="mb-3">新規ユーザ</h4>
+          <form name="myform" class="needs-validation">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label for="ID" class="form-label">ID</label>
+                <input type="text" class="form-control" id="id" name="id" placeholder="" value="" required>
+                <div class="invalid-feedback">
+                    IDを入力してください
+                </div>
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label for="pwd" class="form-label">パスワード</label>
+                <input type="password" class="form-control" id="pwd" name="pwd" placeholder="" value="" required>
+                <div class="invalid-feedback">
+                    パスワードを入力してください
+                </div>
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label for="pwd" class="form-label">パスワード(確認)</label>
+                <input type="password" class="form-control" id="pwd_re" placeholder="" value="" required>
+                <div class="invalid-feedback">
+                    パスワードを入力してください
+                </div>
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label for="familyName" class="form-label">姓</label>
+                <input type="text" class="form-control" id="familyName" placeholder="" value="" required>
+                <div class="invalid-feedback">
+                名字を入力してください
+                </div>
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label for="givenName" class="form-label">名</label>
+                <input type="text" class="form-control" id="givenName" placeholder="" value="" required>
+                <div class="invalid-feedback">
+                名前を入力してください
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button id="reg_btn" class="btn btn-primary" type="submit">登録</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+      <p class="mb-1">&copy; 2023</p>
+      <ul class="list-inline">
+        <li class="list-inline-item"><a href="#">プライバシー</a></li>
+        <li class="list-inline-item"><a href="#">条項</a></li>
+        <li class="list-inline-item"><a href="#">サポート</a></li>
+      </ul>
+    </footer>
+  </div>
+
+  <div id="result"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+  <!-- JSの設定ファイル -->
+  <!-- 
+  <script src="static/js/form-validation.js"></script>
+   -->
+
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script>
+    var reg_btn = document.getElementById('reg_btn');
+    var result = document.getElementById('result');
+
+   reg_btn.addEventListener('click', function(){
+      event.preventDefault();
+      $('#result').text('通信中...');
+      // Ajax通信を開始
+      $.ajax({
+        url: '/sign_up',
+        type: 'POST',
+        dataType: 'json',
+        // フォーム要素の内容をハッシュ形式に変換
+        data: {
+          'id': document.myform.id.value,
+          'pwd': document.myform.pwd.value,
+          'name_last': document.myform.familyName.value,
+          'name_first': document.myform.givenName.value
+        },
+        timeout: 5000,
+      })
+      .done(function(data) {
+          // 通信成功時の処理を記述
+          location.href = "/"
+      })
+      .fail(function(data) {
+          // 通信失敗時の処理を記述
+          result.innerHTML = data;
+      });
+    })
+
+  </script>
+</body>
+
+</html>
