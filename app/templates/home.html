@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}HOME{% endblock %}
+
+{% block body %}
+
+  {{data}}{{csrf_token}}
+  <!--
+  <ul>
+    <li>{{csrf_token}} CSRFtokenを使用する。画面表示時にサーバから自動で渡されるので、クライアントからのリクエスト時に必ず添えるようにする。</li>
+  </ul>
+
+  <div class="draggable-area" cmanOMat="area" >
+    <div id="table1">
+      <div id="box1" class="box" cmanOMat="movearea">赤</div>
+      <div id="box2" class="box" cmanOMat="movearea">黄</div>
+      <div id="box3" class="box" cmanOMat="movearea">青</div>
+    </div>
+  </div>
+    -->
+{% endblock %}

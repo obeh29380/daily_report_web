@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% block title %}日報集計{% endblock %}
+
+{% block body %}
+
+  <div class="container">
+    <main>
+      <div class="py-5 text-center">
+        <h1>日報集計</h1>
+      </div>
+
+      <form class="needs-validation" novalidate>
+        <div class="row g-5">
+
+          <div class="col-8">
+            <dl class="row">
+              <dt class="col-sm-3"><h3 class="mb-3">工事情報</h3></dt>
+              <dd class="col-sm-8">工事名を入力すると、登録済みの工事情報を集計し表示します。
+              </dd>
+            </dl>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">工事名</label>
+                <div class="dropdown w-100">
+                  <!-- 切替ボタンの設定 -->
+                  <button id="worksite_name" type="button" class="btn btn-outline-primary dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false">
+                  </button>
+                  <!-- ドロップメニューの設定 -->
+                  <ul class="dropdown-menu" id="worksite_names">
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">受注先</label>
+                <div class="row">
+                  <div class="input-group">
+                    <input id='txt_customer' type="text" class="form-control" disabled="true">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">住所</label>
+                <div class="row">
+                  <div class="input-group">
+                    <input id='txt_address' type="text" class="form-control" disabled="true">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">備考</label>
+                <div class="row">
+                  <div class="input-group">
+                    <input id='txt_memo' type="text" class="form-control" disabled="true">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">工事期間</label>
+                <div class="row">
+                  <div class="col">
+                    <input id='txt_work_date' type="text" class="form-control" disabled="true">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+              <span class="text-primary">合計</span>
+            </h4>
+            <ul class="list-group mb-3">
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">人員</h6>
+                </div>
+                <span class="text-muted" id="list_total_staff">0</span>
+              </li>
+              
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">車両</h6>
+                </div>
+                <span class="text-muted" id="list_total_car">0</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">重機</h6>
+                </div>
+                <span class="text-muted" id="list_total_machine">0</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">リース</h6>
+                </div>
+                <span class="text-muted" id="list_total_lease">0</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">回送</h6>
+                </div>
+                <span class="text-muted" id="list_total_transport">0</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">廃材</h6>
+                </div>
+                <span class="text-muted" id="list_total_trash">0</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">その他</h6>
+                </div>
+                <span class="text-muted" id="list_total_other">0</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">有価物</h6>
+                </div>
+                <span class="text-muted" id="list_total_valuable">0</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span><h5 class="my-0">受注額合計</h5></span>
+                <strong id="total">0</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <hr class="my-4">
+        <div class="table-responsive">
+          <table class="table text-center">
+            <thead>
+              <tr>
+                <th style="width: 34%;"><h4 class="mb-3">明細</h4></th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+
+        <div class="row">
+          
+          <div class="col">
+            <form id="form-day-1">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th style="width: 3%;" class="text-center" rowspan="2">#</th>
+                    <th style="width: 8%;" class="text-center" rowspan="2">作業日</th>
+                    <th style="width: 5%;" class="text-center" colspan=2>人員</th>
+                    <th style="width: 5%;" class="text-center" colspan=2>車両</th>
+                    <th style="width: 5%;" class="text-center" colspan=2>重機</th>
+                    <th style="width: 5%;" class="text-center" colspan=2>リース</th>
+                    <th style="width: 5%;" class="text-center" colspan=2>回送</th>
+                    <th style="width: 5%;" class="text-center" rowspan="2" align="middle">廃材</th>
+                    <th style="width: 5%;" class="text-center" rowspan="2">その他</th>
+                    <th style="width: 5%;" class="text-center" rowspan="2">有価物</th>
+                  </tr>
+                  <tr>
+                    <th style="width: 5%;" class="text-center">人数</th>
+                    <th style="width: 5%;" class="text-center">費用</th>
+                    <th style="width: 5%;" class="text-center">台数</th>
+                    <th style="width: 5%;" class="text-center">費用</th>
+                    <th style="width: 5%;" class="text-center">台数</th>
+                    <th style="width: 5%;" class="text-center">費用</th>
+                    <th style="width: 5%;" class="text-center">個数</th>
+                    <th style="width: 5%;" class="text-center">費用</th>
+                    <th style="width: 5%;" class="text-center">運行数</th>
+                    <th style="width: 5%;" class="text-center">費用</th>
+                  </tr>
+                </thead>
+    
+                <tbody id="date_summary">
+                </tbody>
+                <tfoot id="date_summary_foot" class="table-group-divider">
+                </tfoot>
+              </table>
+            </form>
+          </div>
+
+        <button class="w-100 btn btn-primary btn-lg" onclick="print();">印刷</button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    {% autoescape off %}
+    worksite_names = {{worksite_names}}
+    {% endautoescape %}
+
+    var Type = {
+      other : 0,
+      staff : 1,
+      car : 2,
+      machine : 3,
+      lease : 4,
+      transport : 5,
+      trash : 6,
+      valuable : 7,
+    };
+    
+    $(document).ready( function(){
+
+      html = ''
+      for(var i in worksite_names){
+        html += 
+        `<li><button class="dropdown-item" type="button" onclick="select_worksite(this)" id="${worksite_names[i]['id']}">${worksite_names[i]['name']}</button></li>`
+      };
+      $('#worksite_names')[0].innerHTML = html
+    })
+
+    function to_currency(int_currency){
+      return new Intl.NumberFormat().format(int_currency);
+    }
+
+    function currency_to_int(currency){
+      return Number(currency.replace(',', ''))
+    }
+
+    function select_worksite(e){
+      //work_id = e.target.id;
+      $('#worksite_name')[0].innerText = e.innerText;
+      work_id = e.id;
+
+      $.ajax({
+        url: `/summary/${work_id}`,
+        type: 'GET',
+        dataType: 'json',
+        // フォーム要素の内容をハッシュ形式に変換
+        data: {},
+        timeout: 5000,
+      })
+      .done(function(data) {
+        if(data['details'].length == 0){
+          return;
+        }
+        $('#txt_customer')[0].value = data['head'].customer_name
+        $('#txt_work_date')[0].value = `${data['details'][0].date} ~ ${data['details'][Number(data['details'].length-1)].date}`
+        $('#txt_address')[0].value = data['head'].address
+        $('#txt_memo')[0].value = data['head'].memo
+      
+        // 日毎の集計
+        html = '';
+        date = '';
+        staff_quant = 0;
+        car_quant = 0;
+        machine_quant = 0;
+        lease_quant = 0;
+        transport_quant = 0;
+        r = -1;
+        tbl_body = document.getElementById('date_summary')
+        for(var i in data['details']){
+          
+          if (date != data['details'][i]['date']){
+            r += 1;
+            html = `<tr>
+              <td class="text-center">${r+1}</td>
+              <td class="text-center">${data['details'][i].date}</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+              <td class="text-center">0</td>
+            </tr>`
+            tbl_body.insertAdjacentHTML('beforeend', html);
+            date = data['details'][i]['date'];
+          }
+
+          if (data['details'][i]['type'] == Type.staff){
+            tbl_body.children[r].children[2].innerText = data['details'][i]['quant']
+            tbl_body.children[r].children[3].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_staff')[0].innerHTML = to_currency(currency_to_int($('#list_total_staff')[0].innerHTML) + Number(data['details'][i]['total']))
+            staff_quant += Number(data['details'][i]['quant']);
+          }
+
+          if (data['details'][i]['type'] == Type.car){
+            tbl_body.children[r].children[4].innerText = data['details'][i]['quant']
+            tbl_body.children[r].children[5].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_car')[0].innerHTML = to_currency(currency_to_int($('#list_total_car')[0].innerHTML) + Number(data['details'][i]['total']))
+            car_quant += Number(data['details'][i]['quant']);
+          }
+          
+          if (data['details'][i]['type'] == Type.machine){
+            tbl_body.children[r].children[6].innerText = data['details'][i]['quant']
+            tbl_body.children[r].children[7].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_machine')[0].innerHTML = to_currency(currency_to_int($('#list_total_machine')[0].innerHTML) + Number(data['details'][i]['total']))
+            machine_quant += Number(data['details'][i]['quant']);
+          }
+          
+          if (data['details'][i]['type'] == Type.lease){
+            tbl_body.children[r].children[8].innerText = data['details'][i]['quant']
+            tbl_body.children[r].children[9].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_lease')[0].innerHTML = to_currency(currency_to_int($('#list_total_lease')[0].innerHTML) + Number(data['details'][i]['total']))
+            lease_quant += Number(data['details'][i]['quant']);
+          }
+          
+          if (data['details'][i]['type'] == Type.transport){
+            tbl_body.children[r].children[10].innerText = data['details'][i]['quant']
+            tbl_body.children[r].children[11].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_transport')[0].innerHTML = to_currency(currency_to_int($('#list_total_transport')[0].innerHTML) + Number(data['details'][i]['total']))
+            transport_quant += Number(data['details'][i]['quant']);
+          }
+
+          if (data['details'][i]['type'] == Type.trash){
+            tbl_body.children[r].children[12].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_trash')[0].innerHTML = to_currency(currency_to_int($('#list_total_trash')[0].innerHTML) + Number(data['details'][i]['total']))
+          }
+          if (data['details'][i]['type'] == Type.other){
+            tbl_body.children[r].children[13].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_other')[0].innerHTML = to_currency(currency_to_int($('#list_total_other')[0].innerHTML) + Number(data['details'][i]['total']))
+          }
+          if (data['details'][i]['type'] == Type.valuable){
+            tbl_body.children[r].children[14].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_valuable')[0].innerHTML = to_currency(currency_to_int($('#list_total_valuable')[0].innerHTML) + Number(data['details'][i]['total']))
+          }
+
+          $('#total')[0].innerHTML = to_currency(currency_to_int($('#total')[0].innerHTML) + Number(data['details'][i]['total']))
+            
+        };
+
+        // 小計
+        r += 1;
+        tfoot = document.getElementById('date_summary_foot');
+        html = `<tr class="bg-info-subtle text-body-emphasis">
+          <td class="text-center" colspan=2>小計</td>
+          <td class="text-center">${staff_quant}</td>
+          <td class="text-center">${$('#list_total_staff')[0].innerText}</td>
+          <td class="text-center">${car_quant}</td>
+          <td class="text-center">${$('#list_total_car')[0].innerText}</td>
+          <td class="text-center">${machine_quant}</td>
+          <td class="text-center">${$('#list_total_machine')[0].innerText}</td>
+          <td class="text-center">${lease_quant}</td>
+          <td class="text-center">${$('#list_total_lease')[0].innerText}</td>
+          <td class="text-center">${transport_quant}</td>
+          <td class="text-center">${$('#list_total_transport')[0].innerText}</td>
+          <td class="text-center">${$('#list_total_trash')[0].innerText}</td>
+          <td class="text-center">${$('#list_total_other')[0].innerText}</td>
+          <td class="text-center">${$('#list_total_valuable')[0].innerText}</td>
+        </tr>`
+        tfoot.insertAdjacentHTML('beforeend', html);
+        
+      })
+      .fail(function(data) {
+          
+      });
+    }
+  </script>
+
+
+{% endblock %}

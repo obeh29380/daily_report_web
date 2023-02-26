@@ -1,0 +1,1344 @@
+{% extends "base.html" %}
+{% block title %}日報管理{% endblock %}
+
+{% block body %}
+
+  <div class="container">
+    <main>
+      <div class="py-5 text-center">
+        <h1>日報管理</h1>
+      </div>
+
+      <form class="needs-validation" novalidate>
+        <div class="row g-5">
+
+          <div class="col-8">
+            <dl class="row">
+              <dt class="col-sm-3"><h3 class="mb-3">工事情報</h3></dt>
+              <dd class="col-sm-8">工事日と工事名を入力すると、登録済みの工事情報を呼び出します。いずれも必須入力です。
+                未登録の工事名を入力すると、新規工事として工事リストにも登録します。
+              </dd>
+            </dl>
+            
+            <div class="row g-3">
+              <div class="row">
+                <label class="form-label">工事日</label>
+                <div class="col-3">
+                  <input type="date" class="form-control" id="date" placeholder="" value="" onchange="report_key_changed(this)">
+                </div>
+                <div class="col-3" id="work_day">
+                </div>
+              </div>
+
+              <div id="invalid-feedback-date" class="text-danger">
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">工事名</label>
+                <div class="input-group">
+                  <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    登録済リスト
+                  </button>
+                  <ul id="worksite_names" class="dropdown-menu dropdown-menu-dark">
+                  </ul>
+                  <input id="txt_worksite" type="text" class="form-control" aria-label="..." oninput="report_key_changed(this)">
+                </div>
+                <div id="invalid-feedback-worksite_name" class="text-danger">
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <dl class="row g-3">
+                <dt class="col-sm-3"><h4 class="mb-3">工事サブ情報</h4></dt>
+                <dd class="col-sm-8">入力は任意です。</dd>
+              </dl>
+            </div>
+            
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">受注先</label>
+                <div class="row">
+                  <div class="input-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                      登録済リスト
+                    </button>
+                    <ul id='customers' class="dropdown-menu dropdown-menu-dark">
+                    </ul>
+                    <input id='txt_customer' type="text" class="form-control" aria-label="...">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <div class="row">
+                  <div class="col">
+                    <label for="givenName" class="form-label">郵便番号</label>
+                      <div class="row">
+                        <div class="col-2">
+                          <input id='txt_address_num' type="text" class="form-control" aria-label="a" pattern="\d{3}-?\d{4}">
+                        </div>
+                        <div class="col">
+                          <button id="btn_address" class="btn btn-primary" onclick="get_address()">郵便番号から住所入力</button>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                    <label for="givenName" class="form-label">住所</label>
+                    <input id='txt_address' type="text" class="form-control" aria-label="...">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">備考</label>
+                <input id='txt_memo' type="text" class="form-control" aria-label="a">
+              </div>
+            </div>
+          </div>
+
+          <div class="col">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+              <span class="text-primary">合計</span>
+            </h4>
+            <ul class="list-group mb-3">
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">人員</h6>
+                </div>
+                <span class="text-muted" id="list_total_staff" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">廃材</h6>
+                </div>
+                <span class="text-muted" id="list_total_trash" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">重機</h6>
+                </div>
+                <span class="text-muted" id="list_total_machine" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">車両</h6>
+                </div>
+                <span class="text-muted" id="list_total_car" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">リース</h6>
+                </div>
+                <span class="text-muted" id="list_total_lease" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">回送</h6>
+                </div>
+                <span class="text-muted" id="list_total_transport" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">有価物</h6>
+                </div>
+                <span class="text-muted" id="list_total_valuable" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">その他</h6>
+                </div>
+                <span class="text-muted" id="list_total_other" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span><h5 class="my-0">合計</h5></span>
+                <strong id="total"></strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </form>
+
+        <hr class="my-4">
+        <div class="table-responsive">
+          <table class="table text-center">
+            <thead>
+              <tr>
+                <th style="width: 34%;"><h4 class="mb-3">明細</h4></th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
+        <div class="row">
+          <!-- 人員 -->
+          <div class="col-4">
+            <form id="form-staff">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">人員</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 10%;"></th>
+                        <th style="width: 60%;" class="text-center">名前</th>
+                        <th style="width: 30%;" class="text-center">単価</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="stafflist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <div class="row">
+                    <h4 class="my-0 fw-normal">
+                      <div class="row">
+                        <div class="col">
+                          小計
+                        </div>
+                        <div class="col text-end">
+                          <span id="staff_total">0</span>人
+                          <span id="staff_total_cost">0</span>
+                        </div>
+                      </div>
+                    </h4>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- 廃材 -->
+          <div class="col">
+            <form id="form-trash">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">廃材</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 20%;" class="text-center">処分場</th>
+                        <th style="width: 20%;" class="text-center">品目</th>
+                        <th style="width: 15%;" class="text-center">単価</th>
+                        <th style="width: 15%;" class="text-center">単位</th>
+                        <th style="width: 15%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="trashlist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span id="total_quant">0</span>個
+                        <span name="total_cost">0円</span>
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- 重機 -->
+          <div class="col">
+            <form id="form-machine">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">重機</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;" class="text-center">名前</th>
+                        <th style="width: 25%;" class="text-center">単価</th>
+                        <th style="width: 20%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="machinelist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>台
+                        <span name="total_cost">0円</span>
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+            
+          <!-- リース -->
+          <div class="col">
+            <form id="form-lease">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">リース</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;" class="text-center">名前</th>
+                        <th style="width: 25%;" class="text-center">単価</th>
+                        <th style="width: 20%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="leaselist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>台
+                        <span name="total_cost">0円</span>
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- 車両 -->
+          <div class="col">
+            <form id="form-car">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">車両</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 45%;" class="text-center">名前</th>
+                        <th style="width: 20%;" class="text-center">単価</th>
+                        <th style="width: 15%;" class="text-center">数量</th>
+                        <th style="width: 20%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="carlist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>台
+                        <span name="total_cost">0円</span>
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- 回送 -->
+          <div class="col">
+            <form id="form-transport">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">回送</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;" class="text-center">名前</th>
+                        <th style="width: 25%;" class="text-center">単価</th>
+                        <th style="width: 20%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="transportlist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>回
+                          <span name="total_cost">0円</span>
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- 有価物 -->
+          <div class="col">
+            <form id="form-valuable">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">有価物</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 20%;" class="text-center">品目</th>
+                        <th style="width: 20%;" class="text-center">単価</th>
+                        <th style="width: 15%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="valuablelist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>個
+                        <span name="total_cost">0円</span>
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- その他 -->
+          <div class="col">
+            <form id="form-other">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">その他</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;" class="text-center">名前</th>
+                        <th style="width: 25%;" class="text-center">単価</th>
+                        <th style="width: 20%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="otherlist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>個
+                        <span name="total_cost">0円</span>
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <button id="btn_reg" class="w-100 btn btn-primary btn-lg" type="submit" onclick="register(this);">登録</button>
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+          <div
+            id="liveToast"
+            class="toast hide"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <div class="toast-header">
+              <strong class="me-auto">登録完了通知</strong>
+              <small>0 mins ago</small>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="toast"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="toast-body">正常に登録されました。</div>
+          </div>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    {% autoescape off %}
+    cars = {{cars}}
+    machines = {{machines}}
+    leases = {{leases}}
+    dests = {{dests}}
+    items = {{items}}
+    customers = {{customers}}
+    worksite_names = {{worksite_names}}
+    unit_type = {{unit_type}}
+    staffs = {{staffs}}
+    {% endautoescape %}
+
+    let map_master = {
+      carlist: cars,
+      machinelist: machines,
+      leaselist: leases
+    }
+    var toastElList = [].slice.call(document.querySelectorAll(".toast"));
+    var toastList = toastElList.map(function (toastEl) {
+      return new bootstrap.Toast(toastEl);
+    });
+
+    var ws = new WebSocket("ws://localhost:80/ws/register_report");
+
+    $(function(){
+      // WebSocket作成
+
+      // WebSocket open時のイベントハンドラ登録
+      ws.onopen = function(){
+        $("#log").prepend("&lt;onopen&gt; " + "<br/>");
+      }
+
+      // WebSocket message受信時のイベントハンドラ登録
+      ws.onmessage = function(message){
+        $("#log").prepend(message.data + "<br/>");
+        showToast();
+      }
+
+      // WebSocket error時のイベントハンドラ登録
+      ws.onerror = function(){
+        $("#log").prepend("&lt;onerror&gt; " + "<br/>");
+      }
+
+      // WebSocket close時のイベントハンドラ登録
+      ws.onclose = function(){
+        $("#log").prepend("&lt;onclose&gt; " + "<br/>");
+      }
+
+      // Windowが閉じられた(例：ブラウザを閉じた)時のイベントを設定
+      $(window).unload(function() {
+        ws.onclose(); // WebSocket close
+      })
+
+      // キー入力時のイベントを設定
+      $("#wstest").onclick(function(e){
+        ws.send($("#wstext").val()); // WebSocketを使いサーバにメッセージを送信
+      });
+
+      
+
+    })
+
+    function showToast() {
+      // トーストを表示する
+      toastList[0].show();
+    }
+
+    let map_form = {
+      "form-staff": "staff",
+      "form-car": "car",
+      "form-machine": "machine",
+      "form-lease": "lease",
+      "form-transport": "transport",
+      "form-trash": "trash",
+      "form-valuable": "valuable",
+      "form-other": "other",
+    }
+
+    var mo = new MutationObserver(function() {
+      calc_total();
+    });
+    var config = {
+      childList: true
+    };
+    mo.observe($('#list_total_staff')[0], config);
+    mo.observe($('#list_total_car')[0], config);
+    mo.observe($('#list_total_machine')[0], config);
+    mo.observe($('#list_total_lease')[0], config);
+    mo.observe($('#list_total_trash')[0], config);
+    mo.observe($('#list_total_transport')[0], config);
+    mo.observe($('#list_total_valuable')[0], config);
+    mo.observe($('#list_total_other')[0], config);
+
+    $(document).ready( function(){
+      set_staff_list();
+      add_new_row(cars, $('#carlist'));
+      add_new_row(machines, $('#machinelist'));
+      add_new_row(leases, $('#leaselist'));
+      add_new_row_trash();
+      add_new_row_no_select($('#transportlist'))
+      add_new_row_no_select($('#valuablelist'))
+      add_new_row_no_select($('#otherlist'))
+
+      html = ''
+      worksite_names.forEach(w => {
+        html += 
+        `<li><button class="dropdown-item" type="button" onclick="enter_worksite(this)">${w}</button></li>`
+      });
+      $('#worksite_names')[0].innerHTML = html
+
+      html = ''
+      customers.forEach(w => {
+        html += 
+        `<li><button class="dropdown-item" type="button" onclick="enter_customer(this)">${w}</button></li>`
+      });
+      $('#customers')[0].innerHTML = html
+    })
+
+    function enter_worksite(e){
+      $('#txt_worksite')[0].value = e.innerText
+      report_key_changed(e)
+    }
+
+    function enter_customer(e){
+      $('#txt_customer')[0].value = e.innerText
+    }
+
+    function set_staff_list(){
+      html = ""
+      staffs.forEach(staff => {
+        html += 
+        `<tr>
+          <td><input type="checkbox" onchange="calc_staff_total(this)" class="form-check-input text-center" value="" id="formCheckDefault"></td>
+          <td class="text-center">${staff['name']}</td>
+          <td class="text-center">${staff['cost']}</td>
+        </tr>`
+      });
+
+      $('#stafflist').html(html);
+
+    }
+
+    function int_to_currency(int_currency){
+      return new Intl.NumberFormat().format(int_currency) + '円';
+    }
+
+    function currency_to_int(currency){
+      currency = currency.replace('円', '')
+      return Number(currency.replace(',', ''))
+    }
+    
+    function re_calc(e){
+      e.value = e.value.replace(/[０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+      });
+
+      if (e.closest('form').id == 'form-trash'){
+        // 行の合計再計算
+        calc_row_total(e.parentElement.parentElement, e.parentElement.parentElement.parentElement, 2, 5, 4)
+        // フォームの合計再計算
+        calc_form_total(e.closest('form'), e.parentElement.parentElement.parentElement, 5)
+      } else {
+        // 行の合計再計算
+        calc_row_total(e.parentElement.parentElement, e.parentElement.parentElement.parentElement, 1, 3, 2)
+        // フォームの合計再計算
+        calc_form_total(e.closest('form'), e.parentElement.parentElement.parentElement, 3, 2)
+      }
+    }
+
+    function calc_row_total(row, table, col_cost, col_total, col_quant = -1){
+      if (col_quant >= 0) {
+        quant = Number(row.children[col_quant].children[0].value)
+      } else {
+        quant = 1
+      }
+
+      cost = Number(row.children[col_cost].children[0].value)
+      row.children[col_total].innerText = cost*quant
+    }
+
+    function calc_form_total(form, table, col_total, col_quant = -1){
+      quant = 0
+      cost = 0
+      Array.prototype.forEach.call(table.children, (row, i) => {
+        if (col_quant >= 0){
+          r_quant = Number(row.children[col_quant].children[0].value)
+        } else {
+          r_quant = 1
+        }
+        r_cost = Number(row.children[col_total].innerText)
+        
+        if (r_cost > 0){
+          cost += r_cost
+        }
+        if (r_quant > 0){
+          quant += r_quant
+        }
+      
+        $(form).find('span[name="total_cost"]')[0].innerText = int_to_currency(cost);
+        if (col_quant >= 0){
+          $(form).find('span[name="total_quant"]')[0].innerText = quant;
+        }
+      });
+
+      $('#list_total_' + map_form[form.id])[0].innerText = int_to_currency(cost);
+    }
+
+    function calc_total(){
+      total = 0
+      total += currency_to_int($('#list_total_staff')[0].innerText)
+      total += currency_to_int($('#list_total_car')[0].innerText)
+      total += currency_to_int($('#list_total_machine')[0].innerText)
+      total += currency_to_int($('#list_total_lease')[0].innerText)
+      total += currency_to_int($('#list_total_trash')[0].innerText)
+      total += currency_to_int($('#list_total_transport')[0].innerText)
+      total += currency_to_int($('#list_total_valuable')[0].innerText)
+      total += currency_to_int($('#list_total_other')[0].innerText)
+
+      $('#total')[0].innerText = int_to_currency(total);
+    }
+
+    function add_new_row(options, tbody){
+      html = ""
+      html += '<tr>'
+      html += '<td><select class="form-select">'
+      html += '<option value="">--選択してください--</option>'
+      options.forEach(o => {
+        html += `<option value="${o['cost']}">${o['name']}</option>`
+      });
+      html += '</td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td><td class="text-end">0</td>'
+      html += '</tr>'
+      $(tbody).append(html);
+    }
+
+    function add_new_row_no_select(tbody){
+      html = ""
+      html += '<tr>'
+      html += '<td><input type="text" oninput="check_input(this)" class="form-control text-left"></td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+      html += '<td class="text-end">0</td>'
+      html += '</tr>'
+      $(tbody).append(html);
+
+    }
+
+    function add_new_row_trash(){
+      html = ""
+      html += '<tr>'
+      html += '<td><select class="form-select">'
+      html += '<option value="">--選択してください--</option>'
+      dests.forEach(o => {
+        html += `<option value="${o['id']}">${o['name']}</option>`
+      });
+      html += '</td>'
+      html += '<td><select class="form-select">'
+      html += '<option value="">--選択してください--</option>'
+      items.forEach(o => {
+        html += `<option value="${o['id']}">${o['name']}</option>`
+      });
+      html += '</td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+
+      html += '</td>'
+      html += '<td><select class="form-select" name="unit_type">'
+        unit_type.forEach(o => {
+        html += `<option value="${o['id']}">${o['name']}</option>`
+      });
+      html += '</td>'
+
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+
+      html += '<td class="text-end">0</td>'
+      html += '</tr>'
+
+      $('#trashlist').append(html);
+
+    }
+
+    function calc_staff_total(e){
+      // staff-form 小計
+      cost = Number(e.parentElement.parentElement.children[2].textContent)
+      staff_total = document.getElementById('staff_total')
+      staff_total_cost = document.getElementById('staff_total_cost')
+
+      current_total = Number(staff_total.textContent)
+      current_total_cost = currency_to_int(staff_total_cost.textContent)
+      if (e.checked == true){
+        staff_total.textContent = current_total + 1;
+        total_cost = current_total_cost + cost;
+      } else {
+        staff_total.textContent = current_total - 1;
+        total_cost = current_total_cost - cost;
+      }
+
+      staff_total_cost.textContent = int_to_currency(total_cost);
+
+      $('#list_total_staff')[0].innerText = int_to_currency(total_cost);
+    }
+
+    $(function($) {
+      $('html').on('focus', 'select', function(e) {
+        pre_cost = Number(e.target.parentElement.parentElement.children[3].innerText)
+        pre_quant = Number(e.target.parentElement.parentElement.children[2].childNodes[0].value)
+      }).on('change', 'select', function(e) {
+
+        // 廃材の単位選択時は検索不要
+        if(e.target.name == 'unit_type'){
+          return;
+        }
+        table = e.target.closest('tbody')
+        row_count = Number(e.target.parentElement.parentElement.parentElement.childElementCount)
+        current_row = Number(e.target.parentElement.parentElement.rowIndex)
+
+        if (table.id == 'trashlist'){
+
+          dest_id = e.target.closest('tr').children[0].children[0].value
+          item_id = e.target.closest('tr').children[1].children[0].value
+
+          if (dest_id == "" || item_id == ""){
+            return
+          }
+          
+          $.ajax({
+            url: `/master/trash/${dest_id}/${item_id}`,
+            type: 'GET',
+            dataType: 'json',
+            // フォーム要素の内容をハッシュ形式に変換
+            data: {},
+            timeout: 5000,
+          })
+          .done(function(data) {
+            e.target.closest('tr').children[2].children[0].value = data.cost
+            e.target.closest('tr').children[3].children[0].value = data.unit_type
+            if (e.target.closest('tr').children[4].children[0].value == ''){
+              e.target.closest('tr').children[4].children[0].value = 1
+            }
+
+            calc_row_total(e.target.parentElement.parentElement, e.target.parentElement.parentElement.parentElement, 2, 5, 4)
+            calc_form_total(e.target.closest('form'), e.target.parentElement.parentElement.parentElement, 5)
+
+            if (current_row == row_count && cost > 0) {
+              add_new_row_trash();
+            }
+          })
+          .fail(function(data) {
+              // 該当無しの場合は、行追加のみ
+          });
+        } else {
+
+          if (e.target.parentElement.parentElement.children[2].childNodes[0].value == ''){
+            quant = 1
+          } else {
+            quant = Number(e.target.parentElement.parentElement.children[2].childNodes[0].value)
+          }
+          cost = Number(e.target.value)
+
+          e.target.parentElement.parentElement.children[1].childNodes[0].value = cost;
+          e.target.parentElement.parentElement.children[2].childNodes[0].value = quant;
+
+          calc_row_total(e.target.parentElement.parentElement, e.target.parentElement.parentElement.parentElement, 1, 3, 2)
+          calc_form_total(e.target.closest('form'), e.target.parentElement.parentElement.parentElement, 3, 2)
+
+          if (current_row == row_count && cost > 0) {
+            add_new_row(map_master[table.id], table);
+          }
+        }
+
+        // フォーカスを外さないと、同じ要素を連続でselectしたときにfocusイベントが動かない
+        document.activeElement.blur();
+      });
+    });
+
+    function check_input(e){
+      row_count = Number(e.parentElement.parentElement.parentElement.childElementCount)
+      current_row = Number(e.parentElement.parentElement.rowIndex)
+      table = e.closest('tbody')
+      if (current_row == row_count && e.value != '') {
+        add_new_row_no_select(table);
+      }
+    }
+
+    function register(e){
+      event.preventDefault();
+      $(`#invalid-feedback-worksite_name`)[0].innerText = '';
+      $(`#invalid-feedback-date`)[0].innerText = '';
+
+      // 入力チェック
+      // 日報ヘッダ情報
+      if ($('#txt_worksite')[0].value == ''){
+        $(`#invalid-feedback-worksite_name`)[0].innerText = '工事名を入力してください';
+        alert('工事名を入力してください')
+        return;
+      } else {
+        worksite = $('#txt_worksite')[0].value;
+      };
+
+      if ($('#date')[0].value == ''){
+        $(`#invalid-feedback-date`)[0].innerText = '工事日を選択してください';
+        alert('工事日を選択してください')
+        return;
+      } else {
+        workdate = $('#date')[0].value;
+      };
+
+      customer = $('#txt_customer')[0].value;
+      address = $('#txt_address')[0].value;
+      memo = $('#txt_memo')[0].value;
+      staff_input = get_staff_input();
+      car_input = get_car_input();
+      machine_input = get_machine_input();
+      lease_input = get_lease_input();
+      transport_input = get_transport_input();
+      valuable_input = get_valuable_input();
+      other_input = get_other_input();
+      trash_input = get_trash_input();
+      
+      // Ajax通信を開始
+      $.ajax({
+        url: `/daily_report/${worksite}/${workdate}`,
+        type: 'POST',
+        dataType: 'json',
+        data: {
+          'head': {
+            'customer': customer,
+            'address': address,
+            'memo': memo,
+          },
+          'staff': JSON.stringify(staff_input),
+          'car': JSON.stringify(car_input),
+          'machine': JSON.stringify(machine_input),
+          'lease': JSON.stringify(lease_input),
+          'transport': JSON.stringify(transport_input),
+          'valuable': JSON.stringify(valuable_input),
+          'other': JSON.stringify(other_input),
+          'trash': JSON.stringify(trash_input)
+        },
+        timeout: 5000
+      }).done(function(data) {
+        // 通信成功時の処理を記述
+        showToast();
+
+      }).fail(function(jqXHR, textStatus, errorThrown, XMLHttPRequest) {
+        // 通信失敗時の処理を記述
+        console.log("jqXHR          : " + jqXHR.status); // HTTPステータスが取得
+        console.log("textStatus     : " + textStatus);    // タイムアウト、パースエラー
+        console.log("errorThrown    : " + errorThrown.message); // 例外情報
+        console.log("errorThrown2    : " + XMLHttpRequest.status); // 例外情報
+      });
+    };
+
+    function get_staff_input(){
+      values = {}
+      Array.from($('#stafflist')[0].children).forEach(tr => {
+        if(tr.children[0].children[0].checked == true){
+          values[tr.children[1].innerText] = tr.children[2].innerText;
+        };
+      });
+      return values
+    }
+
+    function get_car_input(){
+      values = []
+      Array.from($('#carlist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].selectedOptions[0].innerText;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_lease_input(){
+      values = []
+      Array.from($('#leaselist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].selectedOptions[0].innerText;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_machine_input(){
+      values = []
+      Array.from($('#machinelist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].selectedOptions[0].innerText;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_transport_input(){
+      values = []
+      Array.from($('#transportlist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].value;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_valuable_input(){
+      values = []
+      Array.from($('#valuablelist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].value;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_other_input(){
+      values = []
+      Array.from($('#otherlist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].value;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_trash_input(){
+      values = []
+      Array.from($('#trashlist')[0].children).forEach(tr => {
+        dest = tr.children[0].children[0].selectedOptions[0].innerText;
+        if(dest == ''){return};
+        item = tr.children[1].children[0].selectedOptions[0].innerText;
+        if(item == ''){return};
+        cost = tr.children[2].children[0].value;
+        if(cost == ''){return};
+        unit_type = tr.children[3].children[0].value;
+        if(unit_type == ''){return};
+        quant = tr.children[4].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'dest': dest,
+          'item': item,
+          'cost': cost,
+          'unit_type': unit_type,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function clear_form(e){
+      for(let tr in Array.from($('#stafflist')[0].children)){
+        Array.from($('#stafflist')[0].children)[tr].children[0].children[0].checked = false;
+      }
+      $('#trashlist')[0].innerHTML = "";
+      $('#carlist')[0].innerHTML = "";
+      $('#machinelist')[0].innerHTML = "";
+      $('#leaselist')[0].innerHTML = "";
+      $('#transportlist')[0].innerHTML = "";
+      $('#valuablelist')[0].innerHTML = "";
+      $('#otherlist')[0].innerHTML = "";
+
+      add_new_row_trash();
+      add_new_row(cars, $('#carlist'));
+      add_new_row(machines, $('#machinelist'));
+      add_new_row(leases, $('#leaselist'));
+      add_new_row_no_select($('#transportlist'))
+      add_new_row_no_select($('#valuablelist'))
+      add_new_row_no_select($('#otherlist'))
+      re_calc($('#carlist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#machinelist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#leaselist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#transportlist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#valuablelist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#otherlist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#trashlist')[0].children[0].childNodes[2].firstChild);
+
+      $('#staff_total')[0].innerText = 0;
+      $('#staff_total_cost')[0].innerText = 0;
+      $('#staff_total_cost')[0].innerText = 0;
+      $('#list_total_staff')[0].innerText = "0円";
+    }
+
+    function get_address(){
+      event.preventDefault();
+      address_num = $('#txt_address_num')[0].value.replace("-","");
+      // リファレンス https://api-doc.postcode-jp.com/#90aa7c4e14
+      if(address_num.length != 7){
+        return;
+      }
+
+      $.ajax({
+        url: `https://apis.postcode-jp.com/api/v5/postcodes/${address_num}`,
+        type: 'GET',
+        dataType: 'json',
+        data: {
+          "apikey": "uJvHA9Oi0ALu2FHpUXIpowPOQv5QMQn5YPkg2Ry"
+        },
+        timeout: 5000,
+      })
+      .done(function(data) {
+        $('#txt_address')[0].value = data[0]['allAddress'];
+      })
+      .fail(function(data) {
+          
+      });
+    }
+
+    function report_key_changed(e){
+      // 入力チェック
+      // 日報ヘッダ情報
+      if ($('#txt_worksite')[0].value == ''){
+        return;
+      };
+
+      if ($('#date')[0].value == ''){
+        return;
+      };
+
+      worksite = $('#txt_worksite')[0].value;
+      workdate = $('#date')[0].value;
+
+      $.ajax({
+        url: `/daily_report/${worksite}/${workdate}`,
+        type: 'GET',
+        dataType: 'json',
+        // フォーム要素の内容をハッシュ形式に変換
+        data: {},
+        timeout: 5000,
+      })
+      .done(function(data) {
+        clear_form(data);
+        set_registered_data(data);
+      })
+      .fail(function(data) {
+          // 該当無しの場合は、行追加のみ
+      });
+
+      function set_registered_data(data){
+        // 登録済みデータのセット
+        // report_head情報
+        $('#txt_customer')[0].value = data['head']['customer_name'];
+        $('#txt_address')[0].value = data['head']['address'];
+        $('#txt_memo')[0].value = data['head']['memo'];
+
+        // staff
+        for(let d in data.STAFF){
+          for(let tr in Array.from($('#stafflist')[0].children)){
+            if(Array.from($('#stafflist')[0].children)[tr].children[1].innerText == data.STAFF[d]['name']){
+              Array.from($('#stafflist')[0].children)[tr].children[0].children[0].checked = true;
+              calc_staff_total(Array.from($('#stafflist')[0].children)[tr].children[0].children[0]);
+              break;
+            }
+          }
+        }
+
+        // trash
+        for(let d in data.TRASH){
+          last_idx = Number($('#trashlist')[0].children.length) - 1;
+          // 処分場
+          for(let i = 0; i < $('#trashlist')[0].children[last_idx].childNodes[0].firstChild.length; i++){
+            if($('#trashlist')[0].children[last_idx].childNodes[0].firstChild[i].text == data.TRASH[d]['dest']){
+              $('#trashlist')[0].children[last_idx].childNodes[0].firstChild[i].selected = true;
+            };
+          };
+          // 品名
+          for(let i = 0; i < $('#trashlist')[0].children[last_idx].childNodes[1].firstChild.length; i++){
+            if($('#trashlist')[0].children[last_idx].childNodes[1].firstChild[i].text == data.TRASH[d]['name']){
+              $('#trashlist')[0].children[last_idx].childNodes[1].firstChild[i].selected = true;
+            };
+          };
+          $('#trashlist')[0].children[last_idx].childNodes[2].firstChild.value = data.TRASH[d]['cost'];
+          // 単位
+          for(let i = 0; i < $('#trashlist')[0].children[last_idx].childNodes[3].firstChild.length; i++){
+            if($('#trashlist')[0].children[last_idx].childNodes[3].firstChild[i].text == data.TRASH[d]['unit_type']){
+              $('#trashlist')[0].children[last_idx].childNodes[3].firstChild[i].selected = true;
+            };
+          };
+          $('#trashlist')[0].children[last_idx].childNodes[4].firstChild.value = data.TRASH[d]['quant'];
+          re_calc($('#trashlist')[0].children[last_idx].childNodes[4].firstChild);
+          add_new_row_trash();
+        }
+
+        // car
+        for(let d in data.CAR){
+          last_idx = Number($('#carlist')[0].children.length) - 1;
+          for(let i = 0; i < $('#carlist')[0].children[last_idx].childNodes[0].firstChild.length; i++){
+            if($('#carlist')[0].children[last_idx].childNodes[0].firstChild[i].text == data.CAR[d]['name']){
+              $('#carlist')[0].children[last_idx].childNodes[0].firstChild[i].selected = true;
+            };
+          };
+          $('#carlist')[0].children[last_idx].childNodes[1].firstChild.value = data.CAR[d]['cost'];
+          $('#carlist')[0].children[last_idx].childNodes[2].firstChild.value = data.CAR[d]['quant'];
+          re_calc($('#carlist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row(cars, $('#carlist'));
+        }
+
+        //machine
+        for(let d in data.MACHINE){
+          last_idx = Number($('#machinelist')[0].children.length) - 1;
+          for(let i = 0; i < $('#machinelist')[0].children[last_idx].childNodes[0].firstChild.length; i++){
+            if($('#machinelist')[0].children[last_idx].childNodes[0].firstChild[i].text == data.MACHINE[d]['name']){
+              $('#machinelist')[0].children[last_idx].childNodes[0].firstChild[i].selected = true;
+            };
+          };
+          $('#machinelist')[0].children[last_idx].childNodes[1].firstChild.value = data.MACHINE[d]['cost'];
+          $('#machinelist')[0].children[last_idx].childNodes[2].firstChild.value = data.MACHINE[d]['quant'];
+          re_calc($('#machinelist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row(machines, $('#machinelist'));
+        }
+
+        //lease
+        for(let d in data.LEASE){
+          last_idx = Number($('#leaselist')[0].children.length) - 1;
+          for(let i = 0; i < $('#leaselist')[0].children[last_idx].childNodes[0].firstChild.length; i++){
+            if($('#leaselist')[0].children[last_idx].childNodes[0].firstChild[i].text == data.LEASE[d]['name']){
+              $('#leaselist')[0].children[last_idx].childNodes[0].firstChild[i].selected = true;
+            };
+          };
+          $('#leaselist')[0].children[last_idx].childNodes[1].firstChild.value = data.LEASE[d]['cost'];
+          $('#leaselist')[0].children[last_idx].childNodes[2].firstChild.value = data.LEASE[d]['quant'];
+          re_calc($('#leaselist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row(leases, $('#leaselist'));
+        }
+
+        //transport
+        for(let d in data.TRANSPORT){
+          last_idx = Number($('#transportlist')[0].children.length) - 1;
+          $('#transportlist')[0].children[last_idx].childNodes[0].firstChild.value = data.TRANSPORT[d]['name'];
+          $('#transportlist')[0].children[last_idx].childNodes[1].firstChild.value = data.TRANSPORT[d]['cost'];
+          $('#transportlist')[0].children[last_idx].childNodes[2].firstChild.value = data.TRANSPORT[d]['quant'];
+          re_calc($('#transportlist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row_no_select($('#transportlist'))
+        }
+
+        //valuable
+        for(let d in data.VALUABLE){
+          last_idx = Number($('#valuablelist')[0].children.length) - 1;
+          $('#valuablelist')[0].children[last_idx].childNodes[0].firstChild.value = data.VALUABLE[d]['name'];
+          $('#valuablelist')[0].children[last_idx].childNodes[1].firstChild.value = data.VALUABLE[d]['cost'];
+          $('#valuablelist')[0].children[last_idx].childNodes[2].firstChild.value = data.VALUABLE[d]['quant'];
+          re_calc($('#valuablelist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row_no_select($('#valuablelist'))
+        }
+
+        //other
+        for(let d in data.OTHER){
+          last_idx = Number($('#otherlist')[0].children.length) - 1;
+          $('#otherlist')[0].children[last_idx].childNodes[0].firstChild.value = data.OTHER[d]['name'];
+          $('#otherlist')[0].children[last_idx].childNodes[1].firstChild.value = data.OTHER[d]['cost'];
+          $('#otherlist')[0].children[last_idx].childNodes[2].firstChild.value = data.OTHER[d]['quant'];
+          re_calc($('#otherlist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row_no_select($('#otherlist'))
+        }
+
+      }
+    }
+
+  </script>
+
+
+{% endblock %}

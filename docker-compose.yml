@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  web:
+    container_name: drw-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/etc/drw/app
+      - ./setup:/etc/drw/setup
+      - ./db:/etc/drw/db
+    tty: true
+    ports:
+      - "8080:8080"
+    environment:
+      - PYTHONPATH=/etc/drw/db/
+    command: /bin/bash -c "/etc/drw/db/migrate_db.sh && python3 /etc/drw/app/app.py"
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      # NGINXのコンフィグファイルをホストOSから、ゲストOSに連結する
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+      # HTTPS用の証明書とキーをホストOSから、ゲストOSに連結する
+      - /etc/letsencrypt/live/www.konbumame.com/fullchain.pem:/etc/nginx/conf.d/fullchain.pem:Z
+      - /etc/letsencrypt/live/www.konbumame.com/privkey.pem:/etc/nginx/conf.d/privkey.pem:Z

@@ -1,0 +1,13 @@
+db/db.sqlite3
+db/migrations/__pycache__/*
+db/migrations/versions/**
+!db/migrations/versions/**/
+!db/migrations/versions/**/.gitkeep
+./daily_report_web.pem
+./app/setting.json
+.python-version
+./app/setting.json
+./app/command/__pycache__
+./data/*
+./data_real
+__pycache__
