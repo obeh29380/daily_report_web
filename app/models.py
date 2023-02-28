@@ -4,11 +4,9 @@ from datetime import datetime
 from db_common import Base
 from db_common import engine
 
-from sqlalchemy import Column, String, DateTime, ForeignKey
+from sqlalchemy import Column, String, DateTime
 from sqlalchemy.sql.functions import current_timestamp
 from sqlalchemy.dialects.mysql import INTEGER
-
-import hashlib
 
 SQLITE3_NAME = "./db.sqlite3"
 

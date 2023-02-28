@@ -158,8 +158,13 @@ class SignIn():
         id = data.get('id')
         pwd = data.get('pwd')
 
-        users = db.session.query(User.user_id, User.user_pwd, User.auth_type)
-        db.session.close()
+        try:
+            users = db.session.query(User.user_id, User.user_pwd, User.auth_type)
+        except Exception as e:
+            print(type(e))
+            raise
+        finally:
+            db.session.close()
 
         auth_type = None
         for user in users:
