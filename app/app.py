@@ -1,7 +1,17 @@
 from pathlib import Path
 import json
 import responder
-from models import User, StaffMaster
+from models import (
+    User,
+    StaffMaster,
+    CarMaster,
+    MachineMaster,
+    LeaseMaster,
+    ItemMaster,
+    DestMaster,
+    CustomerMaster,
+    TrashMaster,
+)
 import db_common as db
 import jwt
 from sqlalchemy.sql.expression import func
@@ -20,8 +30,6 @@ api = responder.API(
 class StaffMasterInfo():
 
     async def on_get(self, req, resp):
-
-        #data = await req.media()
 
         staffs = db.session.query(StaffMaster.id, StaffMaster.name, StaffMaster.cost)
         db.session.close()
@@ -44,15 +52,10 @@ class StaffMasterInfo():
 
         response = dict()
         data = await req.media()
-        table = data.get('table')
         name = data.get('values[name]')
         cost = data.get('values[cost]')
 
         # もし何も入力されていない場合
-        if table is None:
-            resp.media = 'table not entered'
-            resp.status_code = api.status_codes.HTTP_400
-            return
         if name is None:
             resp.media = 'name not entered'
             resp.status_code = api.status_codes.HTTP_400
@@ -62,8 +65,7 @@ class StaffMasterInfo():
             resp.status_code = api.status_codes.HTTP_400
             return
 
-        if table == 'staff':
-            v = StaffMaster(name, cost)
+        v = StaffMaster(name, cost)
 
         # DBに登録
         try:
@@ -98,7 +100,14 @@ class StaffMasterInfo():
             return
 
         # 削除対象のデータを検索
-        staff = db.session.query(StaffMaster).filter_by(id=id).first()
+        try:
+            staff = db.session.query(StaffMaster).filter_by(id=id).first()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            db.session.close()
+            raise
 
         # 指定したデータを削除
         try:
@@ -113,13 +122,278 @@ class StaffMasterInfo():
             db.session.close()
 
 
+@api.route("/master/car")
+class CarMasterInfo():
+
+    async def on_get(self, req, resp):
+
+        db_data = db.session.query(CarMaster.id, CarMaster.name, CarMaster.cost)
+        db.session.close()
+
+        res = list()
+        for d in db_data:
+            res.append(
+                {
+                   'id': d.id,
+                   'name': d.name,
+                   'cost': d.cost
+                }
+            )
+
+        resp.media = {
+            'response': res
+        }
+
+    async def on_post(self, req, resp):
+
+        response = dict()
+        data = await req.media()
+        name = data.get('values[name]')
+        cost = data.get('values[cost]')
+
+        # もし何も入力されていない場合
+        if name is None:
+            resp.media = 'name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        if cost is None:
+            resp.media = 'cost not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        v = CarMaster(name, cost)
+
+        # DBに登録
+        try:
+            db.session.add(v)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        new_id = db.session.query(func.max(CarMaster.id)).scalar()
+        db.session.close()
+        response['new_id'] = new_id
+        response['name'] = name
+        response['cost'] = cost
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
+
+    async def on_delete(self, req, resp):
+
+        data = await req.media()
+        id = data.get('id')
+
+        if id is None:
+            print('no id')
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
+        # 削除対象のデータを検索
+        staff = db.session.query(CarMaster).filter_by(id=id).first()
+
+        # 指定したデータを削除
+        try:
+            db.session.delete(staff)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+
+@api.route("/master/lease")
+class LeaseMasterInfo():
+
+    async def on_get(self, req, resp):
+
+        db_data = db.session.query(LeaseMaster.id, LeaseMaster.name, LeaseMaster.cost)
+        db.session.close()
+
+        res = list()
+        for d in db_data:
+            res.append(
+                {
+                   'id': d.id,
+                   'name': d.name,
+                   'cost': d.cost
+                }
+            )
+
+        resp.media = {
+            'response': res
+        }
+
+    async def on_post(self, req, resp):
+
+        response = dict()
+        data = await req.media()
+        name = data.get('values[name]')
+        cost = data.get('values[cost]')
+
+        # もし何も入力されていない場合
+        if name is None:
+            resp.media = 'name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        if cost is None:
+            resp.media = 'cost not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        v = LeaseMaster(name, cost)
+
+        # DBに登録
+        try:
+            db.session.add(v)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        new_id = db.session.query(func.max(LeaseMaster.id)).scalar()
+        db.session.close()
+        response['new_id'] = new_id
+        response['name'] = name
+        response['cost'] = cost
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
+
+    async def on_delete(self, req, resp):
+
+        data = await req.media()
+        id = data.get('id')
+
+        if id is None:
+            print('no id')
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
+        # 削除対象のデータを検索
+        staff = db.session.query(LeaseMaster).filter_by(id=id).first()
+
+        # 指定したデータを削除
+        try:
+            db.session.delete(staff)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+
+@api.route("/master/machine")
+class MachineMasterInfo():
+
+    async def on_get(self, req, resp):
+
+        db_data = db.session.query(MachineMaster.id, MachineMaster.name, MachineMaster.cost)
+        db.session.close()
+
+        res = list()
+        for d in db_data:
+            res.append(
+                {
+                   'id': d.id,
+                   'name': d.name,
+                   'cost': d.cost
+                }
+            )
+
+        resp.media = {
+            'response': res
+        }
+
+    async def on_post(self, req, resp):
+
+        response = dict()
+        data = await req.media()
+        name = data.get('values[name]')
+        cost = data.get('values[cost]')
+
+        # もし何も入力されていない場合
+        if name is None:
+            resp.media = 'name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        if cost is None:
+            resp.media = 'cost not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        v = MachineMaster(name, cost)
+
+        # DBに登録
+        try:
+            db.session.add(v)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        new_id = db.session.query(func.max(MachineMaster.id)).scalar()
+        db.session.close()
+        response['new_id'] = new_id
+        response['name'] = name
+        response['cost'] = cost
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
+
+    async def on_delete(self, req, resp):
+
+        data = await req.media()
+        id = data.get('id')
+
+        if id is None:
+            print('no id')
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
+        # 削除対象のデータを検索
+        staff = db.session.query(MachineMaster).filter_by(id=id).first()
+
+        # 指定したデータを削除
+        try:
+            db.session.delete(staff)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
 # view #####################################
 @api.route("/home")
 class Home():
     async def on_get(self, req, resp):
 
         param = dict()
-        param['BASE_DIR'] = BASE_DIR
         resp.html = api.template('home.html', param)
 
 
@@ -128,7 +402,6 @@ class DailyReportMenu():
     async def on_get(self, req, resp):
 
         param = dict()
-        param['BASE_DIR'] = BASE_DIR
         resp.html = api.template('daily_report_top.html', param)
 
 
@@ -137,7 +410,6 @@ class DailyReportSummary():
     async def on_get(self, req, resp):
 
         param = dict()
-        param['BASE_DIR'] = BASE_DIR
         resp.html = api.template('daily_report_summary.html', param)
 
 
@@ -146,7 +418,33 @@ class MasterMentenanceMenu():
     async def on_get(self, req, resp):
 
         param = dict()
-        param['BASE_DIR'] = BASE_DIR
+        param['menu'] = {
+            'staff': {
+                'menu_name': '人員'
+            },
+            'car': {
+                'menu_name': '車両'
+            },
+            'lease': {
+                'menu_name': 'リース'
+            },
+            'machine': {
+                'menu_name': '重機'
+            },
+            'trash': {
+                'menu_name': '廃材処分費'
+            },
+            'customer': {
+                'menu_name': '受注先'
+            },
+            'dest': {
+                'menu_name': '廃材処分先'
+            },
+            'items': {
+                'menu_name': '廃材品目'
+            },
+        }
+
         resp.html = api.template('master_top.html', param)
 
 
