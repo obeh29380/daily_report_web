@@ -3,7 +3,8 @@
 
 {% block body %}
 
-
+    
+    <div class="container">
     <div class="d-flex align-items-start">
       <div class="nav flex-column nav-pills flex-shrink-0 me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
         <!--
@@ -20,6 +21,7 @@
         <button type="button" class="nav-link" id="v-pills-{{k}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{k}}" role="tab" aria-controls="v-pills-{{k}}" aria-selected="false">{{v.menu_name}}</button>
         {% endfor %}
       </div>
+      <div class="container">
       <div class="tab-content" id="v-pills-tabContent">
         {% for k, v in menu.items() %}
         <div class="tab-pane fade" id="v-pills-{{k}}" role="tabpanel" aria-labelledby="v-pills-{{k}}-tab" tabindex="0">
@@ -33,13 +35,14 @@
               </form>
 
               <form id="{{k}}Form">
-                
               </form>
             </div>
           </div>
         </div>
         {% endfor %}
       </div>
+      </div>
+    </div>
     </div>
     <div id="result"></div>
     <script>
@@ -86,7 +89,7 @@
       };
 
       function tab_select(e){
-        
+        $(`#result`).innerText = ''
         if (current_tab == e.target.id) {
             return 0;
         };
@@ -117,8 +120,11 @@
 
             $(`#${type}RegForm table thead`).append(`<tr>`);
             $(`#${type}RegForm table thead`).append(`</tr>`);
-            Object.keys(data.response[0].columns).forEach(function(key) {
-              $(`#${type}RegForm table thead tr`).append('<th>' + data.response[0].columns[key]['colname'] + '</th>');
+            Object.keys(data.response.col_definitions).forEach(function(key) {
+              if (data.response.col_definitions[key]['readonly'] == true){
+                return;
+              }
+              $(`#${type}RegForm table thead tr`).append('<th>' + data.response.col_definitions[key]['colname'] + '</th>');
             });
 
             $(`#${type}RegForm table`).append(`<tbody>`);
@@ -127,14 +133,15 @@
             $(`#${type}RegForm table tbody`).append(`<tr>`);
             $(`#${type}RegForm table tbody`).append(`</tr>`);
 
-            Object.keys(data.response[0].columns).forEach(function(key) {
-              if (data.response[0].columns[key]['type'] == 'select'){
+            Object.keys(data.response.col_definitions).forEach(function(key) {
+              if (data.response.col_definitions[key]['readonly'] == true){
+                return;
+              }
+              if (data.response.col_definitions[key]['type'] == 'select'){
                 $(`#${type}RegForm table tbody tr`).append(`<td><select class="form-select" id="${key}" required></td>`);
                 
-                data.response[0].columns[key]['selections'].forEach(function(s) {
-                  key_name = Object.keys(s)[0];
-                  option_value = Object.values(s)[0];
-                  $(`#${key}`).append(`<option value="${key_name}">${option_value}</option>`);
+                data.response.col_definitions[key]['selections'].forEach(function(s) {
+                  $(`#${key}`).append(`<option value="${s.id}">${s.name}</option>`);
                 })
               } else {
                 $(`#${type}RegForm table tbody tr`).append(`<td><input type="text" class="form-control" id="${key}" placeholder="" value="" required></td>`);
@@ -155,75 +162,73 @@
             $(`#${type}Form table thead`).append(`</tr>`);
             $(`#${type}Form table thead tr`).append('<th>' + '#' + '</th>');
             $(`#${type}Form table thead tr`).append('<th>' + 'id' + '</th>');
-            Object.keys(data.response[0].columns).forEach(function(key) {
-              $(`#${type}Form table thead tr`).append('<th scope="col">' + data.response[0].columns[key]['colname'] + '</th>');
+            Object.keys(data.response.col_definitions).forEach(function(key) {
+              if (data.response.col_definitions[key]['readonly'] == true){
+                return;
+              }
+              $(`#${type}Form table thead tr`).append('<th scope="col">' + data.response.col_definitions[key]['colname'] + '</th>');
             });
 
             $(`#${type}Form table`).append(`<tbody id="${type}_data">`);
             $(`#${type}Form table`).append(`</tbody>`);
 
 
-            data.response.forEach(function(elem, index) {
+            data.response.col_values.forEach(function(elem, index) {
               $(`#${type}_data`).append(`<tr id=${type}${elem.id}>`);
               $(`#${type}_data`).append('</tr>');
               $(`#${type}${elem.id}`).append('<th scope="row"></th>');
-                $(`#${type}${elem.id}`).append('<td>' + elem.id + '</td>');
-                Object.keys(elem.columns).forEach(function(key) {
-                $(`#${type}${elem.id}`).append('<td>' + elem.columns[key]['value'] + '</td>');
-                });
+              Object.keys(elem).forEach(function(key) {
+                $(`#${type}${elem.id}`).append('<td>' + elem[key] + '</td>');
+              });
               $(`#${type}${elem.id}`).append('<td><button id="del_btn" onclick="removeList(this);" class="btn btn-danger" type="submit">削除</button></td>');
             });
             document.getElementById(`reg_btn`).addEventListener('click', register, false);
         })
         .fail(function(data) {
             // 通信失敗時の処理を記述
-            alert('失敗')
+            $(`#result`).innerText = '通信失敗'
         });
       };
 
       function register(e){
+        $(`#result`).innerText = ''
         event.preventDefault();
         type = table_name[current_tab]
         form = document.getElementById(`${type}RegForm`);
         values = {}
+        // values = {col_id: [id,name]} or {col_id: [name]}
+        // POSTしてDBに登録する際は、常に0番目の要素を参照すればよい。登録後、画面の一覧に追加するとき、
+        // 1番目の要素があればこれを、なければ0番目要素を表示する。
         for (var i = 0, iLen = form.length; i < iLen; i++) {
           if(form[i].localName == 'input'){
             if (form[i].value == ''){
-              $(`#message_${type}`).text(form[i].id + 'を入力してください');
+              $(`#message_${type}`).text(form.children[0].tHead.rows[0].cells[i].innerText + 'を入力してください');
               return 0;
             };
-            values[form[i].id] = form[i].value
+            values[form[i].id] = [form[i].value]
           } else if(form[i].localName == 'select'){
             if (form[i].value == ''){
-              $(`#message_${type}`).text(form[i].id + 'を選択してください');
+              $(`#message_${type}`).text(form.children[0].tHead.rows[0].cells[i].innerText + 'を選択してください');
               return 0;
             };
-            values[form[i].id] = form[i].value
+            values[form[i].id] = [form[i].value, form[i].selectedOptions[0].innerText]
           }
         }
-        //name = form.name.value
-        //if (name == ''){
-        //  $(`#message_${type}`).text('名前を入力してください');
-        //  return 0;
-        //};
-        //cost = form.cost.value
-        //if (cost == ''){
-        //  $(`#message_${type}`).text('費用を入力してください');
-        //  return 0;
-        //};
+
+        // postのパラメータ用に変換
+        param = {}
+        Object.keys(values).forEach(function(key) {
+          // selectの場合0番目にはid,1番目に表示名が入っているため、常に一番後ろの要素を取得する。
+          param[key] = values[key][0];
+        });
+        
         // Ajax通信を開始
         $.ajax({
           url: `/master/${type}`,
           type: 'POST',
           dataType: 'json',
-          //data: {
-          //  'values': {
-          //    'name': name,
-          //    'cost': cost
-          //  }
-          //},
           data: {
-            values: values
+            values: param
           },
           timeout: 5000,
         })
@@ -235,18 +240,20 @@
               $(`#${type}${data.new_id}`).append('<th scope="row"></th>');
               $(`#${type}${data.new_id}`).append('<td>' + data.new_id + '</td>');
               Object.keys(values).forEach(function(key) {
-                $(`#${type}${data.new_id}`).append('<td>' + values[key] + '</td>');
+                  // selectの場合0番目にはid,1番目に表示名が入っているため、常に一番後ろの要素を取得する。
+                  $(`#${type}${data.new_id}`).append('<td>' + values[key][values[key].length - 1] + '</td>');
               });
               $(`#${type}${data.new_id}`).append('<td><button id="del_btn" onclick="removeList(this);" class="btn btn-danger" type="submit">削除</button></td>');
               $(`#message_${type}`).text('');
           })
         .fail(function(data) {
             // 通信失敗時の処理を記述
-            alert('登録失敗')
+            $(`#result`).innerText = '通信失敗'
         });
       };
 
       function removeList(obj) {
+        $(`#result`).innerText = ''
         event.preventDefault();
         type = form_name[obj.form.id]
         form = document.getElementById(`${type}_data`);
@@ -269,7 +276,7 @@
           })
         .fail(function(data) {
             // 通信失敗時の処理を記述
-            alert('登録失敗')
+            $(`#result`).innerText = '通信失敗'
         });
       };
     </script>

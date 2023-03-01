@@ -13,66 +13,45 @@
   <div class="container">
     <main>
       <div class="py-5 text-center">
-          <h2>新規登録フォーム</h2>
-          <p class="lead">以下は、Bootstrapのフォームコントロールで完全に構築されたサンプルフォーム。必要な各フォームグループには、フォームを完了せずに送信しようとすると切り替わる検証状態がついている。</p>
+        <h2>新規登録フォーム</h2>
       </div>
 
-      <div class="row g-5">
-        <div class="col-md-7 col-lg-8">
-          <h4 class="mb-3">新規ユーザ</h4>
-          <form name="myform" class="needs-validation">
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <label for="ID" class="form-label">ID</label>
-                <input type="text" class="form-control" id="id" name="id" placeholder="" value="" required>
-                <div class="invalid-feedback">
-                    IDを入力してください
-                </div>
-              </div>
-            </div>
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <label for="pwd" class="form-label">パスワード</label>
-                <input type="password" class="form-control" id="pwd" name="pwd" placeholder="" value="" required>
-                <div class="invalid-feedback">
-                    パスワードを入力してください
-                </div>
-              </div>
-            </div>
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <label for="pwd" class="form-label">パスワード(確認)</label>
-                <input type="password" class="form-control" id="pwd_re" placeholder="" value="" required>
-                <div class="invalid-feedback">
-                    パスワードを入力してください
-                </div>
-              </div>
-            </div>
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <label for="familyName" class="form-label">姓</label>
-                <input type="text" class="form-control" id="familyName" placeholder="" value="" required>
-                <div class="invalid-feedback">
-                名字を入力してください
-                </div>
-              </div>
-            </div>
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <label for="givenName" class="form-label">名</label>
-                <input type="text" class="form-control" id="givenName" placeholder="" value="" required>
-                <div class="invalid-feedback">
-                名前を入力してください
-                </div>
-              </div>
-            </div>
-            <div class="col-sm-6">
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <button id="reg_btn" class="btn btn-primary" type="submit">登録</button>
-              </div>
-            </div>
-          </form>
-        </div>
+      <div class="d-flex justify-content-xxl-center">
+        <form name="myform" class="needs-validation">
+
+          <label for="ID" class="form-label">ID</label>
+          <input type="text" class="form-control" id="id" name="id" placeholder="" value="" required>
+          <div class="invalid-feedback">
+              IDを入力してください
+          </div>
+          <div id="invalid_id" class="text-danger"></div>
+
+          <label for="pwd" class="form-label">パスワード</label>
+          <input type="password" class="form-control" id="pwd" name="pwd" placeholder="" value="" required>
+          <div class="invalid-feedback">
+              パスワードを入力してください
+          </div>
+          <div id="invalid_pwd" class="text-danger"></div>
+
+          <label for="pwd" class="form-label">パスワード(確認)</label>
+          <input type="password" class="form-control" id="pwd2" placeholder="" value="" required>
+          <div class="invalid-feedback">
+              パスワードを入力してください
+          </div>
+          <div id="invalid_pwd2" class="text-danger"></div>
+
+          <label for="familyName" class="form-label">姓</label>
+          <input type="text" class="form-control" id="familyName" placeholder="" value="">
+          <div id="invalid_fname" class="text-danger"></div>
+
+          <label for="givenName" class="form-label">名</label>
+          <input type="text" class="form-control" id="givenName" placeholder="" value="">
+          <div id="invalid_name" class="text-danger"></div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <button id="reg_btn" class="btn btn-primary" type="submit">登録</button>
+          </div>
+        </form>
       </div>
     </main>
 
@@ -98,32 +77,53 @@
     var reg_btn = document.getElementById('reg_btn');
     var result = document.getElementById('result');
 
-   reg_btn.addEventListener('click', function(){
-      event.preventDefault();
-      $('#result').text('通信中...');
-      // Ajax通信を開始
-      $.ajax({
-        url: '/sign_up',
-        type: 'POST',
-        dataType: 'json',
-        // フォーム要素の内容をハッシュ形式に変換
-        data: {
-          'id': document.myform.id.value,
-          'pwd': document.myform.pwd.value,
-          'name_last': document.myform.familyName.value,
-          'name_first': document.myform.givenName.value
-        },
-        timeout: 5000,
+    reg_btn.addEventListener('click', function(){
+        event.preventDefault();
+        $('#invalid_id').text('');
+        $('#invalid_pwd').text('');
+        $('#invalid_pwd2').text('');
+        $('#invalid_fname').text('');
+        $('#invalid_name').text('');
+
+        if (document.myform.id.value == ''){
+          $('#invalid_id').text('IDを入力してください');
+          return
+        }
+        if (document.myform.pwd.value == ''){
+          $('#invalid_pwd').text('パスワードを入力してください');
+          return
+        }
+        if (document.myform.pwd2.value == ''){
+          $('#invalid_pwd2').text('パスワード(確認)を入力してください');
+          return
+        }
+        if (document.myform.pwd.value != document.myform.pwd2.value){
+          $('#invalid_pwd2').text('確認用のパスワードが一致しません');
+          return
+        }
+        // Ajax通信を開始
+        $.ajax({
+          url: '/sign_up',
+          type: 'POST',
+          dataType: 'json',
+          // フォーム要素の内容をハッシュ形式に変換
+          data: {
+            'id': document.myform.id.value,
+            'pwd': document.myform.pwd.value,
+            'name_last': document.myform.familyName.value,
+            'name_first': document.myform.givenName.value
+          },
+          timeout: 5000,
+        })
+        .done(function(data) {
+            // 通信成功時の処理を記述
+            location.href = "/"
+        })
+        .fail(function(data) {
+            // 通信失敗時の処理を記述
+            result.innerHTML = data;
+        });
       })
-      .done(function(data) {
-          // 通信成功時の処理を記述
-          location.href = "/"
-      })
-      .fail(function(data) {
-          // 通信失敗時の処理を記述
-          result.innerHTML = data;
-      });
-    })
 
   </script>
 </body>

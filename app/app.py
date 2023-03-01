@@ -17,7 +17,20 @@ import jwt
 from sqlalchemy.sql.expression import func
 
 BASE_DIR = Path(__file__).resolve().parents[0]
-
+UNIT_TYPE = [
+    {
+        'id': 0,
+        'name': 'なし'
+    },
+    {
+        'id': 1,
+        'name': 'Kg'
+    },
+    {
+        'id': 2,
+        'name': 't'
+    },
+]
 
 api = responder.API(
     static_dir=str(BASE_DIR.joinpath('static')),
@@ -26,35 +39,97 @@ api = responder.API(
 
 
 # util #####################################
+def get_simple_master_data(data):
+    """id,name,cost から成るマスタデータのクエリオブジェクトについて、
+    クライアントに返す形式のデータに変換する。
+
+    Args:
+        data (queryobject): dbから取得したクエリオブジェクト
+    """
+
+    if data is None:
+        return None
+
+    res = dict()
+    res['col_definitions'] = {
+        'id': {
+            'colname': 'id',
+            'type': 'integer',
+            'readonly': True
+        },
+        'name': {
+            'colname': '名前',
+            'type': 'string',
+            'readonly': False
+        },
+        'cost': {
+            'colname': '費用',
+            'type': 'integer',
+            'readonly': False
+        },
+    }
+
+    col_values = list()
+    for d in data:
+        col_values.append(
+            {
+                'id': d.id,
+                'name': d.name,
+                'cost': d.cost,
+            }
+        )
+    res['col_values'] = col_values
+
+    return res
+
+
+def get_name_only_master_data(data):
+    """id,name から成るマスタデータのクエリオブジェクトについて、
+    クライアントに返す形式のデータに変換する。
+
+    Args:
+        data (queryobject): dbから取得したクエリオブジェクト
+    """
+
+    if data is None:
+        return None
+
+    res = dict()
+    res['col_definitions'] = {
+        'id': {
+            'colname': 'id',
+            'type': 'integer',
+            'readonly': True
+        },
+        'name': {
+            'colname': '名前',
+            'type': 'string',
+            'readonly': False
+        }
+    }
+
+    col_values = list()
+    for d in data:
+        col_values.append(
+            {
+                'id': d.id,
+                'name': d.name
+            }
+        )
+    res['col_values'] = col_values
+
+    return res
+
+
 @api.route("/master/staff")
 class StaffMasterInfo():
 
     async def on_get(self, req, resp):
 
-        staffs = db.session.query(StaffMaster.id, StaffMaster.name, StaffMaster.cost)
+        db_data = db.session.query(StaffMaster.id, StaffMaster.name, StaffMaster.cost)
         db.session.close()
 
-        res = list()
-        for d in staffs:
-            res.append(
-                {
-                    'id': d.id,
-                    'columns': {
-                        'name': {
-                            'colname': '名前',
-                            'value': d.name,
-                            'type': 'string',
-                            'readonly': False
-                        },
-                        'cost': {
-                            'colname': '費用',
-                            'value': d.cost,
-                            'type': 'integer',
-                            'readonly': False
-                        },
-                    }
-                }
-            )
+        res = get_simple_master_data(db_data)
 
         resp.media = {
             'response': res
@@ -142,27 +217,7 @@ class CarMasterInfo():
         db_data = db.session.query(CarMaster.id, CarMaster.name, CarMaster.cost)
         db.session.close()
 
-        res = list()
-        for d in db_data:
-            res.append(
-                {
-                    'id': d.id,
-                    'columns': {
-                        'name': {
-                            'colname': '名前',
-                            'value': d.name,
-                            'type': 'string',
-                            'readonly': False
-                        },
-                        'cost': {
-                            'colname': '費用',
-                            'value': d.cost,
-                            'type': 'integer',
-                            'readonly': False
-                        },
-                    }
-                }
-            )
+        res = get_simple_master_data(db_data)
 
         resp.media = {
             'response': res
@@ -243,27 +298,7 @@ class LeaseMasterInfo():
         db_data = db.session.query(LeaseMaster.id, LeaseMaster.name, LeaseMaster.cost)
         db.session.close()
 
-        res = list()
-        for d in db_data:
-            res.append(
-                {
-                    'id': d.id,
-                    'columns': {
-                        'name': {
-                            'colname': '名前',
-                            'value': d.name,
-                            'type': 'string',
-                            'readonly': False
-                        },
-                        'cost': {
-                            'colname': '費用',
-                            'value': d.cost,
-                            'type': 'integer',
-                            'readonly': False
-                        },
-                    }
-                }
-            )
+        res = get_simple_master_data(db_data)
 
         resp.media = {
             'response': res
@@ -344,27 +379,7 @@ class MachineMasterInfo():
         db_data = db.session.query(MachineMaster.id, MachineMaster.name, MachineMaster.cost)
         db.session.close()
 
-        res = list()
-        for d in db_data:
-            res.append(
-                {
-                    'id': d.id,
-                    'columns': {
-                        'name': {
-                            'colname': '名前',
-                            'value': d.name,
-                            'type': 'string',
-                            'readonly': False
-                        },
-                        'cost': {
-                            'colname': '費用',
-                            'value': d.cost,
-                            'type': 'integer',
-                            'readonly': False
-                        },
-                    }
-                }
-            )
+        res = get_simple_master_data(db_data)
 
         resp.media = {
             'response': res
@@ -445,21 +460,7 @@ class CustomerMasterInfo():
         db_data = db.session.query(CustomerMaster.id, CustomerMaster.name)
         db.session.close()
 
-        res = list()
-        for d in db_data:
-            res.append(
-                {
-                    'id': d.id,
-                    'columns': {
-                        'name': {
-                            'colname': '名前',
-                            'value': d.name,
-                            'type': 'string',
-                            'readonly': False
-                        },
-                    }
-                }
-            )
+        res = get_name_only_master_data(db_data)
 
         resp.media = {
             'response': res
@@ -535,21 +536,7 @@ class DestMasterInfo():
         db_data = db.session.query(DestMaster.id, DestMaster.name)
         db.session.close()
 
-        res = list()
-        for d in db_data:
-            res.append(
-                {
-                    'id': d.id,
-                    'columns': {
-                        'name': {
-                            'colname': '名前',
-                            'value': d.name,
-                            'type': 'string',
-                            'readonly': False
-                        },
-                    }
-                }
-            )
+        res = get_name_only_master_data(db_data)
 
         resp.media = {
             'response': res
@@ -624,27 +611,7 @@ class ItemMasterInfo():
         db_data = db.session.query(ItemMaster.id, ItemMaster.name, ItemMaster.cost)
         db.session.close()
 
-        res = list()
-        for d in db_data:
-            res.append(
-                {
-                    'id': d.id,
-                    'columns': {
-                        'name': {
-                            'colname': '品名',
-                            'value': d.name,
-                            'type': 'string',
-                            'readonly': False
-                        },
-                        'cost': {
-                            'colname': '費用',
-                            'value': d.cost,
-                            'type': 'integer',
-                            'readonly': False
-                        },
-                    }
-                }
-            )
+        res = get_simple_master_data(db_data)
 
         resp.media = {
             'response': res
@@ -722,59 +689,84 @@ class TrashMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(TrashMaster.id,
-                                   TrashMaster.dest_id,
-                                   TrashMaster.name_id,
-                                   TrashMaster.cost,
-                                   TrashMaster.unit_type
-                                   )
+        db_data = db.session.query(
+            TrashMaster.id,
+            DestMaster.name.label('dest_name'),
+            ItemMaster.name.label('item_name'),
+            TrashMaster.cost,
+            TrashMaster.unit_type
+        ).join(
+            DestMaster,
+            TrashMaster.dest_id == DestMaster.id
+        ).join(
+            ItemMaster,
+            TrashMaster.name_id == ItemMaster.id
+        )
+        dest = db.session.query(DestMaster.id, DestMaster.name)
+        item = db.session.query(ItemMaster.id, ItemMaster.name)
         db.session.close()
 
-        res = list()
-        for d in db_data:
-            res.append(
+        dest_list = list()
+        for d in dest:
+            dest_list.append(
                 {
                     'id': d.id,
-                    'columns': {
-                        'dest_name': {
-                            'colname': '処分先',
-                            'value': d.dest_id,
-                            'type': 'select',
-                            'selections': [
-                                {'0': 'dest_test01'},
-                                {'1': 'dest_test02'},
-                            ],
-                            'readonly': False
-                        },
-                        'item_name': {
-                            'colname': '品名',
-                            'value': d.name_id,
-                            'type': 'select',
-                            'selections': [
-                                {'0': 'item_test01'},
-                                {'1': 'item_test02'},
-                            ],
-                            'readonly': False
-                        },
-                        'cost': {
-                            'colname': '費用',
-                            'value': d.cost,
-                            'type': 'integer',
-                            'readonly': False
-                        },
-                        'unit_type': {
-                            'colname': '単位',
-                            'value': d.unit_type,
-                            'type': 'select',
-                            'selections': [
-                                {'0': 'Kg'},
-                                {'1': 't'},
-                            ],
-                            'readonly': False
-                        },
-                    }
+                    'name': d.name
                 }
             )
+        item_list = list()
+        for d in item:
+            item_list.append(
+                {
+                    'id': d.id,
+                    'name': d.name
+                }
+            )
+
+        res = dict()
+        res['col_definitions'] = {
+            'id': {
+                'colname': 'id',
+                'type': 'integer',
+                'readonly': True
+            },
+            'dest_name': {
+                'colname': '処分先',
+                'type': 'select',
+                'selections': dest_list,
+                'readonly': False
+            },
+            'item_name': {
+                'colname': '品名',
+                'type': 'select',
+                'selections': item_list,
+                'readonly': False
+            },
+            'cost': {
+                'colname': '費用',
+                'type': 'integer',
+                'readonly': False
+            },
+            'unit_type': {
+                'colname': '単位',
+                'type': 'select',
+                'selections': UNIT_TYPE,
+                'readonly': False
+            },
+        }
+
+        col_values = list()
+        for d in db_data:
+            col_values.append(
+                {
+                    'id': d.id,
+                    'dest_name': d.dest_name,
+                    'item_name': d.item_name,
+                    'cost': d.cost,
+                    'unit_type': list(filter(lambda item: item['id'] == d.unit_type, UNIT_TYPE))[0]['name'],
+                }
+            )
+        res['col_values'] = col_values
 
         resp.media = {
             'response': res
@@ -978,12 +970,12 @@ class SignUp():
         if pwd is None:
             resp.media = 'pwd not entered'
             return
-        if name_last is None:
-            resp.media = 'name_last not entered'
-            return
-        if name_first is None:
-            resp.media = 'name_first not entered'
-            return
+        # if name_last is None:
+        #     resp.media = 'name_last not entered'
+        #     return
+        # if name_first is None:
+        #     resp.media = 'name_first not entered'
+        #     return
 
         # adminユーザを作成
         admin = User(id, pwd, f'{name_last} {name_first}')

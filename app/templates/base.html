@@ -46,7 +46,7 @@
         名前が入る
       </ul>
       <ul class="nav">
-        <button type="button" class="btn btn-light text-dark me-2">サインアウト</button>
+        <button id="btn_sign_out" type="button" class="btn btn-light text-dark me-2">サインアウト</button>
       </ul>
     </div>
     </div>
@@ -87,6 +87,11 @@
       }
 
     });
+
+    var btn_sign_out = document.getElementById('btn_sign_out');
+    btn_sign_out.addEventListener('click', function(){
+      window.location.href = "/"
+    })
   </script>
 </body>
 
