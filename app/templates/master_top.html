@@ -30,42 +30,10 @@
               </div>
               
               <form id="{{k}}RegForm">
-                <table class="table">
-                  <thead>
-                    <tr>
-                        <th scope="col">名前</th>
-                        <th scope="col">費用</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <input type="text" class="form-control" id="name" placeholder="" value="" required>
-                      </td>
-                      <td>
-                        <input type="text" class="form-control" id="cost" placeholder="" value="" required>
-                      </td>
-                      <td>
-                        <button id="reg_btn_{{k}}" class="btn btn-primary" type="submit">登録</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
               </form>
+
               <form id="{{k}}Form">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th scope="col">id</th>
-                      <th scope="col">名前</th>
-                      <th scope="col">費用</th>
-                    </tr>
-                    <div id="message_{{k}}" class="text-danger"></div>
-                  </thead>
-                  <tbody id="{{k}}_data">
-                  </tbody>
-                </table>
+                
               </form>
             </div>
           </div>
@@ -115,14 +83,17 @@
       
       for (let key in menu) {
         document.getElementById(`v-pills-${key}-tab`).addEventListener('click', tab_select, false);
-        document.getElementById(`reg_btn_${key}`).addEventListener('click', register, false);
       };
 
       function tab_select(e){
-
+        
         if (current_tab == e.target.id) {
             return 0;
         };
+        // 変更前のタブをクリア(formの中身をidで取得（種別によらず共通のIdとする）するため、削除しないと重複する)
+        $(`#${table_name[current_tab]}RegForm`).html("");
+        $(`#${table_name[current_tab]}Form`).html("");
+
         current_tab = e.target.id;
         type = table_name[e.target.id]
         // Ajax通信を開始
@@ -136,16 +107,73 @@
         })
         .done(function(data) {
             // 通信成功時の処理を記述
-            $(`#${type}_data`).html("");
+            // 登録フォーム
+            $(`#${type}RegForm`).html("");
+            $(`#${type}RegForm`).append(`<table class="table">`);
+            $(`#${type}RegForm`).append('</table>');
+
+            $(`#${type}RegForm table`).append(`<thead>`);
+            $(`#${type}RegForm table`).append(`</thead>`);
+
+            $(`#${type}RegForm table thead`).append(`<tr>`);
+            $(`#${type}RegForm table thead`).append(`</tr>`);
+            Object.keys(data.response[0].columns).forEach(function(key) {
+              $(`#${type}RegForm table thead tr`).append('<th>' + data.response[0].columns[key]['colname'] + '</th>');
+            });
+
+            $(`#${type}RegForm table`).append(`<tbody>`);
+            $(`#${type}RegForm table`).append(`</tbody>`);
+
+            $(`#${type}RegForm table tbody`).append(`<tr>`);
+            $(`#${type}RegForm table tbody`).append(`</tr>`);
+
+            Object.keys(data.response[0].columns).forEach(function(key) {
+              if (data.response[0].columns[key]['type'] == 'select'){
+                $(`#${type}RegForm table tbody tr`).append(`<td><select class="form-select" id="${key}" required></td>`);
+                
+                data.response[0].columns[key]['selections'].forEach(function(s) {
+                  key_name = Object.keys(s)[0];
+                  option_value = Object.values(s)[0];
+                  $(`#${key}`).append(`<option value="${key_name}">${option_value}</option>`);
+                })
+              } else {
+                $(`#${type}RegForm table tbody tr`).append(`<td><input type="text" class="form-control" id="${key}" placeholder="" value="" required></td>`);
+              }
+            });
+            $(`#${type}RegForm table tbody tr`).append(`<td><button id="reg_btn" class="btn btn-primary" type="submit">登録</button></td>`);
+            $(`#${type}RegForm`).append(`<div id="message_${type}" class="text-danger"></div>`);
+
+            // 一覧フォーム
+            $(`#${type}data`).html("");
+            $(`#${type}Form`).append(`<table class="table">`);
+            $(`#${type}Form`).append('</table>');
+
+            $(`#${type}Form table`).append(`<thead>`);
+            $(`#${type}Form table`).append(`</thead>`);
+
+            $(`#${type}Form table thead`).append(`<tr>`);
+            $(`#${type}Form table thead`).append(`</tr>`);
+            $(`#${type}Form table thead tr`).append('<th>' + '#' + '</th>');
+            $(`#${type}Form table thead tr`).append('<th>' + 'id' + '</th>');
+            Object.keys(data.response[0].columns).forEach(function(key) {
+              $(`#${type}Form table thead tr`).append('<th scope="col">' + data.response[0].columns[key]['colname'] + '</th>');
+            });
+
+            $(`#${type}Form table`).append(`<tbody id="${type}_data">`);
+            $(`#${type}Form table`).append(`</tbody>`);
+
+
             data.response.forEach(function(elem, index) {
               $(`#${type}_data`).append(`<tr id=${type}${elem.id}>`);
               $(`#${type}_data`).append('</tr>');
               $(`#${type}${elem.id}`).append('<th scope="row"></th>');
-              $(`#${type}${elem.id}`).append('<td>' + elem.id + '</td>');
-              $(`#${type}${elem.id}`).append('<td>' + elem.name + '</td>');
-              $(`#${type}${elem.id}`).append('<td>' + elem.cost + '</td>');
+                $(`#${type}${elem.id}`).append('<td>' + elem.id + '</td>');
+                Object.keys(elem.columns).forEach(function(key) {
+                $(`#${type}${elem.id}`).append('<td>' + elem.columns[key]['value'] + '</td>');
+                });
               $(`#${type}${elem.id}`).append('<td><button id="del_btn" onclick="removeList(this);" class="btn btn-danger" type="submit">削除</button></td>');
             });
+            document.getElementById(`reg_btn`).addEventListener('click', register, false);
         })
         .fail(function(data) {
             // 通信失敗時の処理を記述
@@ -155,41 +183,60 @@
 
       function register(e){
         event.preventDefault();
-        type = reg_btn_name[e.target.id]
+        type = table_name[current_tab]
         form = document.getElementById(`${type}RegForm`);
-        
-        name = form.name.value
-        if (name == ''){
-          $(`#message_${type}`).text('名前を入力してください');
-          return 0;
-        };
-        cost = form.cost.value
-        if (cost == ''){
-          $(`#message_${type}`).text('費用を入力してください');
-          return 0;
-        };
+        values = {}
+        for (var i = 0, iLen = form.length; i < iLen; i++) {
+          if(form[i].localName == 'input'){
+            if (form[i].value == ''){
+              $(`#message_${type}`).text(form[i].id + 'を入力してください');
+              return 0;
+            };
+            values[form[i].id] = form[i].value
+          } else if(form[i].localName == 'select'){
+            if (form[i].value == ''){
+              $(`#message_${type}`).text(form[i].id + 'を選択してください');
+              return 0;
+            };
+            values[form[i].id] = form[i].value
+          }
+        }
+        //name = form.name.value
+        //if (name == ''){
+        //  $(`#message_${type}`).text('名前を入力してください');
+        //  return 0;
+        //};
+        //cost = form.cost.value
+        //if (cost == ''){
+        //  $(`#message_${type}`).text('費用を入力してください');
+        //  return 0;
+        //};
         // Ajax通信を開始
         $.ajax({
           url: `/master/${type}`,
           type: 'POST',
           dataType: 'json',
+          //data: {
+          //  'values': {
+          //    'name': name,
+          //    'cost': cost
+          //  }
+          //},
           data: {
-            'values': {
-              'name': name,
-              'cost': cost
-            }
+            values: values
           },
           timeout: 5000,
         })
         .done(function(data) {
             // 通信成功時の処理を記述
 
-              $(`#${type}_data`).append(`<tr id=${data.new_id}>`);
+              $(`#${type}_data`).append(`<tr id=${type}${data.new_id}>`);
               $(`#${type}_data`).append('</tr>');
               $(`#${type}${data.new_id}`).append('<th scope="row"></th>');
               $(`#${type}${data.new_id}`).append('<td>' + data.new_id + '</td>');
-              $(`#${type}${data.new_id}`).append('<td>' + data.name + '</td>');
-              $(`#${type}${data.new_id}`).append('<td>' + data.cost + '</td>');
+              Object.keys(values).forEach(function(key) {
+                $(`#${type}${data.new_id}`).append('<td>' + values[key] + '</td>');
+              });
               $(`#${type}${data.new_id}`).append('<td><button id="del_btn" onclick="removeList(this);" class="btn btn-danger" type="submit">削除</button></td>');
               $(`#message_${type}`).text('');
           })

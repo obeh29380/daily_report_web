@@ -35,12 +35,24 @@ class StaffMasterInfo():
         db.session.close()
 
         res = list()
-        for staff in staffs:
+        for d in staffs:
             res.append(
                 {
-                   'id': staff.id,
-                   'name': staff.name,
-                   'cost': staff.cost
+                    'id': d.id,
+                    'columns': {
+                        'name': {
+                            'colname': '名前',
+                            'value': d.name,
+                            'type': 'string',
+                            'readonly': False
+                        },
+                        'cost': {
+                            'colname': '費用',
+                            'value': d.cost,
+                            'type': 'integer',
+                            'readonly': False
+                        },
+                    }
                 }
             )
 
@@ -134,9 +146,21 @@ class CarMasterInfo():
         for d in db_data:
             res.append(
                 {
-                   'id': d.id,
-                   'name': d.name,
-                   'cost': d.cost
+                    'id': d.id,
+                    'columns': {
+                        'name': {
+                            'colname': '名前',
+                            'value': d.name,
+                            'type': 'string',
+                            'readonly': False
+                        },
+                        'cost': {
+                            'colname': '費用',
+                            'value': d.cost,
+                            'type': 'integer',
+                            'readonly': False
+                        },
+                    }
                 }
             )
 
@@ -223,9 +247,21 @@ class LeaseMasterInfo():
         for d in db_data:
             res.append(
                 {
-                   'id': d.id,
-                   'name': d.name,
-                   'cost': d.cost
+                    'id': d.id,
+                    'columns': {
+                        'name': {
+                            'colname': '名前',
+                            'value': d.name,
+                            'type': 'string',
+                            'readonly': False
+                        },
+                        'cost': {
+                            'colname': '費用',
+                            'value': d.cost,
+                            'type': 'integer',
+                            'readonly': False
+                        },
+                    }
                 }
             )
 
@@ -312,9 +348,21 @@ class MachineMasterInfo():
         for d in db_data:
             res.append(
                 {
-                   'id': d.id,
-                   'name': d.name,
-                   'cost': d.cost
+                    'id': d.id,
+                    'columns': {
+                        'name': {
+                            'colname': '名前',
+                            'value': d.name,
+                            'type': 'string',
+                            'readonly': False
+                        },
+                        'cost': {
+                            'colname': '費用',
+                            'value': d.cost,
+                            'type': 'integer',
+                            'readonly': False
+                        },
+                    }
                 }
             )
 
@@ -387,6 +435,425 @@ class MachineMasterInfo():
             raise
         finally:
             db.session.close()
+
+
+@api.route("/master/customer")
+class CustomerMasterInfo():
+
+    async def on_get(self, req, resp):
+
+        db_data = db.session.query(CustomerMaster.id, CustomerMaster.name)
+        db.session.close()
+
+        res = list()
+        for d in db_data:
+            res.append(
+                {
+                    'id': d.id,
+                    'columns': {
+                        'name': {
+                            'colname': '名前',
+                            'value': d.name,
+                            'type': 'string',
+                            'readonly': False
+                        },
+                    }
+                }
+            )
+
+        resp.media = {
+            'response': res
+        }
+
+    async def on_post(self, req, resp):
+
+        response = dict()
+        data = await req.media()
+        name = data.get('values[name]')
+
+        # もし何も入力されていない場合
+        if name is None:
+            resp.media = 'name not entered'
+            print('name not entered')
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        v = CustomerMaster(name)
+
+        # DBに登録
+        try:
+            db.session.add(v)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        new_id = db.session.query(func.max(CustomerMaster.id)).scalar()
+        db.session.close()
+        response['new_id'] = new_id
+        response['name'] = name
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
+
+    async def on_delete(self, req, resp):
+
+        data = await req.media()
+        id = data.get('id')
+
+        if id is None:
+            print('no id')
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
+        # 削除対象のデータを検索
+        staff = db.session.query(CustomerMaster).filter_by(id=id).first()
+
+        # 指定したデータを削除
+        try:
+            db.session.delete(staff)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+
+@api.route("/master/dest")
+class DestMasterInfo():
+
+    async def on_get(self, req, resp):
+
+        db_data = db.session.query(DestMaster.id, DestMaster.name)
+        db.session.close()
+
+        res = list()
+        for d in db_data:
+            res.append(
+                {
+                    'id': d.id,
+                    'columns': {
+                        'name': {
+                            'colname': '名前',
+                            'value': d.name,
+                            'type': 'string',
+                            'readonly': False
+                        },
+                    }
+                }
+            )
+
+        resp.media = {
+            'response': res
+        }
+
+    async def on_post(self, req, resp):
+
+        response = dict()
+        data = await req.media()
+        name = data.get('values[name]')
+
+        # もし何も入力されていない場合
+        if name is None:
+            resp.media = 'name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        v = DestMaster(name)
+
+        # DBに登録
+        try:
+            db.session.add(v)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        new_id = db.session.query(func.max(DestMaster.id)).scalar()
+        db.session.close()
+        response['new_id'] = new_id
+        response['name'] = name
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
+
+    async def on_delete(self, req, resp):
+
+        data = await req.media()
+        id = data.get('id')
+
+        if id is None:
+            print('no id')
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
+        # 削除対象のデータを検索
+        staff = db.session.query(DestMaster).filter_by(id=id).first()
+
+        # 指定したデータを削除
+        try:
+            db.session.delete(staff)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+
+@api.route("/master/items")
+class ItemMasterInfo():
+
+    async def on_get(self, req, resp):
+
+        db_data = db.session.query(ItemMaster.id, ItemMaster.name, ItemMaster.cost)
+        db.session.close()
+
+        res = list()
+        for d in db_data:
+            res.append(
+                {
+                    'id': d.id,
+                    'columns': {
+                        'name': {
+                            'colname': '品名',
+                            'value': d.name,
+                            'type': 'string',
+                            'readonly': False
+                        },
+                        'cost': {
+                            'colname': '費用',
+                            'value': d.cost,
+                            'type': 'integer',
+                            'readonly': False
+                        },
+                    }
+                }
+            )
+
+        resp.media = {
+            'response': res
+        }
+
+    async def on_post(self, req, resp):
+
+        response = dict()
+        data = await req.media()
+        name = data.get('values[name]')
+        cost = data.get('values[cost]')
+
+        # もし何も入力されていない場合
+        if name is None:
+            resp.media = 'name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        if cost is None:
+            resp.media = 'cost not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        v = ItemMaster(name, cost)
+
+        # DBに登録
+        try:
+            db.session.add(v)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        new_id = db.session.query(func.max(ItemMaster.id)).scalar()
+        db.session.close()
+        response['new_id'] = new_id
+        response['name'] = name
+        response['cost'] = cost
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
+
+    async def on_delete(self, req, resp):
+
+        data = await req.media()
+        id = data.get('id')
+
+        if id is None:
+            print('no id')
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
+        # 削除対象のデータを検索
+        staff = db.session.query(ItemMaster).filter_by(id=id).first()
+
+        # 指定したデータを削除
+        try:
+            db.session.delete(staff)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+
+@api.route("/master/trash")
+class TrashMasterInfo():
+
+    async def on_get(self, req, resp):
+
+        db_data = db.session.query(TrashMaster.id,
+                                   TrashMaster.dest_id,
+                                   TrashMaster.name_id,
+                                   TrashMaster.cost,
+                                   TrashMaster.unit_type
+                                   )
+        db.session.close()
+
+        res = list()
+        for d in db_data:
+            res.append(
+                {
+                    'id': d.id,
+                    'columns': {
+                        'dest_name': {
+                            'colname': '処分先',
+                            'value': d.dest_id,
+                            'type': 'select',
+                            'selections': [
+                                {'0': 'dest_test01'},
+                                {'1': 'dest_test02'},
+                            ],
+                            'readonly': False
+                        },
+                        'item_name': {
+                            'colname': '品名',
+                            'value': d.name_id,
+                            'type': 'select',
+                            'selections': [
+                                {'0': 'item_test01'},
+                                {'1': 'item_test02'},
+                            ],
+                            'readonly': False
+                        },
+                        'cost': {
+                            'colname': '費用',
+                            'value': d.cost,
+                            'type': 'integer',
+                            'readonly': False
+                        },
+                        'unit_type': {
+                            'colname': '単位',
+                            'value': d.unit_type,
+                            'type': 'select',
+                            'selections': [
+                                {'0': 'Kg'},
+                                {'1': 't'},
+                            ],
+                            'readonly': False
+                        },
+                    }
+                }
+            )
+
+        resp.media = {
+            'response': res
+        }
+
+    async def on_post(self, req, resp):
+
+        response = dict()
+        data = await req.media()
+        dest_name = data.get('values[dest_name]')
+        item_name = data.get('values[item_name]')
+        cost = data.get('values[cost]')
+        unit_type = data.get('values[unit_type]')
+
+        # もし何も入力されていない場合
+        if dest_name is None:
+            resp.media = 'dest_name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        if item_name is None:
+            resp.media = 'item_name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        if cost is None:
+            resp.media = 'cost not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        if unit_type is None:
+            resp.media = 'unit_type not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        v = TrashMaster(dest_name, item_name, cost, unit_type)
+
+        # DBに登録
+        try:
+            db.session.add(v)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        new_id = db.session.query(func.max(TrashMaster.id)).scalar()
+        db.session.close()
+        response['new_id'] = new_id
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
+
+    async def on_delete(self, req, resp):
+
+        data = await req.media()
+        id = data.get('id')
+
+        if id is None:
+            print('no id')
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
+        # 削除対象のデータを検索
+        staff = db.session.query(TrashMaster).filter_by(id=id).first()
+
+        # 指定したデータを削除
+        try:
+            db.session.delete(staff)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
 
 # view #####################################
 @api.route("/home")
