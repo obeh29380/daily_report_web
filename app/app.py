@@ -1,6 +1,7 @@
 from pathlib import Path
-import json
+import hashlib
 import responder
+import json
 from models import (
     User,
     StaffMaster,
@@ -39,6 +40,26 @@ api = responder.API(
 
 
 # util #####################################
+def to_json(data):
+    """クエリオブジェクトをdict形式にパースする。
+
+    Args:
+        data (_type_): _description_
+    """
+
+    res = list()
+    for d in data:
+        res.append(
+            {
+                'id': d.id,
+                'dest_name': d.dest_name,
+                'item_name': d.item_name,
+                'cost': d.cost,
+                'unit_type': list(filter(lambda item: item['id'] == d.unit_type, UNIT_TYPE))[0]['name'],
+            }
+        )
+    return res
+
 def get_simple_master_data(data):
     """id,name,cost から成るマスタデータのクエリオブジェクトについて、
     クライアントに返す形式のデータに変換する。
@@ -684,6 +705,31 @@ class ItemMasterInfo():
             db.session.close()
 
 
+@api.route("/master/trash/{dest_id}/{item_id}")
+class TrashMasterInfoById():
+
+    async def on_get(self, req, resp, dest_id, item_id):
+
+        try:
+            d = db.session.query(TrashMaster).filter_by(dest_id=dest_id, name_id=item_id).first()
+        except Exception as e:
+            print(type(e))
+            raise
+        finally:
+            db.session.close()
+
+        if d is None:
+            resp.status_code = api.status_codes.HTTP_404
+            return
+
+        res = {
+            'cost': d.cost,
+            'unit_type': d.unit_type,
+        }
+
+        resp.media = res
+
+
 @api.route("/master/trash")
 class TrashMasterInfo():
 
@@ -861,6 +907,22 @@ class DailyReportMenu():
     async def on_get(self, req, resp):
 
         param = dict()
+
+        staffs = db.session.query(StaffMaster).all()
+        cars = db.session.query(CarMaster).all()
+        machines = db.session.query(MachineMaster).all()
+        leases = db.session.query(LeaseMaster).all()
+        dests = db.session.query(DestMaster).all()
+        items = db.session.query(ItemMaster).all()
+        db.session.close()
+
+        param['staffs'] = list(x._to_dict() for x in staffs)
+        param['cars'] = list(x._to_dict() for x in cars)
+        param['machines'] = list(x._to_dict() for x in machines)
+        param['leases'] = list(x._to_dict() for x in leases)
+        param['dests'] = list(x._to_dict() for x in dests)
+        param['items'] = list(x._to_dict() for x in items)
+
         resp.html = api.template('daily_report_top.html', param)
 
 
@@ -915,21 +977,17 @@ class SignIn():
         id = data.get('id')
         pwd = data.get('pwd')
 
+        hashed_pwd = hashlib.sha256(pwd.encode()).hexdigest()
+
         try:
-            users = db.session.query(User.user_id, User.user_pwd, User.auth_type)
+            user = db.session.query(User).filter_by(user_id=id, user_pwd=hashed_pwd).first()
         except Exception as e:
             print(type(e))
             raise
         finally:
             db.session.close()
 
-        auth_type = None
-        for user in users:
-            if user.user_id == id and user.user_pwd == pwd:
-                auth_type = user.auth_type
-                break
-
-        if auth_type is None:
+        if user is None:
             resp.status_code = api.status_codes.HTTP_404
             resp.media = {'message': 'login failed'}
             return
@@ -941,7 +999,7 @@ class SignIn():
         token = jwt.encode(content, key, algorithm="HS256")
         resp.status_code = api.status_codes.HTTP_200
         resp.media = {
-            'auth_type': auth_type,
+            'auth_type': user.auth_type,
             'token': token,
         }
         # api.redirect(resp, '/home')
@@ -970,15 +1028,11 @@ class SignUp():
         if pwd is None:
             resp.media = 'pwd not entered'
             return
-        # if name_last is None:
-        #     resp.media = 'name_last not entered'
-        #     return
-        # if name_first is None:
-        #     resp.media = 'name_first not entered'
-        #     return
+
+        hashed_pwd = hashlib.sha256(pwd.encode()).hexdigest()
 
         # adminユーザを作成
-        admin = User(id, pwd, f'{name_last} {name_first}')
+        admin = User(id, hashed_pwd, f'{name_last} {name_first}')
         db.session.add(admin)
         db.session.commit()
         db.session.close()

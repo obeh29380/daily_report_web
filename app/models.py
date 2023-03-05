@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-
 from db_common import Base
 from db_common import engine
 
@@ -53,11 +52,12 @@ class User(Base):
         self.auth_type = auth_type
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'user_id': self.user_id,
             'user_name': self.user_name,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 
@@ -93,11 +93,12 @@ class StaffMaster(Base):
         self.cost = cost
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
             'cost': self.cost,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 
@@ -133,11 +134,12 @@ class CarMaster(Base):
         self.cost = cost
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
             'cost': self.cost,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 
@@ -173,11 +175,12 @@ class LeaseMaster(Base):
         self.cost = cost
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
             'cost': self.cost,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 
@@ -213,11 +216,12 @@ class MachineMaster(Base):
         self.cost = cost
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
             'cost': self.cost,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 
@@ -253,11 +257,12 @@ class ItemMaster(Base):
         self.cost = cost
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
             'cost': self.cost,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 
@@ -290,10 +295,11 @@ class CustomerMaster(Base):
         self.name = name
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 
@@ -326,10 +332,11 @@ class DestMaster(Base):
         self.name = name
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'name': self.name,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 
@@ -371,13 +378,124 @@ class TrashMaster(Base):
         self.unit_type = unit_type
         self.reg_dtime = reg_dtime
 
-    def __str__(self):
+    def _to_dict(self):
         return {
+            'id': self.id,
             'dest_id': self.dest_id,
             'name_id': self.name_id,
             'cost': self.cost,
             'unit_type': self.unit_type,
-            'reg_dtime': self.reg_dtime,
+            'reg_dtime': self.reg_dtime.isoformat(),
+        }
+
+
+class ReportHead(Base):
+    """
+    日報ヘッダ情報
+
+    id                  : 主キー
+    customer_name       : 受注先
+    worksite_name       : 工事名
+    address             : 住所
+    memo                : 備考
+    completed_date      : 工事完了日（default=null (未完了))
+    reg_dtime           : 登録日
+    """
+    __tablename__ = 'report_head'
+
+    id = Column(
+        'id',
+        INTEGER(unsigned=True),
+        primary_key=True,
+        autoincrement=True
+    )
+    customer_name = Column('customer_name', String(256))
+    worksite_name = Column('worksite_name', String(256))
+    address = Column('address', String(512))
+    memo = Column('memo', String(512))
+    completed_date = Column('completed_date', String(8))
+    reg_dtime = Column(
+        'reg_dtime',
+        DateTime,
+        default=datetime.now(),
+        nullable=False,
+        server_default=current_timestamp()
+    )
+
+    def __init__(self, customer_name, worksite_name, address, memo, completed_date, reg_dtime=datetime.now()):
+        self.customer_name = customer_name
+        self.worksite_name = worksite_name
+        self.address = address
+        self.memo = memo
+        self.completed_date = completed_date
+        self.reg_dtime = reg_dtime
+
+    def _to_dict(self):
+        return {
+            'id': self.id,
+            'customer_name': self.customer_name,
+            'worksite_name': self.worksite_name,
+            'address': self.address,
+            'memo': self.memo,
+            'completed_date': self.completed_date,
+            'reg_dtime': self.reg_dtime.isoformat(),
+        }
+
+
+class ReportDetail(Base):
+    """
+    日報明細情報
+
+    id                  : 主キー
+    report_head_id      : 日報ヘッドID
+    type                : 品目種別
+    name               : 品目名
+    cost                : 品目単価
+    quant                : 数量
+    unit_type             : 単位
+    reg_dtime           : 登録日
+    """
+    __tablename__ = 'report_detail'
+
+    id = Column(
+        'id',
+        INTEGER(unsigned=True),
+        primary_key=True,
+        autoincrement=True
+    )
+    report_head_id = Column('report_head_id', INTEGER(unsigned=True))
+    type = Column('type', INTEGER(unsigned=True))
+    name = Column('name', String(256))
+    cost = Column('cost', INTEGER(unsigned=True))
+    quant = Column('quant', INTEGER(unsigned=True))
+    unit_type = Column('unit_type', INTEGER(unsigned=True))
+    reg_dtime = Column(
+        'reg_dtime',
+        DateTime,
+        default=datetime.now(),
+        nullable=False,
+        server_default=current_timestamp()
+    )
+
+    def __init__(self, report_head_id, type, name, cost, quant, unit_type=0, reg_dtime=datetime.now()):
+        self.report_head_id = report_head_id
+        self.type = type
+        self.name = name
+        self.cost = cost
+        self.quant = quant
+        self.unit_type = unit_type
+        self.reg_dtime = reg_dtime
+
+    def _to_dict(self):
+        return {
+            'id': self.id,
+            'report_head_id': self.report_head_id,
+            'type': self.type,
+            'name': self.name,
+            'cost': self.cost,
+            'quant': self.quant,
+            'unit_type': self.unit_type,
+            'reg_dtime': self.reg_dtime.isoformat(),
         }
 
 

@@ -3,5 +3,738 @@
 
 {% block body %}
 
+<body class="bg-light">
+  <div class="container">
+    <main>
+      <div class="py-5 text-center">
+        <h2>日報管理</h2>
+      </div>
+
+      <form class="needs-validation" novalidate>
+        <div class="row g-5">
+
+          <div class="col-8">
+            <h4 class="mb-3">工事情報</h4>
+            
+            <div class="row g-3">
+              <div class="col-sm-2">
+                <label for="familyName" class="form-label">工事日</label>
+                <input type="text" class="form-control" id="familyName" placeholder="" value="" required>
+                <div class="invalid-feedback">
+                  工事日を入力してください
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-8">
+                <label for="givenName" class="form-label">工事名</label>
+                <div class="input-group">
+                  <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    登録済リスト
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">工事名サンプル１</a></li>
+                    <li><a class="dropdown-item" href="#">工事名サンプル２</a></li>
+                    <li><a class="dropdown-item" href="#">工事名サンプル３</a></li>
+                  </ul>
+                  <input type="text" class="form-control" aria-label="...">
+                </div>
+                <div class="invalid-feedback">
+                  工事名を入力してください
+                </div>
+              </div>
+              <div class="col-4">
+                <label for="givenName" class="form-label">作業何日目？</label>
+                <div class="row">
+                  <div class="col">
+                    <select class="form-select d-block w-100" id="day" type="number" required>
+                      <option>選択...</option>
+                      <option>1日目</option>
+                      <option>2日目</option>
+                      <option>3日目</option>
+                      <option>4日目</option>
+                      <option>5日目</option>
+                      <option>6日目</option>
+                      <option>7日目</option>
+                      <option>8日目</option>
+                      <option>9日目</option>
+                      <option>10日目</option>
+                    </select>
+                    <div class="invalid-feedback">
+                      日を選択してください
+                    </div>
+                  </div>
+                  <div class="col">
+                    <button id="btn_worksite_master" class="btn btn-primary" type="submit">工事名登録</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <label for="givenName" class="form-label">受注先</label>
+              <div class="row">
+                <div class="col-10">
+                  <div class="input-group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                      登録済リスト
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="#">受注先サンプル１</a></li>
+                      <li><a class="dropdown-item" href="#">受注先サンプル２</a></li>
+                      <li><a class="dropdown-item" href="#">受注先サンプル３</a></li>
+                    </ul>
+                    <input type="text" class="form-control" aria-label="...">
+                  </div>
+                </div>
+                <div class="col">
+                  <button id="btn_customer_master" class="btn btn-primary" type="submit">受注先登録</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col" style="visibility:hidden">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+              <span class="text-primary">カート</span>
+              <span class="badge bg-primary rounded-pill">3</span>
+            </h4>
+            <ul class="list-group mb-3">
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">商品名</h6>
+                  <small class="text-muted">簡単な説明</small>
+                </div>
+                <span class="text-muted">￥12000</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">2番目の商品</h6>
+                  <small class="text-muted">簡単な説明</small>
+                </div>
+                <span class="text-muted">￥8000</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">3番目の商品</h6>
+                  <small class="text-muted">簡単な説明</small>
+                </div>
+                <span class="text-muted">￥5000</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between bg-light">
+                <div class="text-success">
+                  <h6 class="my-0">プロモーションコード</h6>
+                  <small>EXAMPLECODE</small>
+                </div>
+                <span class="text-success">−￥5000</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span>合計 (円)</span>
+                <strong>￥20000</strong>
+              </li>
+            </ul>
+
+            <form class="card p-2">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="プロモーションコード">
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-secondary">適用</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <h4 class="mb-3">明細</h4>
+        </div>
+        <hr class="my-4">
+
+        <div class="row">
+          <!-- 人員 -->
+          <div class="col-4">
+            <form id="form-staff">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">人員</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 10%;"></th>
+                        <th style="width: 60%;" class="text-center">名前</th>
+                        <th style="width: 30%;" class="text-center">単価</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="stafflist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <div class="row">
+                    <h4 class="my-0 fw-normal">
+                      <div class="row">
+                        <div class="col">
+                          小計
+                        </div>
+                        <div class="col text-end">
+                          <span id="staff_total">0</span>人
+                          <span id="staff_total_cost">0</span>円
+                        </div>
+                      </div>
+                    </h4>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- 廃材 -->
+          <div class="col">
+            <form id="form-trash">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">廃材</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 20%;" class="text-center">処分場</th>
+                        <th style="width: 20%;" class="text-center">品目</th>
+                        <th style="width: 20%;" class="text-center">単価</th>
+                        <th style="width: 10%;" class="text-center">単位</th>
+                        <th style="width: 15%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="trashlist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_cost">0</span>円
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- 重機 -->
+          <div class="col">
+            <form id="form-machine">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">重機</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;" class="text-center">名前</th>
+                        <th style="width: 25%;" class="text-center">単価</th>
+                        <th style="width: 20%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="machinelist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>台
+                        <span name="total_cost">0</span>円
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+            
+          <!-- リース -->
+          <div class="col">
+            <form id="form-lease">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">リース</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;" class="text-center">名前</th>
+                        <th style="width: 25%;" class="text-center">単価</th>
+                        <th style="width: 20%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="leaselist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>台
+                        <span name="total_cost">0</span>円
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- 車両 -->
+          <div class="col">
+            <form id="form-car">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">車両</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 45%;" class="text-center">名前</th>
+                        <th style="width: 20%;" class="text-center">単価</th>
+                        <th style="width: 15%;" class="text-center">数量</th>
+                        <th style="width: 20%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="carlist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>台
+                        <span name="total_cost">0</span>円
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- 回送 -->
+          <div class="col">
+            <form id="form-transport">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">回送</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;" class="text-center">名前</th>
+                        <th style="width: 25%;" class="text-center">単価</th>
+                        <th style="width: 20%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="transportlist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_quant">0</span>回
+                          <span name="total_cost">0</span>円
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- 有価物 -->
+          <div class="col">
+            <form id="form-valuable">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">有価物</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 20%;" class="text-center">品目</th>
+                        <th style="width: 20%;" class="text-center">単価</th>
+                        <th style="width: 15%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="valuablelist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_cost">0</span>円
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- その他 -->
+          <div class="col">
+            <form id="form-valuable">
+              <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                  <h4 class="my-0 fw-normal">その他</h4>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40%;" class="text-center">名前</th>
+                        <th style="width: 25%;" class="text-center">単価</th>
+                        <th style="width: 20%;" class="text-center">数量</th>
+                        <th style="width: 15%;" class="text-center">小計</th>
+                      </tr>
+                    </thead>
+        
+                    <tbody id="otherlist">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="card-footer py-3">
+                  <h4 class="my-0 fw-normal">
+                    <div class="row">
+                      <div class="col">
+                        小計
+                      </div>
+                      <div class="col text-end">
+                        <span name="total_cost">0</span>円
+                      </div>
+                    </div>
+                  </h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <button class="w-100 btn btn-primary btn-lg" type="submit">登録</button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    {% autoescape off %}
+    cars = {{cars}}
+    machines = {{machines}}
+    leases = {{leases}}
+    dests = {{dests}}
+    items = {{items}}
+    {% endautoescape %}
+
+    let map_master = {
+      carlist: cars,
+      machinelist: machines,
+      leaselist: leases
+    }
+
+    $(document).ready( function(){
+      set_staff_list();
+      add_new_row(cars, $('#carlist'));
+      add_new_row(machines, $('#machinelist'));
+      add_new_row(leases, $('#leaselist'));
+      add_new_row_trash();
+      add_new_row_no_select($('#transportlist'))
+      add_new_row_no_select($('#valuablelist'))
+      add_new_row_no_select($('#otherlist'))
+    })
+
+    function set_staff_list(){
+      {% autoescape off %}
+      staffs = {{staffs}}
+      {% endautoescape %}
+      html = ""
+      staffs.forEach(staff => {
+        html += 
+        `<tr>
+          <td><input type="checkbox" onchange="calc_staff_total(this)" class="form-check-input text-center" value="" id="formCheckDefault"></td>
+          <td class="text-center">${staff['name']}</td>
+          <td class="text-center">${staff['cost']}</td>
+        </tr>`
+      });
+
+      $('#stafflist').html(html);
+
+    }
+
+    function int_to_currency(int_currency){
+      return new Intl.NumberFormat().format(int_currency);
+    }
+
+    function currency_to_int(currency){
+      return Number(currency.replace(',', ''))
+    }
+
+    function re_calc(e){
+
+      if (e.closest('form').id == 'form-trash'){
+        // 行の合計再計算
+        calc_row_total(e.parentElement.parentElement, e.parentElement.parentElement.parentElement, 2, 5, 4)
+        // フォームの合計再計算
+        calc_form_total(e.closest('form'), e.parentElement.parentElement.parentElement, 5)
+      } else {
+        // 行の合計再計算
+        calc_row_total(e.parentElement.parentElement, e.parentElement.parentElement.parentElement, 1, 3, 2)
+        // フォームの合計再計算
+        calc_form_total(e.closest('form'), e.parentElement.parentElement.parentElement, 3, 2)
+      }
+    }
+
+    function calc_row_total(row, table, col_cost, col_total, col_quant = -1){
+      if (col_quant >= 0) {
+        quant = Number(row.children[col_quant].children[0].value)
+      } else {
+        quant = 1
+      }
+
+      cost = Number(row.children[col_cost].children[0].value)
+
+      row.children[col_total].innerText = cost*quant
+    }
+
+    function calc_form_total(form, table, col_total, col_quant = -1){
+      quant = 0
+      cost = 0
+      Array.prototype.forEach.call(table.children, (row, i) => {
+        if (col_quant >= 0){
+          r_quant = Number(row.children[col_quant].children[0].value)
+        } else {
+          r_quant = 1
+        }
+        r_cost = Number(row.children[col_total].innerText)
+        
+        if (r_cost > 0){
+          cost += r_cost
+        }
+        if (r_quant > 0){
+          quant += r_quant
+        }
+      
+        $(form).find('span[name="total_cost"]')[0].innerText = cost;
+        if (col_quant >= 0){
+          $(form).find('span[name="total_quant"]')[0].innerText = quant;
+        }
+      });
+    }
+
+    function add_new_row(options, tbody){
+      html = ""
+      html += '<tr><td><select class="form-select">'
+      html += '<option value="">--選択してください--</option>'
+      options.forEach(o => {
+        html += `<option value="${o['cost']}">${o['name']}</option>`
+      });
+      html += '</td><td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td><td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td><td class="text-end">0</td></tr>'
+
+      $(tbody).append(html);
+
+    }
+
+    function add_new_row_no_select(tbody){
+      html = ""
+      html += '<tr>'
+      html += '<td><input type="text" oninput="check_input(this)" class="form-control text-left"></td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+      html += '<td class="text-end">0</td>'
+      html += '</tr>'
+      $(tbody).append(html);
+
+    }
+
+    function add_new_row_trash(){
+      html = ""
+      html += '<tr>'
+      html += '<td><select class="form-select">'
+      html += '<option value="">--選択してください--</option>'
+      dests.forEach(o => {
+        html += `<option value="${o['id']}">${o['name']}</option>`
+      });
+      html += '</td>'
+      html += '<td><select class="form-select">'
+      html += '<option value="">--選択してください--</option>'
+      items.forEach(o => {
+        html += `<option value="${o['id']}">${o['name']}</option>`
+      });
+      html += '</td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+
+      html += '</td>'
+      html += '<td><select class="form-select">'
+      html += '<option value="">--選択してください--</option>'
+      html += '<option value="0">t</option>'
+      html += '<option value="1">Kg</option>'
+      html += '</td>'
+
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+
+      html += '<td class="text-end">0</td>'
+      html += '</tr>'
+
+      $('#trashlist').append(html);
+
+    }
+
+    function calc_staff_total(e){
+      cost = Number(e.parentElement.parentElement.children[2].textContent)
+      staff_total = document.getElementById('staff_total')
+      staff_total_cost = document.getElementById('staff_total_cost')
+
+      current_total = Number(staff_total.textContent)
+      current_total_cost = Number(staff_total_cost.textContent)
+      if (e.checked == true){
+        staff_total.textContent = current_total + 1;
+        staff_total_cost.textContent = current_total_cost + cost;
+      } else {
+        staff_total.textContent = current_total - 1;
+        staff_total_cost.textContent = current_total_cost - cost;
+      }
+    }
+
+    $(function($) {
+      $('html').on('focus', 'select', function(e) {
+        pre_cost = Number(e.target.parentElement.parentElement.children[3].innerText)
+        pre_quant = Number(e.target.parentElement.parentElement.children[2].childNodes[0].value)
+      }).on('change', 'select', function(e) {
+        table = e.target.closest('tbody')
+        row_count = Number(e.target.parentElement.parentElement.parentElement.childElementCount)
+        current_row = Number(e.target.parentElement.parentElement.rowIndex)
+
+        if (table.id == 'trashlist'){
+
+          dest_id = e.target.closest('tr').children[0].children[0].value
+          item_id = e.target.closest('tr').children[1].children[0].value
+
+          if (dest_id == "" || item_id == ""){
+            return
+          }
+          
+          $.ajax({
+            url: `/master/trash/${dest_id}/${item_id}`,
+            type: 'GET',
+            dataType: 'json',
+            // フォーム要素の内容をハッシュ形式に変換
+            data: {},
+            timeout: 5000,
+          })
+          .done(function(data) {
+            e.target.closest('tr').children[2].children[0].value = data.cost
+            e.target.closest('tr').children[3].children[0].value = data.unit_type
+            if (e.target.closest('tr').children[4].children[0].value == ''){
+              e.target.closest('tr').children[4].children[0].value = 1
+            }
+
+            calc_row_total(e.target.parentElement.parentElement, e.target.parentElement.parentElement.parentElement, 2, 5, 4)
+            calc_form_total(e.target.closest('form'), e.target.parentElement.parentElement.parentElement, 5)
+
+            if (current_row == row_count && cost > 0) {
+              add_new_row_trash();
+            }
+          })
+          .fail(function(data) {
+              // 該当無しの場合は、行追加のみ
+          });
+        } else {
+
+
+          if (e.target.parentElement.parentElement.children[2].childNodes[0].value == ''){
+            quant = 1
+          } else {
+            quant = Number(e.target.parentElement.parentElement.children[2].childNodes[0].value)
+          }
+          cost = Number(e.target.value)
+
+          e.target.parentElement.parentElement.children[1].childNodes[0].value = cost;
+          e.target.parentElement.parentElement.children[2].childNodes[0].value = quant;
+
+          calc_row_total(e.target.parentElement.parentElement, e.target.parentElement.parentElement.parentElement, 1, 3, 2)
+          calc_form_total(e.target.closest('form'), e.target.parentElement.parentElement.parentElement, 3, 2)
+
+          if (current_row == row_count && cost > 0) {
+            add_new_row(map_master[table.id], table);
+          }
+        }
+
+        // フォーカスを外さないと、同じ要素を連続でselectしたときにfocusイベントが動かない
+        document.activeElement.blur();
+      });
+    });
+
+    function check_input(e){
+      row_count = Number(e.parentElement.parentElement.parentElement.childElementCount)
+      current_row = Number(e.parentElement.parentElement.rowIndex)
+      table = e.closest('tbody')
+      if (current_row == row_count && e.value != '') {
+        add_new_row_no_select(table);
+      }
+    }
+
+
+  </script>
+</body>
+
 
 {% endblock %}
