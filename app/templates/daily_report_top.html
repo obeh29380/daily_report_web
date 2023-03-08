@@ -3,7 +3,6 @@
 
 {% block body %}
 
-<body class="bg-light">
   <div class="container">
     <main>
       <div class="py-5 text-center">
@@ -95,54 +94,64 @@
             </div>
           </div>
 
-          <div class="col" style="visibility:hidden">
+          <div class="col">
             <h4 class="d-flex justify-content-between align-items-center mb-3">
-              <span class="text-primary">カート</span>
-              <span class="badge bg-primary rounded-pill">3</span>
+              <span class="text-primary">合計</span>
             </h4>
             <ul class="list-group mb-3">
               <li class="list-group-item d-flex justify-content-between lh-sm">
                 <div>
-                  <h6 class="my-0">商品名</h6>
-                  <small class="text-muted">簡単な説明</small>
+                  <h6 class="my-0">人員</h6>
                 </div>
-                <span class="text-muted">￥12000</span>
+                <span class="text-muted" id="list_total_staff" onchange="culc_total()"></span>
               </li>
               <li class="list-group-item d-flex justify-content-between lh-sm">
                 <div>
-                  <h6 class="my-0">2番目の商品</h6>
-                  <small class="text-muted">簡単な説明</small>
+                  <h6 class="my-0">廃材</h6>
                 </div>
-                <span class="text-muted">￥8000</span>
+                <span class="text-muted" id="list_total_trash" onchange="culc_total()"></span>
               </li>
               <li class="list-group-item d-flex justify-content-between lh-sm">
                 <div>
-                  <h6 class="my-0">3番目の商品</h6>
-                  <small class="text-muted">簡単な説明</small>
+                  <h6 class="my-0">重機</h6>
                 </div>
-                <span class="text-muted">￥5000</span>
+                <span class="text-muted" id="list_total_machine" onchange="culc_total()"></span>
               </li>
-              <li class="list-group-item d-flex justify-content-between bg-light">
-                <div class="text-success">
-                  <h6 class="my-0">プロモーションコード</h6>
-                  <small>EXAMPLECODE</small>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">車両</h6>
                 </div>
-                <span class="text-success">−￥5000</span>
+                <span class="text-muted" id="list_total_car" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">リース</h6>
+                </div>
+                <span class="text-muted" id="list_total_lease" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">回送</h6>
+                  
+                <span class="text-muted" id="list_total_transport" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">有価物</h6>
+                </div>
+                <span class="text-muted" id="list_total_valuable" onchange="culc_total()"></span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">その他</h6>
+                </div>
+                <span class="text-muted" id="list_total_other" onchange="culc_total()"></span>
               </li>
               <li class="list-group-item d-flex justify-content-between">
                 <span>合計 (円)</span>
-                <strong>￥20000</strong>
+                <strong id="total"></strong>
               </li>
             </ul>
-
-            <form class="card p-2">
-              <div class="input-group">
-                <input type="text" class="form-control" placeholder="プロモーションコード">
-                <div class="input-group-append">
-                  <button type="submit" class="btn btn-secondary">適用</button>
-                </div>
-              </div>
-            </form>
           </div>
         </div>
 
@@ -182,7 +191,7 @@
                         </div>
                         <div class="col text-end">
                           <span id="staff_total">0</span>人
-                          <span id="staff_total_cost">0</span>円
+                          <span id="staff_total_cost">0</span>
                         </div>
                       </div>
                     </h4>
@@ -205,8 +214,8 @@
                       <tr>
                         <th style="width: 20%;" class="text-center">処分場</th>
                         <th style="width: 20%;" class="text-center">品目</th>
-                        <th style="width: 20%;" class="text-center">単価</th>
-                        <th style="width: 10%;" class="text-center">単位</th>
+                        <th style="width: 15%;" class="text-center">単価</th>
+                        <th style="width: 15%;" class="text-center">単位</th>
                         <th style="width: 15%;" class="text-center">数量</th>
                         <th style="width: 15%;" class="text-center">小計</th>
                       </tr>
@@ -223,7 +232,7 @@
                         小計
                       </div>
                       <div class="col text-end">
-                        <span name="total_cost">0</span>円
+                        <span name="total_cost">0円</span>
                       </div>
                     </div>
                   </h4>
@@ -264,7 +273,7 @@
                       </div>
                       <div class="col text-end">
                         <span name="total_quant">0</span>台
-                        <span name="total_cost">0</span>円
+                        <span name="total_cost">0円</span>
                       </div>
                     </div>
                   </h4>
@@ -303,7 +312,7 @@
                       </div>
                       <div class="col text-end">
                         <span name="total_quant">0</span>台
-                        <span name="total_cost">0</span>円
+                        <span name="total_cost">0円</span>
                       </div>
                     </div>
                   </h4>
@@ -344,7 +353,7 @@
                       </div>
                       <div class="col text-end">
                         <span name="total_quant">0</span>台
-                        <span name="total_cost">0</span>円
+                        <span name="total_cost">0円</span>
                       </div>
                     </div>
                   </h4>
@@ -383,7 +392,7 @@
                       </div>
                       <div class="col text-end">
                         <span name="total_quant">0</span>回
-                          <span name="total_cost">0</span>円
+                          <span name="total_cost">0円</span>
                       </div>
                     </div>
                   </h4>
@@ -423,7 +432,7 @@
                         小計
                       </div>
                       <div class="col text-end">
-                        <span name="total_cost">0</span>円
+                        <span name="total_cost">0円</span>
                       </div>
                     </div>
                   </h4>
@@ -461,7 +470,7 @@
                         小計
                       </div>
                       <div class="col text-end">
-                        <span name="total_cost">0</span>円
+                        <span name="total_cost">0円</span>
                       </div>
                     </div>
                   </h4>
@@ -483,6 +492,7 @@
     leases = {{leases}}
     dests = {{dests}}
     items = {{items}}
+    unit_type = {{unit_type}}
     {% endautoescape %}
 
     let map_master = {
@@ -490,6 +500,32 @@
       machinelist: machines,
       leaselist: leases
     }
+
+    let map_form = {
+      "form-staff": "staff",
+      "form-car": "car",
+      "form-machine": "machine",
+      "form-lease": "lease",
+      "form-transport": "transport",
+      "form-trash": "trash",
+      "form-valuable": "valuable",
+      "form-other": "other",
+    }
+
+    var mo = new MutationObserver(function() {
+      calc_total();
+    });
+    var config = {
+      childList: true
+    };
+    mo.observe($('#list_total_staff')[0], config);
+    mo.observe($('#list_total_car')[0], config);
+    mo.observe($('#list_total_machine')[0], config);
+    mo.observe($('#list_total_lease')[0], config);
+    mo.observe($('#list_total_trash')[0], config);
+    mo.observe($('#list_total_transport')[0], config);
+    mo.observe($('#list_total_valuable')[0], config);
+    mo.observe($('#list_total_other')[0], config);
 
     $(document).ready( function(){
       set_staff_list();
@@ -521,14 +557,18 @@
     }
 
     function int_to_currency(int_currency){
-      return new Intl.NumberFormat().format(int_currency);
+      return new Intl.NumberFormat().format(int_currency) + '円';
     }
 
     function currency_to_int(currency){
+      currency = currency.replace('円', '')
       return Number(currency.replace(',', ''))
     }
-
+    
     function re_calc(e){
+      e.value = e.value.replace(/[０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+      });
 
       if (e.closest('form').id == 'form-trash'){
         // 行の合計再計算
@@ -573,24 +613,42 @@
           quant += r_quant
         }
       
-        $(form).find('span[name="total_cost"]')[0].innerText = cost;
+        $(form).find('span[name="total_cost"]')[0].innerText = int_to_currency(cost);
         if (col_quant >= 0){
           $(form).find('span[name="total_quant"]')[0].innerText = quant;
         }
       });
+
+      $('#list_total_' + map_form[form.id])[0].innerText = int_to_currency(cost);
+    }
+
+    function calc_total(){
+      total = 0
+      total += currency_to_int($('#list_total_staff')[0].innerText)
+      total += currency_to_int($('#list_total_car')[0].innerText)
+      total += currency_to_int($('#list_total_machine')[0].innerText)
+      total += currency_to_int($('#list_total_lease')[0].innerText)
+      total += currency_to_int($('#list_total_trash')[0].innerText)
+      total += currency_to_int($('#list_total_transport')[0].innerText)
+      total += currency_to_int($('#list_total_valuable')[0].innerText)
+      total += currency_to_int($('#list_total_other')[0].innerText)
+
+      $('#total')[0].innerText = int_to_currency(total);
     }
 
     function add_new_row(options, tbody){
       html = ""
-      html += '<tr><td><select class="form-select">'
+      html += '<tr>'
+      html += '<td><select class="form-select">'
       html += '<option value="">--選択してください--</option>'
       options.forEach(o => {
         html += `<option value="${o['cost']}">${o['name']}</option>`
       });
-      html += '</td><td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td><td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td><td class="text-end">0</td></tr>'
-
+      html += '</td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
+      html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td><td class="text-end">0</td>'
+      html += '</tr>'
       $(tbody).append(html);
-
     }
 
     function add_new_row_no_select(tbody){
@@ -624,9 +682,9 @@
 
       html += '</td>'
       html += '<td><select class="form-select">'
-      html += '<option value="">--選択してください--</option>'
-      html += '<option value="0">t</option>'
-      html += '<option value="1">Kg</option>'
+        unit_type.forEach(o => {
+        html += `<option value="${o['id']}">${o['name']}</option>`
+      });
       html += '</td>'
 
       html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
@@ -644,14 +702,18 @@
       staff_total_cost = document.getElementById('staff_total_cost')
 
       current_total = Number(staff_total.textContent)
-      current_total_cost = Number(staff_total_cost.textContent)
+      current_total_cost = currency_to_int(staff_total_cost.textContent)
       if (e.checked == true){
         staff_total.textContent = current_total + 1;
-        staff_total_cost.textContent = current_total_cost + cost;
+        total_cost = current_total_cost + cost;
       } else {
         staff_total.textContent = current_total - 1;
-        staff_total_cost.textContent = current_total_cost - cost;
+        total_cost = current_total_cost - cost;
       }
+
+      staff_total_cost.textContent = int_to_currency(total_cost);
+
+      $('#list_total_staff')[0].innerText = int_to_currency(total_cost);
     }
 
     $(function($) {
@@ -734,7 +796,6 @@
 
 
   </script>
-</body>
 
 
 {% endblock %}

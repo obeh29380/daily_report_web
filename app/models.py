@@ -1,13 +1,16 @@
 import os
 from datetime import datetime
-from db_common import Base
 from db_common import engine
+from sqlalchemy.ext.declarative import declarative_base
 
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.sql.functions import current_timestamp
 from sqlalchemy.dialects.mysql import INTEGER
 
 SQLITE3_NAME = "./db.sqlite3"
+
+# 元々db_commonに定義していたが、それだとalembicのmigrateでmodelを見つけられないため、こちらに移動
+Base = declarative_base()
 
 
 class User(Base):
@@ -29,7 +32,7 @@ class User(Base):
         primary_key=True,
         autoincrement=True
     )
-    user_id = Column('user_id', String(256))
+    user_id = Column('user_id', String(256), unique=True)
     user_pwd = Column('user_pwd', String(256))
     user_name = Column('user_name', String(256))
     reg_dtime = Column(
@@ -78,7 +81,7 @@ class StaffMaster(Base):
         primary_key=True,
         autoincrement=True
     )
-    name = Column('name', String(256))
+    name = Column('name', String(256), unique=True)
     cost = Column('cost', INTEGER(unsigned=True))
     reg_dtime = Column(
         'reg_dtime',
@@ -119,7 +122,7 @@ class CarMaster(Base):
         primary_key=True,
         autoincrement=True
     )
-    name = Column('name', String(256))
+    name = Column('name', String(256), unique=True)
     cost = Column('cost', INTEGER(unsigned=True))
     reg_dtime = Column(
         'reg_dtime',
@@ -160,7 +163,7 @@ class LeaseMaster(Base):
         primary_key=True,
         autoincrement=True
     )
-    name = Column('name', String(256))
+    name = Column('name', String(256), unique=True)
     cost = Column('cost', INTEGER(unsigned=True))
     reg_dtime = Column(
         'reg_dtime',
@@ -201,7 +204,7 @@ class MachineMaster(Base):
         primary_key=True,
         autoincrement=True
     )
-    name = Column('name', String(256))
+    name = Column('name', String(256), unique=True)
     cost = Column('cost', INTEGER(unsigned=True))
     reg_dtime = Column(
         'reg_dtime',
@@ -242,7 +245,7 @@ class ItemMaster(Base):
         primary_key=True,
         autoincrement=True
     )
-    name = Column('name', String(256))
+    name = Column('name', String(256), unique=True)
     cost = Column('cost', INTEGER(unsigned=True))
     reg_dtime = Column(
         'reg_dtime',
@@ -282,7 +285,7 @@ class CustomerMaster(Base):
         primary_key=True,
         autoincrement=True
     )
-    name = Column('name', String(256))
+    name = Column('name', String(256), unique=True)
     reg_dtime = Column(
         'reg_dtime',
         DateTime,
@@ -319,7 +322,7 @@ class DestMaster(Base):
         primary_key=True,
         autoincrement=True
     )
-    name = Column('name', String(256))
+    name = Column('name', String(256), unique=True)
     reg_dtime = Column(
         'reg_dtime',
         DateTime,

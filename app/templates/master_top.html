@@ -44,7 +44,6 @@
       </div>
     </div>
     </div>
-    <div id="result"></div>
     <script>
       var current_tab = '';
       const table_name = {
@@ -89,7 +88,6 @@
       };
 
       function tab_select(e){
-        $(`#result`).innerText = ''
         if (current_tab == e.target.id) {
             return 0;
         };
@@ -149,6 +147,8 @@
             });
             $(`#${type}RegForm table tbody tr`).append(`<td><button id="reg_btn" class="btn btn-primary" type="submit">登録</button></td>`);
             $(`#${type}RegForm`).append(`<div id="message_${type}" class="text-danger"></div>`);
+            $(`#${type}RegForm`).append(`<div id="result_${type}"></div>`);
+            
 
             // 一覧フォーム
             $(`#${type}data`).html("");
@@ -186,12 +186,12 @@
         })
         .fail(function(data) {
             // 通信失敗時の処理を記述
-            $(`#result`).innerText = '通信失敗'
+            $(`#result_${type}`).innerText = '通信失敗'
         });
       };
 
       function register(e){
-        $(`#result`).innerText = ''
+        $(`#result_${type}`).innerText = ''
         event.preventDefault();
         type = table_name[current_tab]
         form = document.getElementById(`${type}RegForm`);
@@ -248,12 +248,12 @@
           })
         .fail(function(data) {
             // 通信失敗時の処理を記述
-            $(`#result`).innerText = '通信失敗'
+            $(`#message_${type}`).text(data.responseJSON.message);
         });
       };
 
       function removeList(obj) {
-        $(`#result`).innerText = ''
+        $(`#result_${type}`).innerText = ''
         event.preventDefault();
         type = form_name[obj.form.id]
         form = document.getElementById(`${type}_data`);
@@ -276,7 +276,7 @@
           })
         .fail(function(data) {
             // 通信失敗時の処理を記述
-            $(`#result`).innerText = '通信失敗'
+            $(`#result_${type}`).innerText = '通信失敗'
         });
       };
     </script>

@@ -6,13 +6,13 @@
   <title>{% block title %}{% endblock %}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
   <!-- CSSの設定ファイル "static/css/headers.css" だと、URL階層が２以上の画面で、パスがおかしくなる-->
-  <link rel="stylesheet" href="http://localhost:8080/static/css/headers.css">
+  <!-- スラッシュからスタートすると解決 -->
+  <link rel="stylesheet" href="/static/css/headers.css">
 {% block header %}{% endblock %}
 </head>
 
 <body>
 
-<main>
 
   <!-- ログイン済みのヘッダ -->
   <header class="p-3 mb-3 border-bottom">
@@ -32,7 +32,7 @@
       <ul class="nav">
         <div class="dropdown text-end">
           <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+            <img src="/static/image/default_img.png" alt="mdo" width="32" height="32" class="rounded-circle">
           </a>
           <ul class="dropdown-menu text-small">
             <li><a class="dropdown-item" href="#">設定</a></li>
@@ -42,7 +42,7 @@
           </ul>
         </div>
       </ul>
-      <ul class="nav">
+      <ul class="nav" id="user-name">
         名前が入る
       </ul>
       <ul class="nav">
@@ -53,8 +53,6 @@
   </header>
   <!-- /ログイン済みのヘッダ -->
 
-</main>
-  <div id="debug"></div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
   <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 
@@ -62,6 +60,23 @@
 
   
   <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      // tokenチェック
+      const cookies = document.cookie.split(';');
+      token = ''
+      cookies.forEach(function(cookie) {
+        if(cookie.trim().split('=')[0]=='token'){
+          token = cookie.trim().split('=')[1];
+        }
+      })
+      if(token==''){
+        window.location.href = "/";
+      }
+
+      decode_jwt = decodeJwt(token);
+      $('#user-name')[0].innerText = decode_jwt.name
+    });
+
     $(document).ready( function(){
       // ページ読み込み時に実行したい処理
       home = document.getElementById("home");
@@ -70,26 +85,40 @@
       master = document.getElementById("master");
       
       path = location.pathname.split('/')[1];
+
+      const cookies = document.cookie.split(';');
+      token = ''
+      cookies.forEach(function(cookie) {
+        if(cookie.trim().split('=')[0]=='token'){
+          token = cookie.trim().split('=')[1];
+        }
+      });
       
-      
-      home.innerHTML = '<a id="home" href="/home" class="nav-link">ホーム</a>'
-      daily_report.innerHTML = '<a id="daily_report" href="/daily_report/top" class="nav-link">日報管理</a>'
-      report_summary.innerHTML = '<a id="report_summary" href="/summary" class="nav-link">集計表示</a>'
-      master.innerHTML = '<a id="master" href="/master/top" class="nav-link">マスタ管理</a>'
+      home.innerHTML = `<a id="home" href="/home?token=${token}" class="nav-link">ホーム</a>`
+      daily_report.innerHTML = `<a id="daily_report" href="/daily_report/top?token=${token}" class="nav-link">日報管理</a>`
+      report_summary.innerHTML = `<a id="report_summary" href="/summary?token=${token}" class="nav-link">集計表示</a>`
+      master.innerHTML = `<a id="master" href="/master/top?token=${token}" class="nav-link">マスタ管理</a>`
       if (path == 'home') {
-        home.innerHTML = '<a id="home" href="/home" class="nav-link active">ホーム</a>';
+        home.innerHTML = `<a id="home" href="/home?token=${token}" class="nav-link active">ホーム</a>`;
       }else if(path == 'daily_report'){
-        daily_report.innerHTML = '<a id="daily_report" href="/daily_report/top" class="nav-link active">日報管理</a>';
+        daily_report.innerHTML = `<a id="daily_report" href="/daily_report/top?token=${token}" class="nav-link active">日報管理</a>`;
       }else if(path == 'summary'){
-        report_summary.innerHTML = '<a id="report_summary" href="/summary" class="nav-link active">集計表示</a>';
+        report_summary.innerHTML = `<a id="report_summary" href="/summary?token=${token}" class="nav-link active">集計表示</a>`;
       }else if(path == 'master'){
-        master.innerHTML = '<a id="master" href="/master/top" class="nav-link active">マスタ管理</a>';
+        master.innerHTML = `<a id="master" href="/master/top?token=${token}" class="nav-link active">マスタ管理</a>`;
       }
 
     });
 
+    const decodeJwt = (token) => {                                        
+      const base64Url = token.split('.')[1];                             
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');    
+      return JSON.parse(decodeURIComponent(escape(window.atob(base64))));
+    };  
+
     var btn_sign_out = document.getElementById('btn_sign_out');
     btn_sign_out.addEventListener('click', function(){
+      document.cookie = "token=;";
       window.location.href = "/"
     })
   </script>

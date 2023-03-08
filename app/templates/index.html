@@ -16,24 +16,34 @@
       <h1 class="h3 mb-3 fw-normal">日報管理アプリ</h1>
       <h1 class="h3 mb-3 fw-normal">サインイン</h1>
       
-      <div class="form-floating">
-        <input type="text" class="form-control" id="floatingInput" placeholder="ID" required>
-        <label for="floatingInput">ID</label>
-      </div>
-      <div class="form-floating">
-        <input type="password" class="form-control" id="floatingPassword" placeholder="パスワード" required>
-        <label for="floatingPassword">パスワード</label>
-      </div>
-      <div id="result"></div>
+      
 
-      <div class="form-check mb-3">
-        <label>
-          <input type="checkbox" value="remember-me"> 状態を記憶する
-        </label>
+      <div class="card mb-4 rounded-3 shadow-sm">
+        <div class="card-body">
+          <div class="form-floating">
+            <input type="text" class="form-control" id="floatingInput" placeholder="ID" required>
+            <label for="floatingInput">ID</label>
+          </div>
+          <div class="form-floating">
+            <input type="password" class="form-control" id="floatingPassword" placeholder="パスワード" required>
+            <label for="floatingPassword">パスワード</label>
+          </div>
+          <div id="result"></div>
+    
+          <div class="form-check mb-3">
+            <label>
+              <input type="checkbox" value="remember-me"> 状態を記憶する
+            </label>
+          </div>
+          <button id="btn_sign_in" class="w-100 btn btn-lg btn-primary" type="submit">サインイン</button>
+          <a href="/sign_up">新規登録</a>
+          <p class="mt-5 mb-3 text-muted">&copy; 2023</p>
+        </div>
       </div>
-      <button id="btn_sign_in" class="w-100 btn btn-lg btn-primary" type="submit">サインイン</button>
-      <a href="/sign_up">新規登録</a>
-      <p class="mt-5 mb-3 text-muted">&copy; 2023</p>
+
+
+
+
     </form>
   </main>
 
@@ -61,6 +71,7 @@
       })
       .done(function(data) {
           // 通信成功時の処理を記述
+          document.cookie = `token=${data.token}`;
           window.location.href = "/home"
       })
       .fail(function(data) {

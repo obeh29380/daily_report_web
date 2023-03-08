@@ -1,7 +1,6 @@
 from pathlib import Path
 import hashlib
 import responder
-import json
 from models import (
     User,
     StaffMaster,
@@ -59,6 +58,7 @@ def to_json(data):
             }
         )
     return res
+
 
 def get_simple_master_data(data):
     """id,name,cost から成るマスタデータのクエリオブジェクトについて、
@@ -163,7 +163,7 @@ class StaffMasterInfo():
         name = data.get('values[name]')
         cost = data.get('values[cost]')
 
-        # もし何も入力されていない場合
+        # 何も入力されていない場合
         if name is None:
             resp.media = 'name not entered'
             resp.status_code = api.status_codes.HTTP_400
@@ -174,6 +174,12 @@ class StaffMasterInfo():
             return
 
         v = StaffMaster(name, cost)
+        # 登録済みチェック
+        d = db.session.query(StaffMaster).filter_by(name=name).first()
+        if d is not None:
+            resp.media = {'message': 'すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
 
         # DBに登録
         try:
@@ -181,7 +187,6 @@ class StaffMasterInfo():
             db.session.commit()
         except Exception as e:
             print(type(e))
-            print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
@@ -251,7 +256,7 @@ class CarMasterInfo():
         name = data.get('values[name]')
         cost = data.get('values[cost]')
 
-        # もし何も入力されていない場合
+        # 何も入力されていない場合
         if name is None:
             resp.media = 'name not entered'
             resp.status_code = api.status_codes.HTTP_400
@@ -262,6 +267,12 @@ class CarMasterInfo():
             return
 
         v = CarMaster(name, cost)
+        # 登録済みチェック
+        d = db.session.query(CarMaster).filter_by(name=name).first()
+        if d is not None:
+            resp.media = {'message': 'すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
 
         # DBに登録
         try:
@@ -332,7 +343,7 @@ class LeaseMasterInfo():
         name = data.get('values[name]')
         cost = data.get('values[cost]')
 
-        # もし何も入力されていない場合
+        # 何も入力されていない場合
         if name is None:
             resp.media = 'name not entered'
             resp.status_code = api.status_codes.HTTP_400
@@ -343,6 +354,12 @@ class LeaseMasterInfo():
             return
 
         v = LeaseMaster(name, cost)
+        # 登録済みチェック
+        d = db.session.query(LeaseMaster).filter_by(name=name).first()
+        if d is not None:
+            resp.media = {'message': 'すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
 
         # DBに登録
         try:
@@ -413,7 +430,7 @@ class MachineMasterInfo():
         name = data.get('values[name]')
         cost = data.get('values[cost]')
 
-        # もし何も入力されていない場合
+        # 何も入力されていない場合
         if name is None:
             resp.media = 'name not entered'
             resp.status_code = api.status_codes.HTTP_400
@@ -424,6 +441,12 @@ class MachineMasterInfo():
             return
 
         v = MachineMaster(name, cost)
+        # 登録済みチェック
+        d = db.session.query(MachineMaster).filter_by(name=name).first()
+        if d is not None:
+            resp.media = {'message': 'すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
 
         # DBに登録
         try:
@@ -493,7 +516,7 @@ class CustomerMasterInfo():
         data = await req.media()
         name = data.get('values[name]')
 
-        # もし何も入力されていない場合
+        # 何も入力されていない場合
         if name is None:
             resp.media = 'name not entered'
             print('name not entered')
@@ -501,6 +524,12 @@ class CustomerMasterInfo():
             return
 
         v = CustomerMaster(name)
+        # 登録済みチェック
+        d = db.session.query(CustomerMaster).filter_by(name=name).first()
+        if d is not None:
+            resp.media = {'message': 'すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
 
         # DBに登録
         try:
@@ -569,13 +598,19 @@ class DestMasterInfo():
         data = await req.media()
         name = data.get('values[name]')
 
-        # もし何も入力されていない場合
+        # 何も入力されていない場合
         if name is None:
             resp.media = 'name not entered'
             resp.status_code = api.status_codes.HTTP_400
             return
 
         v = DestMaster(name)
+        # 登録済みチェック
+        d = db.session.query(DestMaster).filter_by(name=name).first()
+        if d is not None:
+            resp.media = {'message': 'すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
 
         # DBに登録
         try:
@@ -645,7 +680,7 @@ class ItemMasterInfo():
         name = data.get('values[name]')
         cost = data.get('values[cost]')
 
-        # もし何も入力されていない場合
+        # 何も入力されていない場合
         if name is None:
             resp.media = 'name not entered'
             resp.status_code = api.status_codes.HTTP_400
@@ -656,6 +691,12 @@ class ItemMasterInfo():
             return
 
         v = ItemMaster(name, cost)
+        # 登録済みチェック
+        d = db.session.query(ItemMaster).filter_by(name=name).first()
+        if d is not None:
+            resp.media = {'message': 'すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
 
         # DBに登録
         try:
@@ -827,7 +868,7 @@ class TrashMasterInfo():
         cost = data.get('values[cost]')
         unit_type = data.get('values[unit_type]')
 
-        # もし何も入力されていない場合
+        # 何も入力されていない場合
         if dest_name is None:
             resp.media = 'dest_name not entered'
             resp.status_code = api.status_codes.HTTP_400
@@ -906,6 +947,11 @@ class Home():
 class DailyReportMenu():
     async def on_get(self, req, resp):
 
+        data = req.params
+        if data.get('token') is None or data.get('token') == '':
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
         param = dict()
 
         staffs = db.session.query(StaffMaster).all()
@@ -922,6 +968,7 @@ class DailyReportMenu():
         param['leases'] = list(x._to_dict() for x in leases)
         param['dests'] = list(x._to_dict() for x in dests)
         param['items'] = list(x._to_dict() for x in items)
+        param['unit_type'] = UNIT_TYPE
 
         resp.html = api.template('daily_report_top.html', param)
 
@@ -995,6 +1042,7 @@ class SignIn():
         key = "secret"
         content = {}
         content["id"] = id
+        content["name"] = user.user_name if user.user_name is not None else ""
         # token = jwt.encode({'key': 'value'}, 'secret', algorithm='HS256')
         token = jwt.encode(content, key, algorithm="HS256")
         resp.status_code = api.status_codes.HTTP_200
@@ -1017,10 +1065,13 @@ class SignUp():
         data = await req.media()
         id = data.get('id')
         pwd = data.get('pwd')
-        name_last = data.get('name_last')
-        name_first = data.get('name_first')
+        name_last = data.get('name_last', '')
+        name_first = data.get('name_first', '')
 
-        # もし何も入力されていない場合
+        if name_first is None and name_last is None:
+            name_first = '名無し'
+
+        # 何も入力されていない場合
         resp.status_code = api.status_codes.HTTP_400
         if id is None:
             resp.media = 'id not entered'
@@ -1029,9 +1080,16 @@ class SignUp():
             resp.media = 'pwd not entered'
             return
 
+        # 登録済みチェック
+        d = db.session.query(User).filter_by(user_id=id).first()
+        if d is not None:
+            resp.media = {'message': '入力されたIDは、すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
         hashed_pwd = hashlib.sha256(pwd.encode()).hexdigest()
 
-        # adminユーザを作成
+        # ユーザを作成
         admin = User(id, hashed_pwd, f'{name_last} {name_first}')
         db.session.add(admin)
         db.session.commit()
@@ -1042,7 +1100,7 @@ class SignUp():
 
 @api.route("/")
 async def login(req, resp, *args, **kwargs):
-    resp.html = api.template('login.html')
+    resp.html = api.template('index.html')
 
 if __name__ == '__main__':
 
