@@ -6,89 +6,62 @@
   <div class="container">
     <main>
       <div class="py-5 text-center">
-        <h2>日報管理</h2>
+        <h1>日報管理</h1>
       </div>
 
       <form class="needs-validation" novalidate>
         <div class="row g-5">
 
           <div class="col-8">
-            <h4 class="mb-3">工事情報</h4>
+            <dl class="row">
+              <dt class="col-sm-3"><h3 class="mb-3">工事情報</h3></dt>
+              <dd class="col-sm-8">工事日と工事名を入力すると、登録済みの工事情報を呼び出します。いずれも必須入力です。</dd>
+            </dl>
             
             <div class="row g-3">
-              <div class="col-sm-2">
+              <div class="col-3">
                 <label for="familyName" class="form-label">工事日</label>
-                <input type="text" class="form-control" id="familyName" placeholder="" value="" required>
-                <div class="invalid-feedback">
-                  工事日を入力してください
-                </div>
+                <input type="date" class="form-control" id="date" placeholder="" value="">
+              </div>
+              <div id="invalid-feedback-date" class="text-danger">
               </div>
             </div>
 
             <div class="row g-3">
-              <div class="col-8">
+              <div class="col">
                 <label for="givenName" class="form-label">工事名</label>
                 <div class="input-group">
                   <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     登録済リスト
                   </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">工事名サンプル１</a></li>
-                    <li><a class="dropdown-item" href="#">工事名サンプル２</a></li>
-                    <li><a class="dropdown-item" href="#">工事名サンプル３</a></li>
+                  <ul id="worksite_names" class="dropdown-menu dropdown-menu-dark">
                   </ul>
-                  <input type="text" class="form-control" aria-label="...">
+                  <input id="txt_worksite" type="text" class="form-control" aria-label="...">
                 </div>
-                <div class="invalid-feedback">
-                  工事名を入力してください
-                </div>
-              </div>
-              <div class="col-4">
-                <label for="givenName" class="form-label">作業何日目？</label>
-                <div class="row">
-                  <div class="col">
-                    <select class="form-select d-block w-100" id="day" type="number" required>
-                      <option>選択...</option>
-                      <option>1日目</option>
-                      <option>2日目</option>
-                      <option>3日目</option>
-                      <option>4日目</option>
-                      <option>5日目</option>
-                      <option>6日目</option>
-                      <option>7日目</option>
-                      <option>8日目</option>
-                      <option>9日目</option>
-                      <option>10日目</option>
-                    </select>
-                    <div class="invalid-feedback">
-                      日を選択してください
-                    </div>
-                  </div>
-                  <div class="col">
-                    <button id="btn_worksite_master" class="btn btn-primary" type="submit">工事名登録</button>
-                  </div>
+                <div id="invalid-feedback-worksite_name" class="text-danger">
                 </div>
               </div>
             </div>
 
             <div class="row g-3">
-              <label for="givenName" class="form-label">受注先</label>
-              <div class="row">
-                <div class="col-10">
+              <dl class="row g-3">
+                <dt class="col-sm-3"><h4 class="mb-3">工事サブ情報</h4></dt>
+                <dd class="col-sm-8">入力は任意です。</dd>
+              </dl>
+            </div>
+            
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">受注先</label>
+                <div class="row">
                   <div class="input-group">
                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                       登録済リスト
                     </button>
-                    <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="#">受注先サンプル１</a></li>
-                      <li><a class="dropdown-item" href="#">受注先サンプル２</a></li>
-                      <li><a class="dropdown-item" href="#">受注先サンプル３</a></li>
+                    <ul id='customers' class="dropdown-menu dropdown-menu-dark">
                     </ul>
-                    <input type="text" class="form-control" aria-label="...">
+                    <input id='txt_customer' type="text" class="form-control" aria-label="...">
                   </div>
-                </div>
-                <div class="col">
-                  <button id="btn_customer_master" class="btn btn-primary" type="submit">受注先登録</button>
                 </div>
               </div>
             </div>
@@ -132,7 +105,7 @@
               <li class="list-group-item d-flex justify-content-between lh-sm">
                 <div>
                   <h6 class="my-0">回送</h6>
-                  
+                </div>
                 <span class="text-muted" id="list_total_transport" onchange="culc_total()"></span>
               </li>
               <li class="list-group-item d-flex justify-content-between lh-sm">
@@ -155,10 +128,17 @@
           </div>
         </div>
 
-        <div class="row">
-          <h4 class="mb-3">明細</h4>
-        </div>
         <hr class="my-4">
+        <div class="table-responsive">
+          <table class="table text-center">
+            <thead>
+              <tr>
+                <th style="width: 34%;"><h4 class="mb-3">明細</h4></th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+
 
         <div class="row">
           <!-- 人員 -->
@@ -232,6 +212,7 @@
                         小計
                       </div>
                       <div class="col text-end">
+                        <span id="total_quant">0</span>個
                         <span name="total_cost">0円</span>
                       </div>
                     </div>
@@ -432,6 +413,7 @@
                         小計
                       </div>
                       <div class="col text-end">
+                        <span name="total_quant">0</span>個
                         <span name="total_cost">0円</span>
                       </div>
                     </div>
@@ -443,7 +425,7 @@
 
           <!-- その他 -->
           <div class="col">
-            <form id="form-valuable">
+            <form id="form-other">
               <div class="card mb-4 rounded-3 shadow-sm">
                 <div class="card-header py-3">
                   <h4 class="my-0 fw-normal">その他</h4>
@@ -470,6 +452,7 @@
                         小計
                       </div>
                       <div class="col text-end">
+                        <span name="total_quant">0</span>個
                         <span name="total_cost">0円</span>
                       </div>
                     </div>
@@ -480,7 +463,7 @@
           </div>
         </form>
 
-        <button class="w-100 btn btn-primary btn-lg" type="submit">登録</button>
+        <button id="btn_reg" class="w-100 btn btn-primary btn-lg" type="submit" onclick="register();">登録</button>
       </form>
     </main>
   </div>
@@ -492,6 +475,8 @@
     leases = {{leases}}
     dests = {{dests}}
     items = {{items}}
+    customers = {{customers}}
+    worksite_names = {{worksite_names}}
     unit_type = {{unit_type}}
     {% endautoescape %}
 
@@ -536,7 +521,29 @@
       add_new_row_no_select($('#transportlist'))
       add_new_row_no_select($('#valuablelist'))
       add_new_row_no_select($('#otherlist'))
+
+      html = ''
+      worksite_names.forEach(w => {
+        html += 
+        `<li><button class="dropdown-item" type="button" onclick="enter_worksite(this)">${w}</button></li>`
+      });
+      $('#worksite_names')[0].innerHTML = html
+
+      html = ''
+      customers.forEach(w => {
+        html += 
+        `<li><button class="dropdown-item" type="button" onclick="enter_customer(this)">${w}</button></li>`
+      });
+      $('#customers')[0].innerHTML = html
     })
+
+    function enter_worksite(e){
+      $('#txt_worksite')[0].value = e.innerText
+    }
+
+    function enter_customer(e){
+      $('#txt_customer')[0].value = e.innerText
+    }
 
     function set_staff_list(){
       {% autoescape off %}
@@ -792,6 +799,213 @@
       if (current_row == row_count && e.value != '') {
         add_new_row_no_select(table);
       }
+    }
+
+    function register(e){
+      $(`#invalid-feedback-worksite_name`)[0].innerText = '';
+      $(`#invalid-feedback-date`)[0].innerText = '';
+      event.preventDefault();
+
+      // 入力チェック
+      // 日報ヘッダ情報
+      if ($('#txt_worksite')[0].value == ''){
+        $(`#invalid-feedback-worksite_name`)[0].innerText = '工事名を入力してください';
+        alert('工事名を入力してください')
+        return;
+      } else {
+        worksite = $('#txt_worksite')[0].value;
+      };
+
+      if ($('#date')[0].value == ''){
+        $(`#invalid-feedback-date`)[0].innerText = '工事日を選択してください';
+        alert('工事日を選択してください')
+        return;
+      } else {
+        workdate = $('#date')[0].value;
+      };
+
+      staff_input = get_staff_input()
+      car_input = get_car_input()
+      machine_input = get_machine_input()
+      lease_input = get_lease_input()
+      transport_input = get_transport_input()
+      valuable_input = get_valuable_input()
+      other_input = get_other_input()
+      trash_input = get_trash_input()
+      
+      // Ajax通信を開始
+      $.ajax({
+        url: `/daily_report/${worksite}/${workdate}`,
+        type: 'POST',
+        dataType: 'application/json',
+        data: {
+          'staff': JSON.stringify(staff_input),
+          'car': JSON.stringify(car_input),
+          'machine': JSON.stringify(machine_input),
+          'lease': JSON.stringify(lease_input),
+          'transport': JSON.stringify(transport_input),
+          'valuable': JSON.stringify(valuable_input),
+          'other': JSON.stringify(other_input),
+          'trash': JSON.stringify(trash_input)
+        },
+        timeout: 5000,
+      })
+      .done(function(data) {
+          // 通信成功時の処理を記述
+
+        })
+      .fail(function(data) {
+          // 通信失敗時の処理を記述
+      });
+    };
+
+    function get_staff_input(){
+      values = {}
+      Array.from($('#stafflist')[0].children).forEach(tr => {
+        if(tr.children[0].children[0].checked == true){
+          values[tr.children[1].innerText] = tr.children[2].innerText;
+        };
+      });
+      return values
+    }
+
+    function get_car_input(){
+      values = []
+      Array.from($('#carlist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].selectedOptions[0].innerText;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_lease_input(){
+      values = []
+      Array.from($('#leaselist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].selectedOptions[0].innerText;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_machine_input(){
+      values = []
+      Array.from($('#machinelist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].selectedOptions[0].innerText;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_transport_input(){
+      values = []
+      Array.from($('#transportlist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].value;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_valuable_input(){
+      values = []
+      Array.from($('#valuablelist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].value;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_other_input(){
+      values = []
+      Array.from($('#otherlist')[0].children).forEach(tr => {
+        name = tr.children[0].children[0].value;
+        if(name == ''){return};
+        cost = tr.children[1].children[0].value;
+        if(cost == ''){return};
+        quant = tr.children[2].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'name': name,
+          'cost': cost,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
+    }
+
+    function get_trash_input(){
+      values = []
+      Array.from($('#trashlist')[0].children).forEach(tr => {
+        dest = tr.children[0].children[0].selectedOptions[0].innerText;
+        if(dest == ''){return};
+        item = tr.children[1].children[0].selectedOptions[0].innerText;
+        if(item == ''){return};
+        cost = tr.children[2].children[0].value;
+        if(cost == ''){return};
+        unit_type = tr.children[3].children[0].value;
+        if(unit_type == ''){return};
+        quant = tr.children[4].children[0].value;
+        if(quant == ''){return};
+        d = {
+          'dest': dest,
+          'item': item,
+          'cost': cost,
+          'unit_type': unit_type,
+          'quant': quant
+        }
+        values.push(d);
+      });
+      return values
     }
 
 

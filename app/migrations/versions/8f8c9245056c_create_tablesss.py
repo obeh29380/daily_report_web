@@ -1,8 +1,8 @@
-"""create tables
+"""create tablesss
 
-Revision ID: 9b9c707ce705
+Revision ID: 8f8c9245056c
 Revises: 
-Create Date: 2023-03-05 23:22:28.720264
+Create Date: 2023-03-10 20:39:55.052748
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = '9b9c707ce705'
+revision = '8f8c9245056c'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -109,6 +109,8 @@ def upgrade() -> None:
     sa.Column('user_name', sa.String(length=256), nullable=True),
     sa.Column('reg_dtime', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.Column('auth_type', mysql.INTEGER(unsigned=True), nullable=True),
+    sa.Column('token', sa.String(length=256), nullable=False),
+    sa.Column('token_expire_dtime', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('user_id')
     )

@@ -69,12 +69,14 @@
           token = cookie.trim().split('=')[1];
         }
       })
-      if(token==''){
-        window.location.href = "/";
-      }
+      //if(token==''){
+      //  window.location.href = "/";
+      //}
 
-      decode_jwt = decodeJwt(token);
-      $('#user-name')[0].innerText = decode_jwt.name
+      if(token != ''){
+        decode_jwt = decodeJwt(token);
+        $('#user-name')[0].innerText = decode_jwt.name
+      };
     });
 
     $(document).ready( function(){
@@ -94,18 +96,18 @@
         }
       });
       
-      home.innerHTML = `<a id="home" href="/home?token=${token}" class="nav-link">ホーム</a>`
-      daily_report.innerHTML = `<a id="daily_report" href="/daily_report/top?token=${token}" class="nav-link">日報管理</a>`
-      report_summary.innerHTML = `<a id="report_summary" href="/summary?token=${token}" class="nav-link">集計表示</a>`
-      master.innerHTML = `<a id="master" href="/master/top?token=${token}" class="nav-link">マスタ管理</a>`
+      home.innerHTML = `<a href="/home?ver=1.0" class="nav-link">ホーム</a>`
+      daily_report.innerHTML = `<a href="/daily_report/top?ver=1.0" class="nav-link">日報管理</a>`
+      report_summary.innerHTML = `<a href="/summary?ver=1.0" class="nav-link">集計表示</a>`
+      master.innerHTML = `<a href="/master/top?ver=1.0" class="nav-link">マスタ管理</a>`
       if (path == 'home') {
-        home.innerHTML = `<a id="home" href="/home?token=${token}" class="nav-link active">ホーム</a>`;
+        home.innerHTML = `<a href="/home?ver=1.0" class="nav-link active">ホーム</a>`;
       }else if(path == 'daily_report'){
-        daily_report.innerHTML = `<a id="daily_report" href="/daily_report/top?token=${token}" class="nav-link active">日報管理</a>`;
+        daily_report.innerHTML = `<a href="/daily_report/top?ver=1.0" class="nav-link active">日報管理</a>`;
       }else if(path == 'summary'){
-        report_summary.innerHTML = `<a id="report_summary" href="/summary?token=${token}" class="nav-link active">集計表示</a>`;
+        report_summary.innerHTML = `<a href="/summary?ver=1.0" class="nav-link active">集計表示</a>`;
       }else if(path == 'master'){
-        master.innerHTML = `<a id="master" href="/master/top?token=${token}" class="nav-link active">マスタ管理</a>`;
+        master.innerHTML = `<a href="/master/top?ver=1.0" class="nav-link active">マスタ管理</a>`;
       }
 
     });
@@ -118,9 +120,26 @@
 
     var btn_sign_out = document.getElementById('btn_sign_out');
     btn_sign_out.addEventListener('click', function(){
-      document.cookie = "token=;";
-      window.location.href = "/"
+      sign_out();
     })
+
+    function sign_out() {
+      event.preventDefault();
+      $.ajax({
+        url: '/sign_out',
+        type: 'POST',
+        dataType: 'json',
+        data: {
+        },
+        timeout: 5000,
+      })
+      .done(function(data) {
+        document.cookie = "token=;";
+        window.location.href = "/"
+      })
+      .fail(function(data) {
+      });
+    };
   </script>
 </body>
 

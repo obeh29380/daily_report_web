@@ -1,4 +1,5 @@
 import os
+import pytz
 from datetime import datetime
 from db_common import engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -22,6 +23,8 @@ class User(Base):
     user_name      : 名前
     user_pwd      : パスワード
     auth_type      : 権限
+    token      : トークン
+    token_expire_dtime      : トークン有効期限
     reg_dtime : 登録日時
     """
     __tablename__ = 'user'
@@ -47,13 +50,26 @@ class User(Base):
         INTEGER(unsigned=True),
         default=0
     )
+    token = Column(
+        'token',
+        String(256),
+        nullable=False)
+    token_expire_dtime = Column(
+        'token_expire_dtime',
+        DateTime,
+        default=pytz.timezone("Asia/Tokyo").localize(datetime(2021, 1, 1)),
+        nullable=False,
+        server_default=current_timestamp()
+    )
 
-    def __init__(self, user_id, user_pwd, user_name, auth_type=0, reg_dtime=datetime.now()):
+    def __init__(self, user_id, user_pwd, user_name, auth_type=0, reg_dtime=pytz.timezone("Asia/Tokyo").localize(datetime.now()), token="", token_expire_dtime=pytz.timezone("Asia/Tokyo").localize(datetime(2021, 1, 1))):
         self.user_id = user_id
         self.user_pwd = user_pwd
         self.user_name = user_name
         self.auth_type = auth_type
         self.reg_dtime = reg_dtime
+        self.token = token
+        self.token_expire_dtime = token_expire_dtime
 
     def _to_dict(self):
         return {
@@ -61,6 +77,8 @@ class User(Base):
             'user_id': self.user_id,
             'user_name': self.user_name,
             'reg_dtime': self.reg_dtime.isoformat(),
+            'token': self.token,
+            'token_expire_dtime': self.token_expire_dtime.isoformat(),
         }
 
 
@@ -401,7 +419,7 @@ class ReportHead(Base):
     worksite_name       : 工事名
     address             : 住所
     memo                : 備考
-    completed_date      : 工事完了日（default=null (未完了))
+    completed_date      : 工事完了日(default=null (未完了))
     reg_dtime           : 登録日
     """
     __tablename__ = 'report_head'

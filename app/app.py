@@ -1,6 +1,15 @@
+from enum import Enum
 from pathlib import Path
 import hashlib
+import jwt
+import datetime
+import logging
+import pytz
+import json
+
 import responder
+from sqlalchemy.sql.expression import func
+
 from models import (
     User,
     StaffMaster,
@@ -11,11 +20,13 @@ from models import (
     DestMaster,
     CustomerMaster,
     TrashMaster,
+    ReportHead,
+    ReportDetail,
 )
 import db_common as db
-import jwt
-from sqlalchemy.sql.expression import func
 
+TOKEN_EXPIRE_MINUTES = 60*6
+JWT_KEY = 'trym_token_key'
 BASE_DIR = Path(__file__).resolve().parents[0]
 UNIT_TYPE = [
     {
@@ -36,9 +47,21 @@ api = responder.API(
     static_dir=str(BASE_DIR.joinpath('static')),
     templates_dir=str(BASE_DIR.joinpath('templates')),
 )
+logger = logging.getLogger(__name__)
 
 
 # util #####################################
+class ItemType(Enum):
+    OTHER = 0
+    STAFF = 1
+    CAR = 2
+    MACHINE = 3
+    LEASE = 4
+    TRANSPORT = 5
+    TRASH = 6
+    VALUABLE = 7
+
+
 def to_json(data):
     """クエリオブジェクトをdict形式にパースする。
 
@@ -140,6 +163,40 @@ def get_name_only_master_data(data):
     res['col_values'] = col_values
 
     return res
+
+
+def utc_now_dtime():
+    return pytz.timezone('Asia/Tokyo').localize(datetime.datetime.now())
+
+
+def nvl(txt, replace=''):
+    if txt is None or txt == 'null':
+        return replace
+
+
+def validate_token(token):
+
+    try:
+        decode_token = jwt.decode(token, key=JWT_KEY, algorithms="HS256")
+    except Exception as e:
+        logger.debug(type(e))
+        return None
+
+    user = db.session.query(User).filter_by(
+        user_id=decode_token['id'],
+        token=token
+    ).first()
+
+    if user is None:
+        return None
+
+    if pytz.timezone('UTC').localize(user.token_expire_dtime) < utc_now_dtime():
+        return None
+
+    # トークン有効期限更新
+    user.token_expire_dtime = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
+
+    return decode_token
 
 
 @api.route("/master/staff")
@@ -746,6 +803,117 @@ class ItemMasterInfo():
             db.session.close()
 
 
+@api.route("/master/work")
+class WorkStatusMasterInfo():
+
+    async def on_get(self, req, resp):
+
+        db_data = db.session.query(ReportHead)
+        db.session.close()
+
+        if db_data is None:
+            return None
+
+        res = dict()
+        res['col_definitions'] = {
+            'id': {
+                'colname': 'id',
+                'type': 'integer',
+                'readonly': True
+            },
+            'customer': {
+                'colname': '受注先',
+                'type': 'string',
+                'readonly': False
+            },
+            'worksite_name': {
+                'colname': '工事名',
+                'type': 'string',
+                'readonly': False
+            },
+            'address': {
+                'colname': '住所',
+                'type': 'string',
+                'readonly': False
+            },
+            'memo': {
+                'colname': '工事名',
+                'type': 'string',
+                'readonly': False
+            },
+            'complete': {
+                'colname': '完了',
+                'type': 'boolean',
+                'readonly': False
+            },
+        }
+
+        col_values = list()
+        for d in db_data:
+            col_values.append(
+                {
+                    'id': d.id,
+                    'customer': nvl(d.customer_name),
+                    'worksite_name': d.worksite_name,
+                    'address': nvl(d.address),
+                    'memo': nvl(d.memo),
+                    'complete': True if d.completed_date is not None else False,
+                }
+            )
+        res['col_values'] = col_values
+
+        resp.media = {
+            'response': res
+        }
+
+    async def on_post(self, req, resp):
+
+        response = dict()
+        data = await req.media()
+        name = data.get('values[name]')
+        cost = data.get('values[cost]')
+
+        # 何も入力されていない場合
+        if name is None:
+            resp.media = 'name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        if cost is None:
+            resp.media = 'cost not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        v = ItemMaster(name, cost)
+        # 登録済みチェック
+        d = db.session.query(ItemMaster).filter_by(name=name).first()
+        if d is not None:
+            resp.media = {'message': 'すでに登録済みです'}
+            resp.status_code = api.status_codes.HTTP_500
+            return
+
+        # DBに登録
+        try:
+            db.session.add(v)
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        new_id = db.session.query(func.max(ItemMaster.id)).scalar()
+        db.session.close()
+        response['new_id'] = new_id
+        response['name'] = name
+        response['cost'] = cost
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
+
+
 @api.route("/master/trash/{dest_id}/{item_id}")
 class TrashMasterInfoById():
 
@@ -947,10 +1115,17 @@ class Home():
 class DailyReportMenu():
     async def on_get(self, req, resp):
 
-        data = req.params
-        if data.get('token') is None or data.get('token') == '':
+        logger.debug('enter daily_report top')
+
+        cookies = req.cookies
+        if cookies.get('token') is None or cookies.get('token') == '':
             resp.status_code = api.status_codes.HTTP_400
             return
+
+        decode_token = validate_token(cookies['token'])
+        if decode_token is None:
+            resp.status_code = api.status_codes.HTTP_403
+            api.redirect(resp, '/invalid/error403')
 
         param = dict()
 
@@ -960,6 +1135,12 @@ class DailyReportMenu():
         leases = db.session.query(LeaseMaster).all()
         dests = db.session.query(DestMaster).all()
         items = db.session.query(ItemMaster).all()
+        customers = db.session.query(CustomerMaster).all()
+        worksite_names = db.session.query(
+            ReportHead.worksite_name
+        ).filter_by(
+            completed_date=None
+        ).all()
         db.session.close()
 
         param['staffs'] = list(x._to_dict() for x in staffs)
@@ -968,9 +1149,90 @@ class DailyReportMenu():
         param['leases'] = list(x._to_dict() for x in leases)
         param['dests'] = list(x._to_dict() for x in dests)
         param['items'] = list(x._to_dict() for x in items)
+        param['customers'] = list(x.name for x in customers)
+        param['worksite_names'] = list(x.worksite_name for x in worksite_names)
         param['unit_type'] = UNIT_TYPE
 
         resp.html = api.template('daily_report_top.html', param)
+
+
+@api.route("/daily_report/{work_name}/{date}")
+class DailyReportInfo():
+    """日報を更新・登録するAPI。
+        工事日・工事名で日報ヘッドを検索し、登録済の日報であれば、
+        delete&insertを行う。
+        新規の工事については、日報ヘッド情報もここで登録する。
+    """
+
+    async def on_post(self, req, resp, work_name, date):
+
+        response = dict()
+        data = await req.media()
+        customer = data.get('values[customer]')
+        address = data.get('values[address]')
+        memo = data.get('values[memo]')
+
+        staff = json.loads(data.get('staff'))
+        car = json.loads(data.get('car'))
+        lease = json.loads(data.get('lease'))
+        machine = json.loads(data.get('machine'))
+        transport = json.loads(data.get('transport'))
+        valuable = json.loads(data.get('valuable'))
+        other = json.loads(data.get('other'))
+        trash = json.loads(data.get('trash'))
+
+        if work_name == '' or work_name is None:
+            resp.status_code = api.status_codes.HTTP_400
+
+        # 登録済みチェック
+        d = db.session.query(ReportHead
+                             ).filter_by(worksite_name=work_name).first()
+        if d is None:
+            v = ReportHead(customer, work_name, address, memo, None)
+
+            # DBに登録
+            try:
+                db.session.add(v)
+                db.session.commit()
+            except Exception as e:
+                print(type(e))
+                print('db error')
+                resp.status_code = api.status_codes.HTTP_500
+                raise
+            finally:
+                db.session.close()
+
+            # 発番されたidを取得
+            id = db.session.query(func.max(ReportHead.id)).scalar()
+        else:
+            id = d.id
+            db.session.query(ReportDetail
+                             ).filter_by(report_head_id=id).delete()
+
+        v = list()
+        v += [ReportDetail(id, ItemType.STAFF.value, name, cost, 1) for name, cost in staff.items()]
+        v += [ReportDetail(id, ItemType.CAR.value, d['name'], d['cost'], d['quant']) for d in car]
+        v += [ReportDetail(id, ItemType.MACHINE.value, d['name'], d['cost'], d['quant']) for d in machine]
+        v += [ReportDetail(id, ItemType.LEASE.value, d['name'], d['cost'], d['quant']) for d in lease]
+        v += [ReportDetail(id, ItemType.TRANSPORT.value, d['name'], d['cost'], d['quant']) for d in transport]
+        v += [ReportDetail(id, ItemType.TRASH.value, d['item'], d['cost'], d['quant'], d['unit_type']) for d in trash]
+        v += [ReportDetail(id, ItemType.VALUABLE.value, d['name'], d['cost'], d['quant']) for d in valuable]
+        v += [ReportDetail(id, ItemType.OTHER.value, d['name'], d['cost'], d['quant']) for d in other]
+
+        try:
+            db.session.add_all(v)
+        except Exception as e:
+            print(type(e))
+            print('db update failed')
+            resp.status_code = api.status_codes.HTTP_500
+            db.session.close()
+            raise
+
+        db.session.commit()
+        db.session.close()
+
+        resp.status_code = api.status_codes.HTTP_200
+        resp.media = response
 
 
 @api.route("/summary")
@@ -1011,6 +1273,9 @@ class MasterMentenanceMenu():
             'items': {
                 'menu_name': '廃材品目'
             },
+            'work': {
+                'menu_name': '工事進捗管理'
+            },
         }
 
         resp.html = api.template('master_top.html', param)
@@ -1030,27 +1295,60 @@ class SignIn():
             user = db.session.query(User).filter_by(user_id=id, user_pwd=hashed_pwd).first()
         except Exception as e:
             print(type(e))
-            raise
-        finally:
             db.session.close()
+            raise
 
         if user is None:
             resp.status_code = api.status_codes.HTTP_404
             resp.media = {'message': 'login failed'}
             return
 
-        key = "secret"
         content = {}
         content["id"] = id
         content["name"] = user.user_name if user.user_name is not None else ""
         # token = jwt.encode({'key': 'value'}, 'secret', algorithm='HS256')
-        token = jwt.encode(content, key, algorithm="HS256")
+        token = jwt.encode(content, JWT_KEY, algorithm="HS256")
+
+        user.token = token
+        user.token_expire_dtime = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
+        db.session.commit()
+        # db.session.close() はしない。エラーになる。
         resp.status_code = api.status_codes.HTTP_200
         resp.media = {
             'auth_type': user.auth_type,
             'token': token,
         }
         # api.redirect(resp, '/home')
+
+
+@api.route("/sign_out")
+class SignOut():
+    async def on_post(self, req, resp):
+
+        cookies = req.cookies
+        if cookies.get('token') is None or cookies.get('token') == '':
+            resp.status_code = api.status_codes.HTTP_400
+            return
+        decode_token = validate_token(cookies['token'])
+        if decode_token is None:
+            resp.status_code = api.status_codes.HTTP_403
+            api.redirect(resp, '/invalid/error403')
+
+        try:
+            user = db.session.query(User).filter_by(user_id=decode_token['id']).first()
+        except Exception as e:
+            print(type(e))
+            db.session.close()
+            raise
+
+        if user is None:
+            return
+
+        user.token = ''
+        user.token_expire_dtime = datetime.datetime(year=2000, month=1, day=1, tzinfo=datetime.UTC)
+        db.session.commit()
+        # db.session.close() はしない。エラーになる。
+        resp.status_code = api.status_codes.HTTP_200
 
 
 @api.route("/sign_up")
@@ -1096,6 +1394,13 @@ class SignUp():
         db.session.close()
 
         resp.status_code = api.status_codes.HTTP_200
+
+
+@api.route("/invalid")
+class InvalidView():
+
+    async def on_get(self, req, resp):
+        resp.html = api.template('invalid.html')
 
 
 @api.route("/")

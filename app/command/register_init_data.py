@@ -1,5 +1,4 @@
 import json
-import os
 import sys
 sys.path.append('.')
 from models import (
@@ -13,7 +12,6 @@ from models import (
     TrashMaster,
 )
 import db_common as db
-from sqlalchemy import Transaction
 
 
 DATA_FILE_PATH = './data'
@@ -152,4 +150,32 @@ def register_init_data_customer():
         db.session.close()
 
 
+def register_init_data_trash():
+    with open(f'{DATA_FILE_PATH}/trash.json', encoding="utf-8") as f:
+        data = json.load(f)
 
+    dests = db.session.query(DestMaster).all()
+    items = db.session.query(ItemMaster).all()
+
+    # {name: id} の辞書型に変換
+    dests_d = dict()
+    items_d = dict()
+    for d in dests:
+        dests_d[d.name] = d.id
+
+    for d in items:
+        items_d[d.name] = d.id
+
+    # DBに登録
+    try:
+        for d in data:
+            v = TrashMaster(dests_d[d['dest']], items_d[d['item']], d['cost'])
+            db.session.add(v)
+        db.session.commit()
+    except Exception as e:
+        print(f'error {e}')
+        print('db error')
+        db.session.rollback()
+        raise
+    finally:
+        db.session.close()
