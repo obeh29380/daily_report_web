@@ -821,13 +821,13 @@ class WorkStatusMasterInfo():
                 'type': 'integer',
                 'readonly': True
             },
-            'customer': {
-                'colname': '受注先',
+            'worksite_name': {
+                'colname': '工事名',
                 'type': 'string',
                 'readonly': False
             },
-            'worksite_name': {
-                'colname': '工事名',
+            'customer': {
+                'colname': '受注先',
                 'type': 'string',
                 'readonly': False
             },
@@ -837,13 +837,18 @@ class WorkStatusMasterInfo():
                 'readonly': False
             },
             'memo': {
-                'colname': '工事名',
+                'colname': 'メモ',
                 'type': 'string',
                 'readonly': False
             },
             'complete': {
                 'colname': '完了',
                 'type': 'boolean',
+                'readonly': False
+            },
+            'completed_date': {
+                'colname': '完了日',
+                'type': 'date',
                 'readonly': False
             },
         }
@@ -853,11 +858,12 @@ class WorkStatusMasterInfo():
             col_values.append(
                 {
                     'id': d.id,
-                    'customer': nvl(d.customer_name),
                     'worksite_name': d.worksite_name,
+                    'customer': nvl(d.customer_name),
                     'address': nvl(d.address),
                     'memo': nvl(d.memo),
                     'complete': True if d.completed_date is not None else False,
+                    'completed_date': d.completed_date,
                 }
             )
         res['col_values'] = col_values
