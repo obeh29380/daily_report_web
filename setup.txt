@@ -9,3 +9,73 @@
 	
 	新規登録よりユーザ登録を行い、登録したユーザでログインを行う。
 	現在使用できる機能は、マスタ管理の人員タブ。
+	
+	
+ssh -i ./my-app-key.pem ec2-user@ec2-35-78-186-87.ap-northeast-1.compute.amazonaws.com
+
+https://qiita.com/miriwo/items/8d5b35950232c1126d36
+
+sudo yum update
+sudo yum install git
+git version
+
+git clone https://github.com/obeh29380/daily_report_web.git
+
+ECDSA key fingerprint is SHA256:p2QAMXNIC1TJYWeIOttrVc98/R1BUFWu3/LiyKgUfQM.
+ECDSA key fingerprint is MD5:7b:99:81:1e:4c:91:a5:0d:5a:2e:2e:80:13:3f:24:ca.
+
+
+# ファイル取得 使わない
+# scp -i .\daily_report_web.pem -r ec2-user@ec2-35-78-186-87.ap-northeast-1.compute.amazonaws.com:/home/ec2-user/.ssh .
+
+sshキー作ったら、less等でコピーして、githubに張り付ければ良い。
+権限かえとく
+chmod 600 config
+
+よんでないけど参考
+https://qiita.com/tamorieeeen/items/c24f8285448b607b12dd
+
+
+git clone git@github.com:obeh29380/daily_report_web.git
+
+https://akizora.tech/amazon-linux-2-pip-install-4925
+
+
+pyenvいれる
+https://sushiringblog.com/ec2-python3
+
+pyenv install 3.8.0
+pyenv global 3.8.0
+
+
+確認
+python -V
+
+
+pip install --upgrade pip
+pip install --upgrade wheel
+pip install --upgrade setuptools
+
+pip install alembic
+pip install pytz
+
+sqlite はpipだとかなり古いのが入り、動かない
+https://it-jog.com/sqlite/installnewsqlite3
+
+それでもだめだったので以下
+I came across the same issue in my linux Centos7+python3.9.6+Django3.2.5. Althougt the sqlite3 is updated to the lastest version. It seems that this is useless. A kind of solution is changing the database from sqlite3 to pysqlite3. After acticate the virtualenv, install pysqlite
+
+pip3 install pysqlite3
+pip3 install pysqlite3-binary
+and change db in base.py
+
+vim python3.9.6/site-packages/django/db/backends/sqlite3/base.py
+
+# from sqlite3 import dbapi2 as Database # annotation
+from pysqlite3 import dbapi2 as Database # import pysqlite3
+
+
+pip install -r requirements.txt
+マイグレーション
+alembic revision --autogenerate -m "create tables"
+alembic upgrade head

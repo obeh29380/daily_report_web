@@ -2,3 +2,6 @@
 ./app/migrations/__pycache__
 ./app/migrations/versions
 ./__pycache__
+./daily_report_web.pem
+./sshLogin.bat
+./.ssh

@@ -1,3 +1,6 @@
 responder==3.5.2
 sqlalchemy==2.0.4
 PyJWT==2.6.0
+pytz==2022.7.1
+pandas
+openpyxl
