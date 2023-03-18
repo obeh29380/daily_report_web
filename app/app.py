@@ -1415,4 +1415,4 @@ async def login(req, resp, *args, **kwargs):
 
 if __name__ == '__main__':
 
-    api.run(address='0.0.0.0', port=8080)
+    api.run(address='localhost', port=8080)
