@@ -194,7 +194,7 @@ def validate_token(token):
         return None
 
     # トークン有効期限更新
-    user.token_expire_dtime = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
+    user.token_expire_dtime = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
 
     return decode_token
 
@@ -1316,7 +1316,7 @@ class SignIn():
         token = jwt.encode(content, JWT_KEY, algorithm="HS256")
 
         user.token = token
-        user.token_expire_dtime = datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
+        user.token_expire_dtime = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
         db.session.commit()
         # db.session.close() はしない。エラーになる。
         resp.status_code = api.status_codes.HTTP_200
@@ -1351,7 +1351,7 @@ class SignOut():
             return
 
         user.token = ''
-        user.token_expire_dtime = datetime.datetime(year=2000, month=1, day=1, tzinfo=datetime.UTC)
+        user.token_expire_dtime = datetime.datetime(year=2000, month=1, day=1, tzinfo=datetime.timezone.utc)
         db.session.commit()
         # db.session.close() はしない。エラーになる。
         resp.status_code = api.status_codes.HTTP_200
@@ -1415,4 +1415,4 @@ async def login(req, resp, *args, **kwargs):
 
 if __name__ == '__main__':
 
-    api.run(address='localhost', port=8080)
+    api.run(address='0.0.0.0', port=8080)
