@@ -15,14 +15,21 @@
           <div class="col-8">
             <dl class="row">
               <dt class="col-sm-3"><h3 class="mb-3">工事情報</h3></dt>
-              <dd class="col-sm-8">工事日と工事名を入力すると、登録済みの工事情報を呼び出します。いずれも必須入力です。</dd>
+              <dd class="col-sm-8">工事日と工事名を入力すると、登録済みの工事情報を呼び出します。いずれも必須入力です。
+                未登録の工事名を入力すると、新規工事として工事リストにも登録します。
+              </dd>
             </dl>
             
             <div class="row g-3">
-              <div class="col-3">
-                <label for="familyName" class="form-label">工事日</label>
-                <input type="date" class="form-control" id="date" placeholder="" value="">
+              <div class="row">
+                <label class="form-label">工事日</label>
+                <div class="col-3">
+                  <input type="date" class="form-control" id="date" placeholder="" value="" onchange="report_key_changed(this)">
+                </div>
+                <div class="col-3" id="work_day">
+                </div>
               </div>
+
               <div id="invalid-feedback-date" class="text-danger">
               </div>
             </div>
@@ -36,7 +43,7 @@
                   </button>
                   <ul id="worksite_names" class="dropdown-menu dropdown-menu-dark">
                   </ul>
-                  <input id="txt_worksite" type="text" class="form-control" aria-label="...">
+                  <input id="txt_worksite" type="text" class="form-control" aria-label="..." oninput="report_key_changed(this)">
                 </div>
                 <div id="invalid-feedback-worksite_name" class="text-danger">
                 </div>
@@ -121,7 +128,7 @@
                 <span class="text-muted" id="list_total_other" onchange="culc_total()"></span>
               </li>
               <li class="list-group-item d-flex justify-content-between">
-                <span>合計 (円)</span>
+                <span><h5 class="my-0">合計</h5></span>
                 <strong id="total"></strong>
               </li>
             </ul>
@@ -539,6 +546,7 @@
 
     function enter_worksite(e){
       $('#txt_worksite')[0].value = e.innerText
+      report_key_changed(e)
     }
 
     function enter_customer(e){
@@ -1007,6 +1015,178 @@
       return values
     }
 
+
+    function clear_form(e){
+      for(let tr in Array.from($('#stafflist')[0].children)){
+        Array.from($('#stafflist')[0].children)[tr].children[0].children[0].checked = false;
+      }
+      $('#trashlist')[0].innerHTML = "";
+      $('#carlist')[0].innerHTML = "";
+      $('#machinelist')[0].innerHTML = "";
+      $('#leaselist')[0].innerHTML = "";
+      $('#transportlist')[0].innerHTML = "";
+      $('#valuablelist')[0].innerHTML = "";
+      $('#otherlist')[0].innerHTML = "";
+
+      add_new_row_trash();
+      add_new_row(cars, $('#carlist'));
+      add_new_row(machines, $('#machinelist'));
+      add_new_row(leases, $('#leaselist'));
+      add_new_row_no_select($('#transportlist'))
+      add_new_row_no_select($('#valuablelist'))
+      add_new_row_no_select($('#otherlist'))
+      re_calc($('#carlist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#machinelist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#leaselist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#transportlist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#valuablelist')[0].children[0].childNodes[2].firstChild);
+      re_calc($('#otherlist')[0].children[0].childNodes[2].firstChild);
+    }
+
+    function report_key_changed(e){
+      // 入力チェック
+      // 日報ヘッダ情報
+      if ($('#txt_worksite')[0].value == ''){
+        return;
+      };
+
+      if ($('#date')[0].value == ''){
+        return;
+      };
+
+      worksite = $('#txt_worksite')[0].value;
+      workdate = $('#date')[0].value;
+
+      $.ajax({
+        url: `/daily_report/${worksite}/${workdate}`,
+        type: 'GET',
+        dataType: 'json',
+        // フォーム要素の内容をハッシュ形式に変換
+        data: {},
+        timeout: 5000,
+      })
+      .done(function(data) {
+        clear_form(data);
+        set_registered_data(data);
+      })
+      .fail(function(data) {
+          // 該当無しの場合は、行追加のみ
+      });
+
+      function set_registered_data(data){
+        // 登録済みデータのセット
+        // staff
+        for(let d in data.STAFF){
+          for(let tr in Array.from($('#stafflist')[0].children)){
+            if(Array.from($('#stafflist')[0].children)[tr].children[1].innerText == data.STAFF[d]['name']){
+              Array.from($('#stafflist')[0].children)[tr].children[0].children[0].checked = true;
+              calc_staff_total(Array.from($('#stafflist')[0].children)[tr].children[0].children[0]);
+              break;
+            }
+          }
+        }
+
+        // trash
+        for(let d in data.TRASH){
+          last_idx = Number($('#trashlist')[0].children.length) - 1;
+          // 処分場
+          for(let i = 0; i < $('#trashlist')[0].children[last_idx].childNodes[0].firstChild.length; i++){
+            if($('#trashlist')[0].children[last_idx].childNodes[0].firstChild[i].text == data.TRASH[d]['dest']){
+              $('#trashlist')[0].children[last_idx].childNodes[0].firstChild[i].selected = true;
+            };
+          };
+          // 品名
+          for(let i = 0; i < $('#trashlist')[0].children[last_idx].childNodes[1].firstChild.length; i++){
+            if($('#trashlist')[0].children[last_idx].childNodes[1].firstChild[i].text == data.TRASH[d]['name']){
+              $('#trashlist')[0].children[last_idx].childNodes[1].firstChild[i].selected = true;
+            };
+          };
+          $('#trashlist')[0].children[last_idx].childNodes[2].firstChild.value = data.TRASH[d]['cost'];
+          // 単位
+          for(let i = 0; i < $('#trashlist')[0].children[last_idx].childNodes[3].firstChild.length; i++){
+            if($('#trashlist')[0].children[last_idx].childNodes[3].firstChild[i].text == data.TRASH[d]['unit_type']){
+              $('#trashlist')[0].children[last_idx].childNodes[3].firstChild[i].selected = true;
+            };
+          };
+          $('#trashlist')[0].children[last_idx].childNodes[4].firstChild.value = data.TRASH[d]['quant'];
+          re_calc($('#trashlist')[0].children[last_idx].childNodes[4].firstChild);
+          add_new_row_trash();
+        }
+
+        // car
+        for(let d in data.CAR){
+          last_idx = Number($('#carlist')[0].children.length) - 1;
+          for(let i = 0; i < $('#carlist')[0].children[last_idx].childNodes[0].firstChild.length; i++){
+            if($('#carlist')[0].children[last_idx].childNodes[0].firstChild[i].text == data.CAR[d]['name']){
+              $('#carlist')[0].children[last_idx].childNodes[0].firstChild[i].selected = true;
+            };
+          };
+          $('#carlist')[0].children[last_idx].childNodes[1].firstChild.value = data.CAR[d]['cost'];
+          $('#carlist')[0].children[last_idx].childNodes[2].firstChild.value = data.CAR[d]['quant'];
+          re_calc($('#carlist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row(cars, $('#carlist'));
+        }
+
+        //machine
+        for(let d in data.MACHINE){
+          last_idx = Number($('#machinelist')[0].children.length) - 1;
+          for(let i = 0; i < $('#machinelist')[0].children[last_idx].childNodes[0].firstChild.length; i++){
+            if($('#machinelist')[0].children[last_idx].childNodes[0].firstChild[i].text == data.MACHINE[d]['name']){
+              $('#machinelist')[0].children[last_idx].childNodes[0].firstChild[i].selected = true;
+            };
+          };
+          $('#machinelist')[0].children[last_idx].childNodes[1].firstChild.value = data.MACHINE[d]['cost'];
+          $('#machinelist')[0].children[last_idx].childNodes[2].firstChild.value = data.MACHINE[d]['quant'];
+          re_calc($('#machinelist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row(machines, $('#machinelist'));
+        }
+
+        //lease
+        for(let d in data.LEASE){
+          last_idx = Number($('#leaselist')[0].children.length) - 1;
+          for(let i = 0; i < $('#leaselist')[0].children[last_idx].childNodes[0].firstChild.length; i++){
+            if($('#leaselist')[0].children[last_idx].childNodes[0].firstChild[i].text == data.LEASE[d]['name']){
+              $('#leaselist')[0].children[last_idx].childNodes[0].firstChild[i].selected = true;
+            };
+          };
+          $('#leaselist')[0].children[last_idx].childNodes[1].firstChild.value = data.LEASE[d]['cost'];
+          $('#leaselist')[0].children[last_idx].childNodes[2].firstChild.value = data.LEASE[d]['quant'];
+          re_calc($('#leaselist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row(leases, $('#leaselist'));
+        }
+
+        //transport
+        for(let d in data.TRANSPORT){
+          last_idx = Number($('#transportlist')[0].children.length) - 1;
+          $('#transportlist')[0].children[last_idx].childNodes[0].firstChild.value = data.TRANSPORT[d]['name'];
+          $('#transportlist')[0].children[last_idx].childNodes[1].firstChild.value = data.TRANSPORT[d]['cost'];
+          $('#transportlist')[0].children[last_idx].childNodes[2].firstChild.value = data.TRANSPORT[d]['quant'];
+          re_calc($('#transportlist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row_no_select($('#transportlist'))
+        }
+
+        //valuable
+        for(let d in data.VALUABLE){
+          last_idx = Number($('#valuablelist')[0].children.length) - 1;
+          $('#valuablelist')[0].children[last_idx].childNodes[0].firstChild.value = data.VALUABLE[d]['name'];
+          $('#valuablelist')[0].children[last_idx].childNodes[1].firstChild.value = data.VALUABLE[d]['cost'];
+          $('#valuablelist')[0].children[last_idx].childNodes[2].firstChild.value = data.VALUABLE[d]['quant'];
+          re_calc($('#valuablelist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row_no_select($('#valuablelist'))
+        }
+
+        //other
+        for(let d in data.OTHER){
+          last_idx = Number($('#otherlist')[0].children.length) - 1;
+          $('#otherlist')[0].children[last_idx].childNodes[0].firstChild.value = data.OTHER[d]['name'];
+          $('#otherlist')[0].children[last_idx].childNodes[1].firstChild.value = data.OTHER[d]['cost'];
+          $('#otherlist')[0].children[last_idx].childNodes[2].firstChild.value = data.OTHER[d]['quant'];
+          re_calc($('#otherlist')[0].children[last_idx].childNodes[2].firstChild);
+          add_new_row_no_select($('#otherlist'))
+        }
+
+      }
+    }
 
   </script>
 

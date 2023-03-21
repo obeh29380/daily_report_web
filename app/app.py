@@ -46,6 +46,7 @@ UNIT_TYPE = [
 api = responder.API(
     static_dir=str(BASE_DIR.joinpath('static')),
     templates_dir=str(BASE_DIR.joinpath('templates')),
+    cors_params={'max_age': 0}
 )
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,13 @@ class ItemType(Enum):
     TRANSPORT = 5
     TRASH = 6
     VALUABLE = 7
+    
+    @classmethod
+    def value_of(cls, target_value):
+        for e in ItemType:
+            if e.value == target_value:
+                return e
+        raise ValueError('{} は有効な乗り物の値ではありません'.format(target_value))
 
 
 def to_json(data):
@@ -81,6 +89,22 @@ def to_json(data):
             }
         )
     return res
+
+
+def ensure_str(txt, default=None):
+    """文字列のチェック
+    文字列が空文字かNoneの場合、defaultを返す。
+    文字列が上記以外の場合、入力値をそのまま返す。
+
+    Args:
+        txt (_type_): チェック対象文字列
+        default (_type_, optional): _description_. Defaults to None.
+    """
+
+    if txt is None or txt == '':
+        return default
+    else:
+        return txt
 
 
 def get_simple_master_data(data):
@@ -172,9 +196,14 @@ def utc_now_dtime():
 def nvl(txt, replace=''):
     if txt is None or txt == 'null':
         return replace
+    else:
+        return txt
 
 
 def validate_token(token):
+    
+    if ensure_str(token) is None:
+        return None
 
     try:
         decode_token = jwt.decode(token, key=JWT_KEY, algorithms="HS256")
@@ -803,6 +832,44 @@ class ItemMasterInfo():
             db.session.close()
 
 
+@api.route("/master/work/complete")
+class WorkStatusComplete():
+    async def on_post(self, req, resp):
+
+        data = await req.media()
+        worksite_name = data.get('values[worksite_name]')
+        completed_date = data.get('values[completed_date]')
+
+        # 必須項目入力チェック
+        if worksite_name is None:
+            resp.media = 'worksite_name not entered'
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        # 登録済みチェック
+        d = db.session.query(ReportHead).filter_by(worksite_name=worksite_name).first()
+        if d is None:
+            resp.status_code = api.status_codes.HTTP_404
+            return
+
+        # Noneの場合、完了を取り消すことになる。
+        d.completed_date = completed_date
+
+        # DBに登録
+        try:
+            db.session.commit()
+        except Exception as e:
+            print(type(e))
+            print('db error')
+            resp.status_code = api.status_codes.HTTP_500
+            raise
+        finally:
+            db.session.close()
+
+        # 発番されたidを取得
+        resp.status_code = api.status_codes.HTTP_200
+
+
 @api.route("/master/work")
 class WorkStatusMasterInfo():
 
@@ -876,27 +943,27 @@ class WorkStatusMasterInfo():
 
         response = dict()
         data = await req.media()
-        name = data.get('values[name]')
-        cost = data.get('values[cost]')
+        worksite_name = data.get('values[worksite_name]')
+        customer = data.get('values[customer]')
+        address = data.get('values[address]')
+        memo = data.get('values[memo]')
+        complete = data.get('values[complete]')
+        completed_date = data.get('values[completed_date]')
 
-        # 何も入力されていない場合
-        if name is None:
-            resp.media = 'name not entered'
+        # 必須項目入力チェック
+        if worksite_name is None:
+            resp.media = 'worksite_name not entered'
             resp.status_code = api.status_codes.HTTP_400
             return
-        if cost is None:
-            resp.media = 'cost not entered'
-            resp.status_code = api.status_codes.HTTP_400
-            return
 
-        v = ItemMaster(name, cost)
         # 登録済みチェック
-        d = db.session.query(ItemMaster).filter_by(name=name).first()
+        d = db.session.query(ReportHead).filter_by(worksite_name=worksite_name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
             return
 
+        v = ReportHead(customer, worksite_name, address, memo, completed_date)
         # DBに登録
         try:
             db.session.add(v)
@@ -910,11 +977,14 @@ class WorkStatusMasterInfo():
             db.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(ItemMaster.id)).scalar()
+        new_id = db.session.query(func.max(ReportHead.id)).scalar()
         db.session.close()
         response['new_id'] = new_id
-        response['name'] = name
-        response['cost'] = cost
+        response['worksite_name'] = worksite_name
+        response['customer'] = customer
+        response['address'] = address
+        response['memo'] = memo
+        response['completed_date'] = completed_date
 
         resp.status_code = api.status_codes.HTTP_200
         resp.media = response
@@ -1117,21 +1187,30 @@ class Home():
         resp.html = api.template('home.html', param)
 
 
+@api.route("/invalid")
+class Error403View():
+    async def on_get(self, req, resp):
+        resp.html = api.template('invalid.html')
+
+
 @api.route("/daily_report/top")
 class DailyReportMenu():
-    async def on_get(self, req, resp):
+    async def on_get(self, req, resp, *args, **kwargs):
 
         logger.debug('enter daily_report top')
 
         cookies = req.cookies
-        if cookies.get('token') is None or cookies.get('token') == '':
-            resp.status_code = api.status_codes.HTTP_400
-            return
-
-        decode_token = validate_token(cookies['token'])
+        decode_token = validate_token(cookies.get('token'))
+        # chromeの仕様で、デフォルトの301リダイレクトだと、キャッシュされてしまう。
+        # 「リダイレクトキャッシュ」で、一度リダイレクトすると、以降キャッシュした
+        # リダイレクトさきにダイレクトに飛ばされるようになる。
+        # 301は"permanent"なので、条件によってリダイレクト先が変わらない場合に使うべきか。
+        # 使う場面としては、サイトが移動した場合など？
         if decode_token is None:
-            resp.status_code = api.status_codes.HTTP_403
-            api.redirect(resp, '/invalid/error403')
+            resp.headers["Cache-Control"] = "no-store, max_age=0, must-revalidate"
+            api.redirect(resp, '/invalid',
+                         status_code=api.status_codes.HTTP_302)
+            return
 
         param = dict()
 
@@ -1169,6 +1248,38 @@ class DailyReportInfo():
         delete&insertを行う。
         新規の工事については、日報ヘッド情報もここで登録する。
     """
+    async def on_get(self, req, resp, *args, **kwargs):
+
+        cookies = req.cookies
+        decode_token = validate_token(cookies.get('token'))
+        # chromeの仕様で、デフォルトの301リダイレクトだと、キャッシュされてしまう。
+        # 「リダイレクトキャッシュ」で、一度リダイレクトすると、以降キャッシュした
+        # リダイレクトさきにダイレクトに飛ばされるようになる。
+        # 301は"permanent"なので、条件によってリダイレクト先が変わらない場合に使うべきか。
+        # 使う場面としては、サイトが移動した場合など？
+        if decode_token is None:
+            resp.headers["Cache-Control"] = "no-store, max_age=0, must-revalidate"
+            api.redirect(resp, '/invalid',
+                         status_code=api.status_codes.HTTP_302)
+            return
+
+        response = dict()
+        worksite_name = kwargs['work_name']
+        head = db.session.query(ReportHead.id).filter_by(worksite_name=worksite_name).first()
+        if head is None:
+            resp.status_code = api.status_codes.HTTP_404
+            return
+
+        detail = db.session.query(ReportDetail).filter_by(report_head_id=head[0]).all()
+
+        for d in detail:
+            if ItemType.value_of(d.type).name in response:
+                response[ItemType.value_of(d.type).name].append(d._to_dict())
+            else:
+                response[ItemType.value_of(d.type).name] = [d._to_dict()]
+
+        db.session.close()
+        resp.media = response
 
     async def on_post(self, req, resp, work_name, date):
 
@@ -1221,7 +1332,7 @@ class DailyReportInfo():
         v += [ReportDetail(id, ItemType.MACHINE.value, d['name'], d['cost'], d['quant']) for d in machine]
         v += [ReportDetail(id, ItemType.LEASE.value, d['name'], d['cost'], d['quant']) for d in lease]
         v += [ReportDetail(id, ItemType.TRANSPORT.value, d['name'], d['cost'], d['quant']) for d in transport]
-        v += [ReportDetail(id, ItemType.TRASH.value, d['item'], d['cost'], d['quant'], d['unit_type']) for d in trash]
+        v += [ReportDetail(id, ItemType.TRASH.value, d['item'], d['cost'], d['quant'], d['dest'], d['unit_type']) for d in trash]
         v += [ReportDetail(id, ItemType.VALUABLE.value, d['name'], d['cost'], d['quant']) for d in valuable]
         v += [ReportDetail(id, ItemType.OTHER.value, d['name'], d['cost'], d['quant']) for d in other]
 
@@ -1320,6 +1431,11 @@ class SignIn():
         db.session.commit()
         # db.session.close() はしない。エラーになる。
         resp.status_code = api.status_codes.HTTP_200
+        # ログイン時キャッシュクリアする。
+        # tokenの有効期限切れ後各ページにアクセスするとログインページにリダイレクトするが、
+        # 一度これでリダイレクトすると、ログイン後に有効なtokenでアクセスしようとしても、
+        # キャッシュした情報（＝ログインページにリダイレクト）が返されてしまうなど。
+        resp.headers["Cache-Control"] = "no-store, max_age=0, must-revalidate"
         resp.media = {
             'auth_type': user.auth_type,
             'token': token,
@@ -1332,13 +1448,14 @@ class SignOut():
     async def on_post(self, req, resp):
 
         cookies = req.cookies
-        if cookies.get('token') is None or cookies.get('token') == '':
-            resp.status_code = api.status_codes.HTTP_400
-            return
-        decode_token = validate_token(cookies['token'])
+        decode_token = validate_token(cookies.get('token'))
         if decode_token is None:
+            # 正当なtokenを持たない者によるサインアウトは処理しない。
+            # 正規のクライアントが作業中の可能性があるため。
             resp.status_code = api.status_codes.HTTP_403
-            api.redirect(resp, '/invalid/error403')
+            api.redirect(resp, '/invalid', 
+                         status_code=api.status_codes.HTTP_302)
+            return
 
         try:
             user = db.session.query(User).filter_by(user_id=decode_token['id']).first()
@@ -1400,13 +1517,6 @@ class SignUp():
         db.session.close()
 
         resp.status_code = api.status_codes.HTTP_200
-
-
-@api.route("/invalid")
-class InvalidView():
-
-    async def on_get(self, req, resp):
-        resp.html = api.template('invalid.html')
 
 
 @api.route("/")

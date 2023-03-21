@@ -471,6 +471,7 @@ class ReportDetail(Base):
     report_head_id      : 日報ヘッドID
     type                : 品目種別
     name               : 品目名
+    dest                : 処分先
     cost                : 品目単価
     quant                : 数量
     unit_type             : 単位
@@ -487,6 +488,7 @@ class ReportDetail(Base):
     report_head_id = Column('report_head_id', INTEGER(unsigned=True))
     type = Column('type', INTEGER(unsigned=True))
     name = Column('name', String(256))
+    dest = Column('dest', String(256), nullable=True)
     cost = Column('cost', INTEGER(unsigned=True))
     quant = Column('quant', INTEGER(unsigned=True))
     unit_type = Column('unit_type', INTEGER(unsigned=True))
@@ -498,12 +500,13 @@ class ReportDetail(Base):
         server_default=current_timestamp()
     )
 
-    def __init__(self, report_head_id, type, name, cost, quant, unit_type=0, reg_dtime=datetime.now()):
+    def __init__(self, report_head_id, type, name, cost, quant, dest='', unit_type=0, reg_dtime=datetime.now()):
         self.report_head_id = report_head_id
         self.type = type
         self.name = name
         self.cost = cost
         self.quant = quant
+        self.dest = dest
         self.unit_type = unit_type
         self.reg_dtime = reg_dtime
 
@@ -515,6 +518,7 @@ class ReportDetail(Base):
             'name': self.name,
             'cost': self.cost,
             'quant': self.quant,
+            'dest': self.dest,
             'unit_type': self.unit_type,
             'reg_dtime': self.reg_dtime.isoformat(),
         }
