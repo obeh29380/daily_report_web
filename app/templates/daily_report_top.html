@@ -470,7 +470,28 @@
           </div>
         </form>
 
-        <button id="btn_reg" class="w-100 btn btn-primary btn-lg" type="submit" onclick="register();">登録</button>
+        <button id="btn_reg" class="w-100 btn btn-primary btn-lg" type="submit" onclick="register(this);">登録</button>
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+          <div
+            id="liveToast"
+            class="toast hide"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <div class="toast-header">
+              <strong class="me-auto">登録完了通知</strong>
+              <small>0 mins ago</small>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="toast"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="toast-body">正常に登録されました。</div>
+          </div>
+        </div>
       </form>
     </main>
   </div>
@@ -491,6 +512,15 @@
       carlist: cars,
       machinelist: machines,
       leaselist: leases
+    }
+    var toastElList = [].slice.call(document.querySelectorAll(".toast"));
+    var toastList = toastElList.map(function (toastEl) {
+      return new bootstrap.Toast(toastEl);
+    });
+
+    function showToast() {
+      // トーストを表示する
+      toastList[0].show();
     }
 
     let map_form = {
@@ -844,7 +874,7 @@
       $.ajax({
         url: `/daily_report/${worksite}/${workdate}`,
         type: 'POST',
-        dataType: 'application/json',
+        dataType: 'json',
         data: {
           'staff': JSON.stringify(staff_input),
           'car': JSON.stringify(car_input),
@@ -855,14 +885,17 @@
           'other': JSON.stringify(other_input),
           'trash': JSON.stringify(trash_input)
         },
-        timeout: 5000,
-      })
-      .done(function(data) {
-          // 通信成功時の処理を記述
+        timeout: 5000
+      }).done(function(data) {
+        // 通信成功時の処理を記述
+        showToast();
 
-        })
-      .fail(function(data) {
-          // 通信失敗時の処理を記述
+      }).fail(function(jqXHR, textStatus, errorThrown, XMLHttPRequest) {
+        // 通信失敗時の処理を記述
+        console.log("jqXHR          : " + jqXHR.status); // HTTPステータスが取得
+        console.log("textStatus     : " + textStatus);    // タイムアウト、パースエラー
+        console.log("errorThrown    : " + errorThrown.message); // 例外情報
+        console.log("errorThrown2    : " + XMLHttpRequest.status); // 例外情報
       });
     };
 

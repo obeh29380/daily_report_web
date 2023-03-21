@@ -1348,8 +1348,8 @@ class DailyReportInfo():
         db.session.commit()
         db.session.close()
 
-        resp.status_code = api.status_codes.HTTP_200
-        resp.media = response
+        resp.status_code = api.status_codes.HTTP_202
+        resp.media = {"param": "aaa"}
 
 
 @api.route("/summary")
