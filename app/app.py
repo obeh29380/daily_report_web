@@ -1525,4 +1525,7 @@ async def login(req, resp, *args, **kwargs):
 
 if __name__ == '__main__':
 
-    api.run(address='localhost', port=8080)
+    with open('setting.json', encoding="utf-8") as f:
+        data = json.load(f)
+
+    api.run(address=data['ip_adress'], port=data['port'])
