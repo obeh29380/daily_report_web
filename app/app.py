@@ -1265,12 +1265,19 @@ class DailyReportInfo():
 
         response = dict()
         worksite_name = kwargs['work_name']
-        head = db.session.query(ReportHead.id).filter_by(worksite_name=worksite_name).first()
+        head = db.session.query(
+            ReportHead.id
+        ).filter_by(
+            worksite_name=worksite_name,
+        ).first()
         if head is None:
             resp.status_code = api.status_codes.HTTP_404
             return
 
-        detail = db.session.query(ReportDetail).filter_by(report_head_id=head[0]).all()
+        detail = db.session.query(ReportDetail).filter_by(
+            report_head_id=head[0],
+            work_date=kwargs['date']
+        ).all()
 
         for d in detail:
             if ItemType.value_of(d.type).name in response:
@@ -1281,14 +1288,14 @@ class DailyReportInfo():
         db.session.close()
         resp.media = response
 
-    async def on_post(self, req, resp, work_name, date):
+    async def on_post(self, req, resp, *args, **kwargs):
 
-        response = dict()
         data = await req.media()
         customer = data.get('values[customer]')
         address = data.get('values[address]')
         memo = data.get('values[memo]')
-
+        work_name = kwargs['work_name']
+        work_date = kwargs['date']
         staff = json.loads(data.get('staff'))
         car = json.loads(data.get('car'))
         lease = json.loads(data.get('lease'))
@@ -1298,7 +1305,7 @@ class DailyReportInfo():
         other = json.loads(data.get('other'))
         trash = json.loads(data.get('trash'))
 
-        if work_name == '' or work_name is None:
+        if ensure_str(work_name) is None:
             resp.status_code = api.status_codes.HTTP_400
 
         # 登録済みチェック
@@ -1323,18 +1330,26 @@ class DailyReportInfo():
             id = db.session.query(func.max(ReportHead.id)).scalar()
         else:
             id = d.id
-            db.session.query(ReportDetail
-                             ).filter_by(report_head_id=id).delete()
+
+            if ensure_str(work_date) is None:
+                resp.status_code = api.status_codes.HTTP_400
+
+            db.session.query(
+                ReportDetail
+            ).filter_by(
+                report_head_id=id,
+                work_date=work_date,
+            ).delete()
 
         v = list()
-        v += [ReportDetail(id, ItemType.STAFF.value, name, cost, 1) for name, cost in staff.items()]
-        v += [ReportDetail(id, ItemType.CAR.value, d['name'], d['cost'], d['quant']) for d in car]
-        v += [ReportDetail(id, ItemType.MACHINE.value, d['name'], d['cost'], d['quant']) for d in machine]
-        v += [ReportDetail(id, ItemType.LEASE.value, d['name'], d['cost'], d['quant']) for d in lease]
-        v += [ReportDetail(id, ItemType.TRANSPORT.value, d['name'], d['cost'], d['quant']) for d in transport]
-        v += [ReportDetail(id, ItemType.TRASH.value, d['item'], d['cost'], d['quant'], d['dest'], d['unit_type']) for d in trash]
-        v += [ReportDetail(id, ItemType.VALUABLE.value, d['name'], d['cost'], d['quant']) for d in valuable]
-        v += [ReportDetail(id, ItemType.OTHER.value, d['name'], d['cost'], d['quant']) for d in other]
+        v += [ReportDetail(id, work_date, ItemType.STAFF.value, name, cost, 1) for name, cost in staff.items()]
+        v += [ReportDetail(id, work_date, ItemType.CAR.value, d['name'], d['cost'], d['quant']) for d in car]
+        v += [ReportDetail(id, work_date, ItemType.MACHINE.value, d['name'], d['cost'], d['quant']) for d in machine]
+        v += [ReportDetail(id, work_date, ItemType.LEASE.value, d['name'], d['cost'], d['quant']) for d in lease]
+        v += [ReportDetail(id, work_date, ItemType.TRANSPORT.value, d['name'], d['cost'], d['quant']) for d in transport]
+        v += [ReportDetail(id, work_date, ItemType.TRASH.value, d['item'], d['cost'], d['quant'], d['dest'], d['unit_type']) for d in trash]
+        v += [ReportDetail(id, work_date, ItemType.VALUABLE.value, d['name'], d['cost'], d['quant']) for d in valuable]
+        v += [ReportDetail(id, work_date, ItemType.OTHER.value, d['name'], d['cost'], d['quant']) for d in other]
 
         try:
             db.session.add_all(v)
@@ -1353,11 +1368,57 @@ class DailyReportInfo():
 
 
 @api.route("/summary")
-class DailyReportSummary():
+class DailyReportSummaryView():
     async def on_get(self, req, resp):
 
         param = dict()
+        head = db.session.query(ReportHead).all()
+        param['worksite_names'] = list({'id': x.id, 'name': x.worksite_name} for x in head)
+        db.session.close()
         resp.html = api.template('daily_report_summary.html', param)
+
+
+@api.route("/summary/{workId}")
+class DailyReportSummaryById():
+    async def on_get(self, req, resp, *args, **kwargs):
+
+        work_id = kwargs['workId']
+
+        head = db.session.query(
+            ReportHead
+        ).filter_by(
+            id=work_id
+        ).first()
+
+        db_data = db.session.query(
+            ReportDetail.work_date,
+            ReportDetail.type,
+            func.sum(ReportDetail.quant),
+            func.sum(ReportDetail.quant*ReportDetail.cost),
+        ).filter_by(
+            report_head_id=work_id
+        ).group_by(
+            ReportDetail.type,
+            ReportDetail.work_date,
+        ).order_by(
+            ReportDetail.work_date,
+        )
+        db.session.close()
+
+        details = list()
+        for date, type, q, total in db_data:
+            d = {
+                "date": date,
+                "type": type,
+                "quant": q,
+                "total": total
+            }
+            details.append(d)
+
+        resp.media = {
+            'head': head._to_dict(),
+            'details': details
+        }
 
 
 @api.route("/master/top")

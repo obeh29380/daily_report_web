@@ -469,6 +469,7 @@ class ReportDetail(Base):
 
     id                  : 主キー
     report_head_id      : 日報ヘッドID
+    work_date      : 作業日
     type                : 品目種別
     name               : 品目名
     dest                : 処分先
@@ -486,6 +487,7 @@ class ReportDetail(Base):
         autoincrement=True
     )
     report_head_id = Column('report_head_id', INTEGER(unsigned=True))
+    work_date = Column('work_date', String(8), nullable=False, default="")
     type = Column('type', INTEGER(unsigned=True))
     name = Column('name', String(256))
     dest = Column('dest', String(256), nullable=True)
@@ -500,8 +502,9 @@ class ReportDetail(Base):
         server_default=current_timestamp()
     )
 
-    def __init__(self, report_head_id, type, name, cost, quant, dest='', unit_type=0, reg_dtime=datetime.now()):
+    def __init__(self, report_head_id, work_date, type, name, cost, quant, dest='', unit_type=0, reg_dtime=datetime.now()):
         self.report_head_id = report_head_id
+        self.work_date = work_date
         self.type = type
         self.name = name
         self.cost = cost
@@ -514,6 +517,7 @@ class ReportDetail(Base):
         return {
             'id': self.id,
             'report_head_id': self.report_head_id,
+            'work_date': self.work_date,
             'type': self.type,
             'name': self.name,
             'cost': self.cost,
