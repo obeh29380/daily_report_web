@@ -6,3 +6,5 @@
 ./sshLogin.bat
 ./.ssh
 ./app/setting.json
+./app/.python-version
+./app/setting.json
