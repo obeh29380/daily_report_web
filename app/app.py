@@ -1266,7 +1266,7 @@ class DailyReportInfo():
         response = dict()
         worksite_name = kwargs['work_name']
         head = db.session.query(
-            ReportHead.id
+            ReportHead
         ).filter_by(
             worksite_name=worksite_name,
         ).first()
@@ -1274,8 +1274,10 @@ class DailyReportInfo():
             resp.status_code = api.status_codes.HTTP_404
             return
 
+        response['head'] = head._to_dict()
+
         detail = db.session.query(ReportDetail).filter_by(
-            report_head_id=head[0],
+            report_head_id=head.id,
             work_date=kwargs['date']
         ).all()
 
@@ -1291,9 +1293,9 @@ class DailyReportInfo():
     async def on_post(self, req, resp, *args, **kwargs):
 
         data = await req.media()
-        customer = data.get('values[customer]')
-        address = data.get('values[address]')
-        memo = data.get('values[memo]')
+        customer = data.get('head[customer]')
+        address = data.get('head[address]')
+        memo = data.get('head[memo]')
         work_name = kwargs['work_name']
         work_date = kwargs['date']
         staff = json.loads(data.get('staff'))
@@ -1329,10 +1331,14 @@ class DailyReportInfo():
             # 発番されたidを取得
             id = db.session.query(func.max(ReportHead.id)).scalar()
         else:
-            id = d.id
 
             if ensure_str(work_date) is None:
                 resp.status_code = api.status_codes.HTTP_400
+
+            id = d.id
+            d.customer_name = customer
+            d.address = address
+            d.memo = memo
 
             db.session.query(
                 ReportDetail
@@ -1452,7 +1458,7 @@ class MasterMentenanceMenu():
                 'menu_name': '廃材品目'
             },
             'work': {
-                'menu_name': '工事進捗管理'
+                'menu_name': '工事進捗'
             },
         }
 

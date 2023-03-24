@@ -72,6 +72,37 @@
                 </div>
               </div>
             </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <div class="row">
+                  <div class="col">
+                    <label for="givenName" class="form-label">郵便番号</label>
+                      <div class="row">
+                        <div class="col-2">
+                          <input id='txt_address_num' type="text" class="form-control" aria-label="a" pattern="\d{3}-?\d{4}">
+                        </div>
+                        <div class="col">
+                          <button id="btn_address" class="btn btn-primary" onclick="get_address()">郵便番号から住所入力</button>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
+                    <label for="givenName" class="form-label">住所</label>
+                    <input id='txt_address' type="text" class="form-control" aria-label="...">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">備考</label>
+                <input id='txt_memo' type="text" class="form-control" aria-label="a">
+              </div>
+            </div>
           </div>
 
           <div class="col">
@@ -634,7 +665,6 @@
       }
 
       cost = Number(row.children[col_cost].children[0].value)
-
       row.children[col_total].innerText = cost*quant
     }
 
@@ -838,9 +868,9 @@
     }
 
     function register(e){
+      event.preventDefault();
       $(`#invalid-feedback-worksite_name`)[0].innerText = '';
       $(`#invalid-feedback-date`)[0].innerText = '';
-      event.preventDefault();
 
       // 入力チェック
       // 日報ヘッダ情報
@@ -860,14 +890,17 @@
         workdate = $('#date')[0].value;
       };
 
-      staff_input = get_staff_input()
-      car_input = get_car_input()
-      machine_input = get_machine_input()
-      lease_input = get_lease_input()
-      transport_input = get_transport_input()
-      valuable_input = get_valuable_input()
-      other_input = get_other_input()
-      trash_input = get_trash_input()
+      customer = $('#txt_customer')[0].value;
+      address = $('#txt_address')[0].value;
+      memo = $('#txt_memo')[0].value;
+      staff_input = get_staff_input();
+      car_input = get_car_input();
+      machine_input = get_machine_input();
+      lease_input = get_lease_input();
+      transport_input = get_transport_input();
+      valuable_input = get_valuable_input();
+      other_input = get_other_input();
+      trash_input = get_trash_input();
       
       // Ajax通信を開始
       $.ajax({
@@ -875,6 +908,11 @@
         type: 'POST',
         dataType: 'json',
         data: {
+          'head': {
+            'customer': customer,
+            'address': address,
+            'memo': memo,
+          },
           'staff': JSON.stringify(staff_input),
           'car': JSON.stringify(car_input),
           'machine': JSON.stringify(machine_input),
@@ -1080,6 +1118,31 @@
       $('#list_total_staff')[0].innerText = "0円";
     }
 
+    function get_address(){
+      event.preventDefault();
+      address_num = $('#txt_address_num')[0].value.replace("-","");
+      // リファレンス https://api-doc.postcode-jp.com/#90aa7c4e14
+      if(address_num.length != 7){
+        return;
+      }
+
+      $.ajax({
+        url: `https://apis.postcode-jp.com/api/v5/postcodes/${address_num}`,
+        type: 'GET',
+        dataType: 'json',
+        data: {
+          "apikey": "uJvHA9Oi0ALu2FHpUXIpowPOQv5QMQn5YPkg2Ry"
+        },
+        timeout: 5000,
+      })
+      .done(function(data) {
+        $('#txt_address')[0].value = data[0]['allAddress'];
+      })
+      .fail(function(data) {
+          
+      });
+    }
+
     function report_key_changed(e){
       // 入力チェック
       // 日報ヘッダ情報
@@ -1112,6 +1175,11 @@
 
       function set_registered_data(data){
         // 登録済みデータのセット
+        // report_head情報
+        $('#txt_customer')[0].value = data['head']['customer_name'];
+        $('#txt_address')[0].value = data['head']['address'];
+        $('#txt_memo')[0].value = data['head']['memo'];
+
         // staff
         for(let d in data.STAFF){
           for(let tr in Array.from($('#stafflist')[0].children)){

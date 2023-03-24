@@ -475,6 +475,7 @@ class ReportDetail(Base):
     dest                : 処分先
     cost                : 品目単価
     quant                : 数量
+    memo                : 備考
     unit_type             : 単位
     reg_dtime           : 登録日
     """
@@ -493,6 +494,7 @@ class ReportDetail(Base):
     dest = Column('dest', String(256), nullable=True)
     cost = Column('cost', INTEGER(unsigned=True))
     quant = Column('quant', INTEGER(unsigned=True))
+    memo = Column('memo', String(256))
     unit_type = Column('unit_type', INTEGER(unsigned=True))
     reg_dtime = Column(
         'reg_dtime',
@@ -502,13 +504,14 @@ class ReportDetail(Base):
         server_default=current_timestamp()
     )
 
-    def __init__(self, report_head_id, work_date, type, name, cost, quant, dest='', unit_type=0, reg_dtime=datetime.now()):
+    def __init__(self, report_head_id, work_date, type, name, cost, quant, memo='', dest='', unit_type=0, reg_dtime=datetime.now()):
         self.report_head_id = report_head_id
         self.work_date = work_date
         self.type = type
         self.name = name
         self.cost = cost
         self.quant = quant
+        self.memo = memo
         self.dest = dest
         self.unit_type = unit_type
         self.reg_dtime = reg_dtime
@@ -522,6 +525,7 @@ class ReportDetail(Base):
             'name': self.name,
             'cost': self.cost,
             'quant': self.quant,
+            'memo': self.memo,
             'dest': self.dest,
             'unit_type': self.unit_type,
             'reg_dtime': self.reg_dtime.isoformat(),

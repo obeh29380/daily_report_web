@@ -24,7 +24,7 @@
                 <label for="givenName" class="form-label">工事名</label>
                 <div class="dropdown w-100">
                   <!-- 切替ボタンの設定 -->
-                  <button id="worksite_name" type="button" class="btn btn-primary dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button id="worksite_name" type="button" class="btn btn-outline-primary dropdown-toggle w-100" data-bs-toggle="dropdown" aria-expanded="false">
                   </button>
                   <!-- ドロップメニューの設定 -->
                   <ul class="dropdown-menu" id="worksite_names">
@@ -39,6 +39,28 @@
                 <div class="row">
                   <div class="input-group">
                     <input id='txt_customer' type="text" class="form-control" disabled="true">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">住所</label>
+                <div class="row">
+                  <div class="input-group">
+                    <input id='txt_address' type="text" class="form-control" disabled="true">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col">
+                <label for="givenName" class="form-label">備考</label>
+                <div class="row">
+                  <div class="input-group">
+                    <input id='txt_memo' type="text" class="form-control" disabled="true">
                   </div>
                 </div>
               </div>
@@ -70,15 +92,15 @@
               
               <li class="list-group-item d-flex justify-content-between lh-sm">
                 <div>
-                  <h6 class="my-0">重機</h6>
-                </div>
-                <span class="text-muted" id="list_total_machine">0</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between lh-sm">
-                <div>
                   <h6 class="my-0">車両</h6>
                 </div>
                 <span class="text-muted" id="list_total_car">0</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between lh-sm">
+                <div>
+                  <h6 class="my-0">重機</h6>
+                </div>
+                <span class="text-muted" id="list_total_machine">0</span>
               </li>
               <li class="list-group-item d-flex justify-content-between lh-sm">
                 <div>
@@ -201,7 +223,7 @@
       $('#worksite_names')[0].innerHTML = html
     })
 
-    function int_to_currency(int_currency){
+    function to_currency(int_currency){
       return new Intl.NumberFormat().format(int_currency);
     }
 
@@ -228,6 +250,8 @@
         }
         $('#txt_customer')[0].value = data['head'].customer_name
         $('#txt_work_date')[0].value = `${data['details'][0].date} ~ ${data['details'][Number(data['details'].length-1)].date}`
+        $('#txt_address')[0].value = data['head'].address
+        $('#txt_memo')[0].value = data['head'].memo
       
         // 日毎の集計
         html = '';
@@ -266,53 +290,53 @@
 
           if (data['details'][i]['type'] == Type.staff){
             tbl_body.children[r].children[2].innerText = data['details'][i]['quant']
-            tbl_body.children[r].children[3].innerText = data['details'][i]['total']
-            $('#list_total_staff')[0].innerHTML = int_to_currency(currency_to_int($('#list_total_staff')[0].innerHTML) + Number(data['details'][i]['total']))
+            tbl_body.children[r].children[3].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_staff')[0].innerHTML = to_currency(currency_to_int($('#list_total_staff')[0].innerHTML) + Number(data['details'][i]['total']))
             staff_quant += Number(data['details'][i]['quant']);
           }
 
           if (data['details'][i]['type'] == Type.car){
             tbl_body.children[r].children[4].innerText = data['details'][i]['quant']
-            tbl_body.children[r].children[5].innerText = data['details'][i]['total']
-            $('#list_total_car')[0].innerHTML = int_to_currency(currency_to_int($('#list_total_car')[0].innerHTML) + Number(data['details'][i]['total']))
+            tbl_body.children[r].children[5].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_car')[0].innerHTML = to_currency(currency_to_int($('#list_total_car')[0].innerHTML) + Number(data['details'][i]['total']))
             car_quant += Number(data['details'][i]['quant']);
           }
           
           if (data['details'][i]['type'] == Type.machine){
             tbl_body.children[r].children[6].innerText = data['details'][i]['quant']
-            tbl_body.children[r].children[7].innerText = data['details'][i]['total']
-            $('#list_total_machine')[0].innerHTML = int_to_currency(currency_to_int($('#list_total_machine')[0].innerHTML) + Number(data['details'][i]['total']))
+            tbl_body.children[r].children[7].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_machine')[0].innerHTML = to_currency(currency_to_int($('#list_total_machine')[0].innerHTML) + Number(data['details'][i]['total']))
             machine_quant += Number(data['details'][i]['quant']);
           }
           
           if (data['details'][i]['type'] == Type.lease){
             tbl_body.children[r].children[8].innerText = data['details'][i]['quant']
-            tbl_body.children[r].children[9].innerText = data['details'][i]['total']
-            $('#list_total_lease')[0].innerHTML = int_to_currency(currency_to_int($('#list_total_lease')[0].innerHTML) + Number(data['details'][i]['total']))
+            tbl_body.children[r].children[9].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_lease')[0].innerHTML = to_currency(currency_to_int($('#list_total_lease')[0].innerHTML) + Number(data['details'][i]['total']))
             lease_quant += Number(data['details'][i]['quant']);
           }
           
           if (data['details'][i]['type'] == Type.transport){
             tbl_body.children[r].children[10].innerText = data['details'][i]['quant']
-            tbl_body.children[r].children[11].innerText = data['details'][i]['total']
-            $('#list_total_transport')[0].innerHTML = int_to_currency(currency_to_int($('#list_total_transport')[0].innerHTML) + Number(data['details'][i]['total']))
+            tbl_body.children[r].children[11].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_transport')[0].innerHTML = to_currency(currency_to_int($('#list_total_transport')[0].innerHTML) + Number(data['details'][i]['total']))
             transport_quant += Number(data['details'][i]['quant']);
           }
 
           if (data['details'][i]['type'] == Type.trash){
-            tbl_body.children[r].children[12].innerText = data['details'][i]['total']
-            $('#list_total_trash')[0].innerHTML = int_to_currency(currency_to_int($('#list_total_trash')[0].innerHTML) + Number(data['details'][i]['total']))
+            tbl_body.children[r].children[12].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_trash')[0].innerHTML = to_currency(currency_to_int($('#list_total_trash')[0].innerHTML) + Number(data['details'][i]['total']))
           }
           if (data['details'][i]['type'] == Type.other){
-            tbl_body.children[r].children[13].innerText = data['details'][i]['total']
-            $('#list_total_other')[0].innerHTML = int_to_currency(currency_to_int($('#list_total_other')[0].innerHTML) + Number(data['details'][i]['total']))
+            tbl_body.children[r].children[13].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_other')[0].innerHTML = to_currency(currency_to_int($('#list_total_other')[0].innerHTML) + Number(data['details'][i]['total']))
           }
           if (data['details'][i]['type'] == Type.valuable){
-            tbl_body.children[r].children[14].innerText = data['details'][i]['total']
-            $('#list_total_valuable')[0].innerHTML = int_to_currency(currency_to_int($('#list_total_valuable')[0].innerHTML) + Number(data['details'][i]['total']))
+            tbl_body.children[r].children[14].innerText = to_currency(data['details'][i]['total'])
+            $('#list_total_valuable')[0].innerHTML = to_currency(currency_to_int($('#list_total_valuable')[0].innerHTML) + Number(data['details'][i]['total']))
           }
 
-          $('#total')[0].innerHTML = int_to_currency(currency_to_int($('#total')[0].innerHTML) + Number(data['details'][i]['total']))
+          $('#total')[0].innerHTML = to_currency(currency_to_int($('#total')[0].innerHTML) + Number(data['details'][i]['total']))
             
         };
 
