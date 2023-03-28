@@ -754,7 +754,7 @@
       html += '<td><input type="text" oninput="re_calc(this)" class="form-control text-end"></td>'
 
       html += '</td>'
-      html += '<td><select class="form-select">'
+      html += '<td><select class="form-select" name="unit_type">'
         unit_type.forEach(o => {
         html += `<option value="${o['id']}">${o['name']}</option>`
       });
@@ -795,6 +795,11 @@
         pre_cost = Number(e.target.parentElement.parentElement.children[3].innerText)
         pre_quant = Number(e.target.parentElement.parentElement.children[2].childNodes[0].value)
       }).on('change', 'select', function(e) {
+
+        // 廃材の単位選択時は検索不要
+        if(e.target.name == 'unit_type'){
+          return;
+        }
         table = e.target.closest('tbody')
         row_count = Number(e.target.parentElement.parentElement.parentElement.childElementCount)
         current_row = Number(e.target.parentElement.parentElement.rowIndex)

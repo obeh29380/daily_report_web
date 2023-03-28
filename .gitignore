@@ -8,3 +8,4 @@
 ./app/setting.json
 .python-version
 ./app/setting.json
+./app/command/__pycache__

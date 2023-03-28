@@ -25,7 +25,6 @@ from models import (
 )
 import db_common as db
 
-TOKEN_EXPIRE_MINUTES = 60*6
 JWT_KEY = 'trym_token_key'
 BASE_DIR = Path(__file__).resolve().parents[0]
 UNIT_TYPE = [
@@ -49,6 +48,7 @@ api = responder.API(
     cors_params={'max_age': 0}
 )
 logger = logging.getLogger(__name__)
+token_expire_minutes = None
 
 
 # util #####################################
@@ -61,7 +61,7 @@ class ItemType(Enum):
     TRANSPORT = 5
     TRASH = 6
     VALUABLE = 7
-    
+
     @classmethod
     def value_of(cls, target_value):
         for e in ItemType:
@@ -201,7 +201,7 @@ def nvl(txt, replace=''):
 
 
 def validate_token(token):
-    
+
     if ensure_str(token) is None:
         return None
 
@@ -223,7 +223,7 @@ def validate_token(token):
         return None
 
     # トークン有効期限更新
-    user.token_expire_dtime = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
+    user.token_expire_dtime = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=token_expire_minutes)
 
     return decode_token
 
@@ -1494,7 +1494,7 @@ class SignIn():
         token = jwt.encode(content, JWT_KEY, algorithm="HS256")
 
         user.token = token
-        user.token_expire_dtime = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=TOKEN_EXPIRE_MINUTES)
+        user.token_expire_dtime = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=token_expire_minutes)
         db.session.commit()
         # db.session.close() はしない。エラーになる。
         resp.status_code = api.status_codes.HTTP_200
@@ -1594,5 +1594,8 @@ if __name__ == '__main__':
 
     with open('setting.json', encoding="utf-8") as f:
         data = json.load(f)
+
+    settings = data
+    token_expire_minutes = settings['token_expire_minutes']
 
     api.run(address=data['ip_adress'], port=data['port'])

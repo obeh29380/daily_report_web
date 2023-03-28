@@ -1,6 +1,4 @@
-import json
-import sys
-sys.path.append('.')
+import db_common as db
 from models import (
     StaffMaster,
     CarMaster,
@@ -11,7 +9,9 @@ from models import (
     CustomerMaster,
     TrashMaster,
 )
-import db_common as db
+import json
+import sys
+sys.path.append('.')
 
 
 DATA_FILE_PATH = './data'
