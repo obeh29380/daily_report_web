@@ -1,9 +1,0 @@
-
-
-
--- マイグレーション
-alembic revision --autogenerate -m "create tables"
-alembic upgrade head
-
--- 初期データ登録
-python manage.py register_all_data

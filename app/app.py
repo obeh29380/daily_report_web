@@ -1592,7 +1592,7 @@ async def login(req, resp, *args, **kwargs):
 
 if __name__ == '__main__':
 
-    with open('setting.json', encoding="utf-8") as f:
+    with open('app/setting.json', encoding="utf-8") as f:
         data = json.load(f)
 
     settings = data

@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-RDB_PATH = 'sqlite:///db.sqlite3'
+RDB_PATH = 'sqlite:///app/db.sqlite3'
 ECHO_LOG = True
 
 engine = create_engine(
-   RDB_PATH, echo=ECHO_LOG
+    RDB_PATH, echo=ECHO_LOG
 )
 
 Session = sessionmaker(bind=engine)

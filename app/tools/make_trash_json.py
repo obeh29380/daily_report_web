@@ -1,9 +1,13 @@
-import pandas as pd
+import os
 import json
 
-def make_trash_json_from_xlsx():
+import pandas as pd
 
-    df = pd.read_excel('data/trash.xlsx')
+
+def make_trash_json_from_xlsx():
+    path = os.getcwd()
+    print(path)
+    df = pd.read_excel(f'{os.getcwd()}/app/tools/trash.xlsx')
 
     json_data = list()
     row_title = []  # [品目1, 品目2, ...]
@@ -32,9 +36,11 @@ def make_trash_json_from_xlsx():
                 }
             )
 
-    json_file = open('data/trash.json', mode="w", encoding="utf-8")
+    json_file = open(f'{os.getcwd()}/app/tools/trash.json',
+                     mode="w", encoding="utf-8")
     json.dump(json_data, json_file, indent=4, ensure_ascii=False)
     json_file.close()
 
 
-make_trash_json_from_xlsx()
+if __name__ == "__main__":
+    make_trash_json_from_xlsx()

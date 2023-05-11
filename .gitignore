@@ -9,3 +9,5 @@
 .python-version
 ./app/setting.json
 ./app/command/__pycache__
+./data/*
+./data_real
