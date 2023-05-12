@@ -1,3 +1,6 @@
+import json
+import sys
+sys.path.append("../app")
 import db_common as db
 from models import (
     StaffMaster,
@@ -9,15 +12,13 @@ from models import (
     CustomerMaster,
     TrashMaster,
 )
-import json
-import sys
-sys.path.append('.')
 
 
-DATA_FILE_PATH = './data'
+DATA_FILE_PATH = '/app/data'
 
 
 def register_init_data_staff():
+
     with open(f'{DATA_FILE_PATH}/staff.json', encoding="utf-8") as f:
         data = json.load(f)
 
