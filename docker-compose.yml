@@ -8,6 +8,10 @@ services:
       - ./app:/app
     ports:
       - "80:8080"
+    environment:
+      - IP_ADRESS="0.0.0.0"
+      - PORT=8080
+      - TOKEN_EXPIRE_MINUTES=360
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -19,4 +23,3 @@ services:
       # HTTPS用の証明書とキーをホストOSから、ゲストOSに連結する
       - /etc/letsencrypt/live/www.konbumame.com/fullchain.pem:/etc/nginx/conf.d/fullchain.pem:Z
       - /etc/letsencrypt/live/www.konbumame.com/privkey.pem:/etc/nginx/conf.d/privkey.pem:Z
-      - ./nginx:/var/www/html
