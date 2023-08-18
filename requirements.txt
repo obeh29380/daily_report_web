@@ -1,7 +1,0 @@
-responder
-sqlalchemy-pysqlite3
-pysqlite3
-PyJWT
-pandas
-alembic
-typesystem==0.2.5

@@ -6,10 +6,10 @@ import datetime
 import logging
 import pytz
 import json
-
 import responder
 from sqlalchemy.sql.expression import func
 
+import db_common as dbc
 from models import (
     User,
     StaffMaster,
@@ -23,7 +23,6 @@ from models import (
     ReportHead,
     ReportDetail,
 )
-import db_common as db
 
 JWT_KEY = 'trym_token_key'
 BASE_DIR = Path(__file__).resolve().parents[0]
@@ -211,7 +210,7 @@ def validate_token(token):
         logger.debug(type(e))
         return None
 
-    user = db.session.query(User).filter_by(
+    user = dbc.session.query(User).filter_by(
         user_id=decode_token['id'],
         token=token
     ).first()
@@ -233,8 +232,8 @@ class StaffMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(StaffMaster.id, StaffMaster.name, StaffMaster.cost)
-        db.session.close()
+        db_data = dbc.session.query(StaffMaster.id, StaffMaster.name, StaffMaster.cost)
+        dbc.session.close()
 
         res = get_simple_master_data(db_data)
 
@@ -261,7 +260,7 @@ class StaffMasterInfo():
 
         v = StaffMaster(name, cost)
         # 登録済みチェック
-        d = db.session.query(StaffMaster).filter_by(name=name).first()
+        d = dbc.session.query(StaffMaster).filter_by(name=name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -269,18 +268,18 @@ class StaffMasterInfo():
 
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(StaffMaster.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(StaffMaster.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
         response['name'] = name
         response['cost'] = cost
@@ -300,25 +299,25 @@ class StaffMasterInfo():
 
         # 削除対象のデータを検索
         try:
-            staff = db.session.query(StaffMaster).filter_by(id=id).first()
+            staff = dbc.session.query(StaffMaster).filter_by(id=id).first()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
-            db.session.close()
+            dbc.session.close()
             raise
 
         # 指定したデータを削除
         try:
-            db.session.delete(staff)
-            db.session.commit()
+            dbc.session.delete(staff)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
 
 @api.route("/master/car")
@@ -326,8 +325,8 @@ class CarMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(CarMaster.id, CarMaster.name, CarMaster.cost)
-        db.session.close()
+        db_data = dbc.session.query(CarMaster.id, CarMaster.name, CarMaster.cost)
+        dbc.session.close()
 
         res = get_simple_master_data(db_data)
 
@@ -354,7 +353,7 @@ class CarMasterInfo():
 
         v = CarMaster(name, cost)
         # 登録済みチェック
-        d = db.session.query(CarMaster).filter_by(name=name).first()
+        d = dbc.session.query(CarMaster).filter_by(name=name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -362,19 +361,19 @@ class CarMasterInfo():
 
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(CarMaster.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(CarMaster.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
         response['name'] = name
         response['cost'] = cost
@@ -393,19 +392,19 @@ class CarMasterInfo():
             return
 
         # 削除対象のデータを検索
-        staff = db.session.query(CarMaster).filter_by(id=id).first()
+        staff = dbc.session.query(CarMaster).filter_by(id=id).first()
 
         # 指定したデータを削除
         try:
-            db.session.delete(staff)
-            db.session.commit()
+            dbc.session.delete(staff)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
 
 @api.route("/master/lease")
@@ -413,8 +412,8 @@ class LeaseMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(LeaseMaster.id, LeaseMaster.name, LeaseMaster.cost)
-        db.session.close()
+        db_data = dbc.session.query(LeaseMaster.id, LeaseMaster.name, LeaseMaster.cost)
+        dbc.session.close()
 
         res = get_simple_master_data(db_data)
 
@@ -441,7 +440,7 @@ class LeaseMasterInfo():
 
         v = LeaseMaster(name, cost)
         # 登録済みチェック
-        d = db.session.query(LeaseMaster).filter_by(name=name).first()
+        d = dbc.session.query(LeaseMaster).filter_by(name=name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -449,19 +448,19 @@ class LeaseMasterInfo():
 
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(LeaseMaster.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(LeaseMaster.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
         response['name'] = name
         response['cost'] = cost
@@ -480,19 +479,19 @@ class LeaseMasterInfo():
             return
 
         # 削除対象のデータを検索
-        staff = db.session.query(LeaseMaster).filter_by(id=id).first()
+        staff = dbc.session.query(LeaseMaster).filter_by(id=id).first()
 
         # 指定したデータを削除
         try:
-            db.session.delete(staff)
-            db.session.commit()
+            dbc.session.delete(staff)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
 
 @api.route("/master/machine")
@@ -500,8 +499,8 @@ class MachineMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(MachineMaster.id, MachineMaster.name, MachineMaster.cost)
-        db.session.close()
+        db_data = dbc.session.query(MachineMaster.id, MachineMaster.name, MachineMaster.cost)
+        dbc.session.close()
 
         res = get_simple_master_data(db_data)
 
@@ -528,7 +527,7 @@ class MachineMasterInfo():
 
         v = MachineMaster(name, cost)
         # 登録済みチェック
-        d = db.session.query(MachineMaster).filter_by(name=name).first()
+        d = dbc.session.query(MachineMaster).filter_by(name=name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -536,19 +535,19 @@ class MachineMasterInfo():
 
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(MachineMaster.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(MachineMaster.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
         response['name'] = name
         response['cost'] = cost
@@ -567,19 +566,19 @@ class MachineMasterInfo():
             return
 
         # 削除対象のデータを検索
-        staff = db.session.query(MachineMaster).filter_by(id=id).first()
+        staff = dbc.session.query(MachineMaster).filter_by(id=id).first()
 
         # 指定したデータを削除
         try:
-            db.session.delete(staff)
-            db.session.commit()
+            dbc.session.delete(staff)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
 
 @api.route("/master/customer")
@@ -587,8 +586,8 @@ class CustomerMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(CustomerMaster.id, CustomerMaster.name)
-        db.session.close()
+        db_data = dbc.session.query(CustomerMaster.id, CustomerMaster.name)
+        dbc.session.close()
 
         res = get_name_only_master_data(db_data)
 
@@ -611,7 +610,7 @@ class CustomerMasterInfo():
 
         v = CustomerMaster(name)
         # 登録済みチェック
-        d = db.session.query(CustomerMaster).filter_by(name=name).first()
+        d = dbc.session.query(CustomerMaster).filter_by(name=name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -619,19 +618,19 @@ class CustomerMasterInfo():
 
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(CustomerMaster.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(CustomerMaster.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
         response['name'] = name
 
@@ -649,19 +648,19 @@ class CustomerMasterInfo():
             return
 
         # 削除対象のデータを検索
-        staff = db.session.query(CustomerMaster).filter_by(id=id).first()
+        staff = dbc.session.query(CustomerMaster).filter_by(id=id).first()
 
         # 指定したデータを削除
         try:
-            db.session.delete(staff)
-            db.session.commit()
+            dbc.session.delete(staff)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
 
 @api.route("/master/dest")
@@ -669,8 +668,8 @@ class DestMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(DestMaster.id, DestMaster.name)
-        db.session.close()
+        db_data = dbc.session.query(DestMaster.id, DestMaster.name)
+        dbc.session.close()
 
         res = get_name_only_master_data(db_data)
 
@@ -692,7 +691,7 @@ class DestMasterInfo():
 
         v = DestMaster(name)
         # 登録済みチェック
-        d = db.session.query(DestMaster).filter_by(name=name).first()
+        d = dbc.session.query(DestMaster).filter_by(name=name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -700,19 +699,19 @@ class DestMasterInfo():
 
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(DestMaster.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(DestMaster.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
         response['name'] = name
 
@@ -730,19 +729,19 @@ class DestMasterInfo():
             return
 
         # 削除対象のデータを検索
-        staff = db.session.query(DestMaster).filter_by(id=id).first()
+        staff = dbc.session.query(DestMaster).filter_by(id=id).first()
 
         # 指定したデータを削除
         try:
-            db.session.delete(staff)
-            db.session.commit()
+            dbc.session.delete(staff)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
 
 @api.route("/master/items")
@@ -750,8 +749,8 @@ class ItemMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(ItemMaster.id, ItemMaster.name, ItemMaster.cost)
-        db.session.close()
+        db_data = dbc.session.query(ItemMaster.id, ItemMaster.name, ItemMaster.cost)
+        dbc.session.close()
 
         res = get_simple_master_data(db_data)
 
@@ -778,7 +777,7 @@ class ItemMasterInfo():
 
         v = ItemMaster(name, cost)
         # 登録済みチェック
-        d = db.session.query(ItemMaster).filter_by(name=name).first()
+        d = dbc.session.query(ItemMaster).filter_by(name=name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -786,19 +785,19 @@ class ItemMasterInfo():
 
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(ItemMaster.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(ItemMaster.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
         response['name'] = name
         response['cost'] = cost
@@ -817,19 +816,19 @@ class ItemMasterInfo():
             return
 
         # 削除対象のデータを検索
-        staff = db.session.query(ItemMaster).filter_by(id=id).first()
+        staff = dbc.session.query(ItemMaster).filter_by(id=id).first()
 
         # 指定したデータを削除
         try:
-            db.session.delete(staff)
-            db.session.commit()
+            dbc.session.delete(staff)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
 
 @api.route("/master/work/complete")
@@ -847,7 +846,7 @@ class WorkStatusComplete():
             return
 
         # 登録済みチェック
-        d = db.session.query(ReportHead).filter_by(worksite_name=worksite_name).first()
+        d = dbc.session.query(ReportHead).filter_by(worksite_name=worksite_name).first()
         if d is None:
             resp.status_code = api.status_codes.HTTP_404
             return
@@ -857,14 +856,14 @@ class WorkStatusComplete():
 
         # DBに登録
         try:
-            db.session.commit()
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
         resp.status_code = api.status_codes.HTTP_200
@@ -875,8 +874,8 @@ class WorkStatusMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(ReportHead)
-        db.session.close()
+        db_data = dbc.session.query(ReportHead)
+        dbc.session.close()
 
         if db_data is None:
             return None
@@ -957,7 +956,7 @@ class WorkStatusMasterInfo():
             return
 
         # 登録済みチェック
-        d = db.session.query(ReportHead).filter_by(worksite_name=worksite_name).first()
+        d = dbc.session.query(ReportHead).filter_by(worksite_name=worksite_name).first()
         if d is not None:
             resp.media = {'message': 'すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -966,19 +965,19 @@ class WorkStatusMasterInfo():
         v = ReportHead(customer, worksite_name, address, memo, completed_date)
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(ReportHead.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(ReportHead.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
         response['worksite_name'] = worksite_name
         response['customer'] = customer
@@ -996,12 +995,12 @@ class TrashMasterInfoById():
     async def on_get(self, req, resp, dest_id, item_id):
 
         try:
-            d = db.session.query(TrashMaster).filter_by(dest_id=dest_id, name_id=item_id).first()
+            d = dbc.session.query(TrashMaster).filter_by(dest_id=dest_id, name_id=item_id).first()
         except Exception as e:
             print(type(e))
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         if d is None:
             resp.status_code = api.status_codes.HTTP_404
@@ -1020,7 +1019,7 @@ class TrashMasterInfo():
 
     async def on_get(self, req, resp):
 
-        db_data = db.session.query(
+        db_data = dbc.session.query(
             TrashMaster.id,
             DestMaster.name.label('dest_name'),
             ItemMaster.name.label('item_name'),
@@ -1033,9 +1032,9 @@ class TrashMasterInfo():
             ItemMaster,
             TrashMaster.name_id == ItemMaster.id
         )
-        dest = db.session.query(DestMaster.id, DestMaster.name)
-        item = db.session.query(ItemMaster.id, ItemMaster.name)
-        db.session.close()
+        dest = dbc.session.query(DestMaster.id, DestMaster.name)
+        item = dbc.session.query(ItemMaster.id, ItemMaster.name)
+        dbc.session.close()
 
         dest_list = list()
         for d in dest:
@@ -1134,19 +1133,19 @@ class TrashMasterInfo():
 
         # DBに登録
         try:
-            db.session.add(v)
-            db.session.commit()
+            dbc.session.add(v)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
         # 発番されたidを取得
-        new_id = db.session.query(func.max(TrashMaster.id)).scalar()
-        db.session.close()
+        new_id = dbc.session.query(func.max(TrashMaster.id)).scalar()
+        dbc.session.close()
         response['new_id'] = new_id
 
         resp.status_code = api.status_codes.HTTP_200
@@ -1163,19 +1162,19 @@ class TrashMasterInfo():
             return
 
         # 削除対象のデータを検索
-        staff = db.session.query(TrashMaster).filter_by(id=id).first()
+        staff = dbc.session.query(TrashMaster).filter_by(id=id).first()
 
         # 指定したデータを削除
         try:
-            db.session.delete(staff)
-            db.session.commit()
+            dbc.session.delete(staff)
+            dbc.session.commit()
         except Exception as e:
             print(type(e))
             print('db error')
             resp.status_code = api.status_codes.HTTP_500
             raise
         finally:
-            db.session.close()
+            dbc.session.close()
 
 
 # view #####################################
@@ -1214,19 +1213,19 @@ class DailyReportMenu():
 
         param = dict()
 
-        staffs = db.session.query(StaffMaster).all()
-        cars = db.session.query(CarMaster).all()
-        machines = db.session.query(MachineMaster).all()
-        leases = db.session.query(LeaseMaster).all()
-        dests = db.session.query(DestMaster).all()
-        items = db.session.query(ItemMaster).all()
-        customers = db.session.query(CustomerMaster).all()
-        worksite_names = db.session.query(
+        staffs = dbc.session.query(StaffMaster).all()
+        cars = dbc.session.query(CarMaster).all()
+        machines = dbc.session.query(MachineMaster).all()
+        leases = dbc.session.query(LeaseMaster).all()
+        dests = dbc.session.query(DestMaster).all()
+        items = dbc.session.query(ItemMaster).all()
+        customers = dbc.session.query(CustomerMaster).all()
+        worksite_names = dbc.session.query(
             ReportHead.worksite_name
         ).filter_by(
             completed_date=None
         ).all()
-        db.session.close()
+        dbc.session.close()
 
         param['staffs'] = list(x._to_dict() for x in staffs)
         param['cars'] = list(x._to_dict() for x in cars)
@@ -1265,7 +1264,7 @@ class DailyReportInfo():
 
         response = dict()
         worksite_name = kwargs['work_name']
-        head = db.session.query(
+        head = dbc.session.query(
             ReportHead
         ).filter_by(
             worksite_name=worksite_name,
@@ -1276,7 +1275,7 @@ class DailyReportInfo():
 
         response['head'] = head._to_dict()
 
-        detail = db.session.query(ReportDetail).filter_by(
+        detail = dbc.session.query(ReportDetail).filter_by(
             report_head_id=head.id,
             work_date=kwargs['date']
         ).all()
@@ -1287,7 +1286,7 @@ class DailyReportInfo():
             else:
                 response[ItemType.value_of(d.type).name] = [d._to_dict()]
 
-        db.session.close()
+        dbc.session.close()
         resp.media = response
 
     async def on_post(self, req, resp, *args, **kwargs):
@@ -1311,25 +1310,25 @@ class DailyReportInfo():
             resp.status_code = api.status_codes.HTTP_400
 
         # 登録済みチェック
-        d = db.session.query(ReportHead
+        d = dbc.session.query(ReportHead
                              ).filter_by(worksite_name=work_name).first()
         if d is None:
             v = ReportHead(customer, work_name, address, memo, None)
 
             # DBに登録
             try:
-                db.session.add(v)
-                db.session.commit()
+                dbc.session.add(v)
+                dbc.session.commit()
             except Exception as e:
                 print(type(e))
                 print('db error')
                 resp.status_code = api.status_codes.HTTP_500
                 raise
             finally:
-                db.session.close()
+                dbc.session.close()
 
             # 発番されたidを取得
-            id = db.session.query(func.max(ReportHead.id)).scalar()
+            id = dbc.session.query(func.max(ReportHead.id)).scalar()
         else:
 
             if ensure_str(work_date) is None:
@@ -1340,7 +1339,7 @@ class DailyReportInfo():
             d.address = address
             d.memo = memo
 
-            db.session.query(
+            dbc.session.query(
                 ReportDetail
             ).filter_by(
                 report_head_id=id,
@@ -1358,16 +1357,16 @@ class DailyReportInfo():
         v += [ReportDetail(id, work_date, ItemType.OTHER.value, d['name'], d['cost'], d['quant']) for d in other]
 
         try:
-            db.session.add_all(v)
+            dbc.session.add_all(v)
         except Exception as e:
             print(type(e))
             print('db update failed')
             resp.status_code = api.status_codes.HTTP_500
-            db.session.close()
+            dbc.session.close()
             raise
 
-        db.session.commit()
-        db.session.close()
+        dbc.session.commit()
+        dbc.session.close()
 
         resp.status_code = api.status_codes.HTTP_202
         resp.media = {"param": "aaa"}
@@ -1378,9 +1377,9 @@ class DailyReportSummaryView():
     async def on_get(self, req, resp):
 
         param = dict()
-        head = db.session.query(ReportHead).all()
+        head = dbc.session.query(ReportHead).all()
         param['worksite_names'] = list({'id': x.id, 'name': x.worksite_name} for x in head)
-        db.session.close()
+        dbc.session.close()
         resp.html = api.template('daily_report_summary.html', param)
 
 
@@ -1390,13 +1389,13 @@ class DailyReportSummaryById():
 
         work_id = kwargs['workId']
 
-        head = db.session.query(
+        head = dbc.session.query(
             ReportHead
         ).filter_by(
             id=work_id
         ).first()
 
-        db_data = db.session.query(
+        db_data = dbc.session.query(
             ReportDetail.work_date,
             ReportDetail.type,
             func.sum(ReportDetail.quant),
@@ -1409,7 +1408,7 @@ class DailyReportSummaryById():
         ).order_by(
             ReportDetail.work_date,
         )
-        db.session.close()
+        dbc.session.close()
 
         details = list()
         for date, type, q, total in db_data:
@@ -1476,10 +1475,10 @@ class SignIn():
         hashed_pwd = hashlib.sha256(pwd.encode()).hexdigest()
 
         try:
-            user = db.session.query(User).filter_by(user_id=id, user_pwd=hashed_pwd).first()
+            user = dbc.session.query(User).filter_by(user_id=id, user_pwd=hashed_pwd).first()
         except Exception as e:
             print(type(e))
-            db.session.close()
+            dbc.session.close()
             raise
 
         if user is None:
@@ -1495,8 +1494,8 @@ class SignIn():
 
         user.token = token
         user.token_expire_dtime = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(minutes=token_expire_minutes)
-        db.session.commit()
-        # db.session.close() はしない。エラーになる。
+        dbc.session.commit()
+        # dbc.session.close() はしない。エラーになる。
         resp.status_code = api.status_codes.HTTP_200
         # ログイン時キャッシュクリアする。
         # tokenの有効期限切れ後各ページにアクセスするとログインページにリダイレクトするが、
@@ -1525,10 +1524,10 @@ class SignOut():
             return
 
         try:
-            user = db.session.query(User).filter_by(user_id=decode_token['id']).first()
+            user = dbc.session.query(User).filter_by(user_id=decode_token['id']).first()
         except Exception as e:
             print(type(e))
-            db.session.close()
+            dbc.session.close()
             raise
 
         if user is None:
@@ -1536,8 +1535,8 @@ class SignOut():
 
         user.token = ''
         user.token_expire_dtime = datetime.datetime(year=2000, month=1, day=1, tzinfo=datetime.timezone.utc)
-        db.session.commit()
-        # db.session.close() はしない。エラーになる。
+        dbc.session.commit()
+        # dbc.session.close() はしない。エラーになる。
         resp.status_code = api.status_codes.HTTP_200
 
 
@@ -1569,7 +1568,7 @@ class SignUp():
             return
 
         # 登録済みチェック
-        d = db.session.query(User).filter_by(user_id=id).first()
+        d = dbc.session.query(User).filter_by(user_id=id).first()
         if d is not None:
             resp.media = {'message': '入力されたIDは、すでに登録済みです'}
             resp.status_code = api.status_codes.HTTP_500
@@ -1579,12 +1578,29 @@ class SignUp():
 
         # ユーザを作成
         admin = User(id, hashed_pwd, f'{name_last} {name_first}')
-        db.session.add(admin)
-        db.session.commit()
-        db.session.close()
+        dbc.session.add(admin)
+        dbc.session.commit()
+        dbc.session.close()
 
         resp.status_code = api.status_codes.HTTP_200
 
+
+clients = {} # 1
+
+@api.route('/ws/register_report', websocket=True)
+async def websocket(ws):
+    await ws.accept()
+    key = ws.headers.get('sec-websocket-key') # 2
+    clients[key] = ws # 3
+    try:
+        while True:
+            msg = await ws.receive_text()
+            for client in clients.values(): # 4
+                logger.debug('receive and send text')
+                await client.send_text('更新されました')
+    except:
+        await ws.close()
+        del clients[key] # 5
 
 @api.route("/")
 async def login(req, resp, *args, **kwargs):
@@ -1592,7 +1608,7 @@ async def login(req, resp, *args, **kwargs):
 
 if __name__ == '__main__':
 
-    with open('app/setting.json', encoding="utf-8") as f:
+    with open(f'{BASE_DIR}/setting.json', encoding="utf-8") as f:
         data = json.load(f)
 
     settings = data

@@ -1,3 +1,5 @@
+import sys
+sys.path.append("/etc/drw/db")
 import db_common as db
 from models import (
     StaffMaster,
@@ -10,11 +12,9 @@ from models import (
     TrashMaster,
 )
 import json
-import sys
-sys.path.append('.')
 
 
-DATA_FILE_PATH = './data'
+DATA_FILE_PATH = '/etc/drw/db/data'
 
 
 def register_init_data_staff():

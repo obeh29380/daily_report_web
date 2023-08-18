@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  web:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/etc/drw/app
+      - ./setup:/etc/drw/setup
+      - ./db:/etc/drw/db
+    tty: true
+    environment:
+      - PYTHONPATH=/etc/drw/db/
+    command: /bin/bash -c "/etc/drw/db/migrate_db.sh && python3 /etc/drw/app/app.py"
+    ports:
+      - "80:8080"

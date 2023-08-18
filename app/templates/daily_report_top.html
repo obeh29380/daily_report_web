@@ -550,6 +550,46 @@
       return new bootstrap.Toast(toastEl);
     });
 
+    var ws = new WebSocket("ws://localhost:80/ws/register_report");
+
+    $(function(){
+      // WebSocket作成
+
+      // WebSocket open時のイベントハンドラ登録
+      ws.onopen = function(){
+        $("#log").prepend("&lt;onopen&gt; " + "<br/>");
+      }
+
+      // WebSocket message受信時のイベントハンドラ登録
+      ws.onmessage = function(message){
+        $("#log").prepend(message.data + "<br/>");
+        showToast();
+      }
+
+      // WebSocket error時のイベントハンドラ登録
+      ws.onerror = function(){
+        $("#log").prepend("&lt;onerror&gt; " + "<br/>");
+      }
+
+      // WebSocket close時のイベントハンドラ登録
+      ws.onclose = function(){
+        $("#log").prepend("&lt;onclose&gt; " + "<br/>");
+      }
+
+      // Windowが閉じられた(例：ブラウザを閉じた)時のイベントを設定
+      $(window).unload(function() {
+        ws.onclose(); // WebSocket close
+      })
+
+      // キー入力時のイベントを設定
+      $("#wstest").onclick(function(e){
+        ws.send($("#wstext").val()); // WebSocketを使いサーバにメッセージを送信
+      });
+
+      
+
+    })
+
     function showToast() {
       // トーストを表示する
       toastList[0].show();
