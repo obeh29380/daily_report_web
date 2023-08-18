@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python /etc/drw/db/manage.py register_all_data
+python /etc/drw/db/command/register_all_data.py
