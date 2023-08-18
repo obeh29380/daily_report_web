@@ -18,6 +18,7 @@ DATA_FILE_PATH = '/etc/drw/db/data'
 
 
 def register_init_data_staff():
+
     with open(f'{DATA_FILE_PATH}/staff.json', encoding="utf-8") as f:
         data = json.load(f)
 

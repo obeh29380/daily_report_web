@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from pathlib import Path
 import hashlib
@@ -1611,7 +1612,4 @@ if __name__ == '__main__':
     with open(f'{BASE_DIR}/setting.json', encoding="utf-8") as f:
         data = json.load(f)
 
-    settings = data
-    token_expire_minutes = settings['token_expire_minutes']
-
-    api.run(address=data['ip_adress'], port=data['port'])
+    api.run(address=ip, port=port)

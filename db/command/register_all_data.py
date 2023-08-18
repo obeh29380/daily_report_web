@@ -1,4 +1,4 @@
-from . import register_init_data as mod
+import register_init_data as mod
 
 
 def main():
@@ -15,3 +15,7 @@ def main():
     except Exception as e:
         print(e)
         raise
+
+
+if __name__ == '__main__':
+    main()
