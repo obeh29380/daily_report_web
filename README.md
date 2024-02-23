@@ -17,8 +17,10 @@ note: Can install docker, docker compose by execute `init_docker.sh`.
     - In `.env`, set `FQDN` (default: `localhost`)
     - Set environment env `FQDN` (This setting has the highest priority)
 
-2. Edit Nginx default.conf
-    - If use https, edit default.conf to accept access by domain name.
+2. Https settings
+    - If use https, edit default.conf and docker-compose.yml to accept access by domain name.
+        - maybe, all you have to do is uncomment it out.
+    - Also, set hostname by follow step 1.
 
 ### deploy application
 
