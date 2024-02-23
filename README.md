@@ -37,5 +37,5 @@ sh /etc/drw/db/register_sample_data.sh
 
 or out of container (on host)
 ```
-docker exec app sh /etc/drw/db/register_sample_data.sh
+docker exec drw-app sh /etc/drw/db/register_sample_data.sh
 ```
