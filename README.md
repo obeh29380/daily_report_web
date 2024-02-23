@@ -6,8 +6,10 @@ With [daily_report_web](https://github.com/obeh29380/daily_report_web) you can c
 
 ### Check prerequisites
 
-- docker
-- docker compose
+- docker  
+- docker compose  
+
+note: Can install docker, docker compose by execute `init_docker.sh`.
 
 ### deploy settings
 
