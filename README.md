@@ -9,6 +9,15 @@ With [daily_report_web](https://github.com/obeh29380/daily_report_web) you can c
 - docker
 - docker compose
 
+### deploy settings
+
+1. Specify Host name if use
+    - In `.env`, set `FQDN` (default: `localhost`)
+    - Set environment env `FQDN` (This setting has the highest priority)
+
+2. Edit Nginx default.conf
+    - If use https, edit default.conf to accept access by domain name.
+
 ### deploy application
 
 ```
