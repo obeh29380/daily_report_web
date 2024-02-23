@@ -6,7 +6,7 @@ RUN mkdir /etc/drw
 COPY app/ /etc/drw/app
 COPY setup/ /etc/drw/setup
 COPY db/ /etc/drw/db
-# RUN chmod 777 /etc/drw/db/setup_db.sh
+RUN chmod 755 /etc/drw/db/migrate_db.sh
 RUN apt update
 RUN apt-get update -y
 RUN apt-get install -y vim less
