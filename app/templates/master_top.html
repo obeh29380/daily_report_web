@@ -175,10 +175,10 @@
           if (type == 'work'){
             // 工事管理のみ形式が異なるため、別処理
             $(`#${type}RegForm`).html("");
-            $(`#${type}RegForm`).append(`<table class="table">`);
+            $(`#${type}RegForm`).append(`<table class="table align-middle">`);
             $(`#${type}RegForm`).append('</table>');
 
-            $(`#${type}RegForm table`).append(`<thead>`);
+            $(`#${type}RegForm table`).append(`<thead class="text-center">`);
             $(`#${type}RegForm table`).append(`</thead>`);
 
             $(`#${type}RegForm table thead`).append(`<tr>`);
@@ -210,7 +210,7 @@
                 $(`#${type}RegForm table tbody tr`).append(`<td><div class="form-check form-switch">
                   <input type="checkbox" class="form-check-input" id="${key}" role="switch" onclick="complete_change(this)"></div></td>`);
               } else if (data.response.col_definitions[key]['type'] == 'date'){
-                $(`#${type}RegForm table tbody tr`).append(`<td><input type="date" class="form-control" id="${key}" placeholder="" value="" disabled="disabled"></td>`);
+                $(`#${type}RegForm table tbody tr`).append(`<td class="col-sm-1"><input type="date" class="form-control col-sm-1" id="${key}" placeholder="" value="" disabled="disabled"></td>`);
               } else {
                 $(`#${type}RegForm table tbody tr`).append(`<td><input type="text" class="form-control" id="${key}" placeholder="" value="" required></td>`);
               }
@@ -221,7 +221,7 @@
             
             // 一覧フォーム
             $(`#${type}data`).html("");
-            $(`#${type}Form`).append(`<table class="table">`);
+            $(`#${type}Form`).append(`<table class="table align-middle">`);
             $(`#${type}Form`).append('</table>');
 
             $(`#${type}Form table`).append(`<thead>`);
@@ -273,7 +273,7 @@
             $(`#${type}RegForm`).append(`<table class="table">`);
             $(`#${type}RegForm`).append('</table>');
 
-            $(`#${type}RegForm table`).append(`<thead>`);
+            $(`#${type}RegForm table`).append(`<thead class="text-center">`);
             $(`#${type}RegForm table`).append(`</thead>`);
 
             $(`#${type}RegForm table thead`).append(`<tr>`);
@@ -304,7 +304,7 @@
               } else if (data.response.col_definitions[key]['type'] == 'boolean'){
                 $(`#${type}RegForm table tbody tr`).append(`<td><div class="form-check form-switch"><input type="checkbox" class="form-check-input" id="${key}" role="switch"></div></td>`);
               } else if (data.response.col_definitions[key]['type'] == 'date'){
-                $(`#${type}RegForm table tbody tr`).append(`<td><input type="date" class="form-control" id="${key}" placeholder="" value=""></td>`);
+                $(`#${type}RegForm table tbody tr`).append(`<td class="col-sm-2"><input type="date" class="form-control" id="${key}" placeholder="" value=""></td>`);
               } else {
                 $(`#${type}RegForm table tbody tr`).append(`<td><input type="text" class="form-control" id="${key}" placeholder="" value="" required></td>`);
               }
