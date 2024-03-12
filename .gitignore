@@ -8,6 +8,16 @@ db/migrations/versions/**
 .python-version
 ./app/setting.json
 ./app/command/__pycache__
+./app/__pycache__/*
 ./data/*
 ./data_real
+*.sqlite
 __pycache__
+app/.main.py.swp
+.vscode
+__pycache__
+memo
+sample.py
+test.py
+*.sqlite
+app/__pycache__/db_common.cpython-311.pyc

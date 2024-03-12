@@ -1,118 +1,83 @@
 <!doctype html>
 <html lang="ja">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% endblock %}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+    rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
+    crossorigin="anonymous">
   <!-- CSSの設定ファイル "static/css/headers.css" だと、URL階層が２以上の画面で、パスがおかしくなる-->
   <!-- スラッシュからスタートすると解決 -->
   <link rel="stylesheet" href="/static/css/headers.css">
-{% block header %}{% endblock %}
+  {% block header %}{% endblock %}
 </head>
 
 <body>
-
-
-  <!-- ログイン済みのヘッダ -->
-  <header class="p-3 mb-3">
-    <div class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4 border-bottom">
-      <ul class="nav nav-pills col-12 col-lg-auto me-lg-auto mb-2 mb-md-0">
-        <li class="nav-item"><div id="home"></div></li>
-        <li class="nav-item"><div id="daily_report"></div></li>
-        <li class="nav-item"><div id="report_summary"></div></li>
-        <li class="nav-item"><div id="master"></div></li>
+  <div class="container">
+    <header
+      class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-2 border-bottom">
+      <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+        <li class="nav-item px-2">
+          <a href="/home" class="d-inline-flex link-body-emphasis text-decoration-none">
+            <img src="/static/image/default_account_logo.jpg" alt="mdo" width="40" height="40"
+              class="align-self-center">
+          </a>
+        </li>
+        <li class="nav-item">
+          <h2><span id="account_name"></span></h2>
+        </li>
       </ul>
 
-      <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
-        <ul class="nav">
+      <ul class="nav nav-pills col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+        <li><a href="/home?ver=1.0" class="nav-link px-2 active">ホーム</a></li>
+        <li><a href="/daily_report/top?ver=1.0" class="nav-link px-2">日報</a></li>
+        <li><a href="/summary?ver=1.0" class="nav-link px-2">日報集計</a></li>
+        <li><a href="/master/top?ver=1.0" class="nav-link px-2">管理</a></li>
+      </ul>
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
           <li class="nav-item">
             <div class="dropdown">
-              <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle me-4" data-bs-toggle="dropdown" aria-expanded="false">
+              <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle me-4" data-bs-toggle="dropdown"
+                aria-expanded="false">
                 <img src="/static/image/default_img.png" alt="mdo" width="32" height="32" class="rounded-circle">
               </a>
               <ul class="dropdown-menu text-small">
                 <li><a class="dropdown-item" href="#">設定</a></li>
                 <li><a class="dropdown-item" href="#">プロフィール</a></li>
-                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
                 <li><a class="dropdown-item" href="/">サインアウト</a></li>
               </ul>
             </div>
           </li>
           <li class="nav-item align-self-center me-4" id="user-name"></li>
+          <button id="btn_sign_out" type="button" class="btn btn-light text-dark me-2">サインアウト</button>
         </ul>
-        <button id="btn_sign_out" type="button" class="btn btn-light text-dark me-2">サインアウト</button>
-      </nav>
-    </div>
-  </header>
-  <!-- /ログイン済みのヘッダ -->
+    </header>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+    crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="/static/js/utils.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-
-  {% block body %}{% endblock %}
 
   <script>
-    window.addEventListener('DOMContentLoaded', function () {
-      // tokenチェック
-      const cookies = document.cookie.split(';');
-      token = ''
-      cookies.forEach(function(cookie) {
-        if(cookie.trim().split('=')[0]=='token'){
-          token = cookie.trim().split('=')[1];
-        }
-      })
-      //if(token==''){
-      //  window.location.href = "/";
-      //}
+    const cookie = cookie2json(document);
+    const account_uuid = cookie2json(document)['account_uuid'] ?? 0;
+    const headers = { 'X-CSRF-Token': '{{ csrf_token }}' };
 
-      if(token != ''){
-        decode_jwt = decodeJwt(token);
-        $('#user-name')[0].innerText = decode_jwt.name
-      };
+    $(document).ready(function () {
+      $('#account_name')[0].innerText = cookie['account_name'];
+      $('#user-name')[0].innerText = cookie['user_name'];
     });
-
-    $(document).ready( function(){
-      // ページ読み込み時に実行したい処理
-      home = document.getElementById("home");
-      daily_report = document.getElementById("daily_report");
-      report_summary = document.getElementById("report_summary");
-      master = document.getElementById("master");
-      
-      path = location.pathname.split('/')[1];
-
-      const cookies = document.cookie.split(';');
-      token = ''
-      cookies.forEach(function(cookie) {
-        if(cookie.trim().split('=')[0]=='token'){
-          token = cookie.trim().split('=')[1];
-        }
-      });
-      
-      home.innerHTML = `<a href="/home?ver=1.0" class="nav-link">ホーム</a>`
-      daily_report.innerHTML = `<a href="/daily_report/top?ver=1.0" class="nav-link">日報管理</a>`
-      report_summary.innerHTML = `<a href="/summary?ver=1.0" class="nav-link">集計表示</a>`
-      master.innerHTML = `<a href="/master/top?ver=1.0" class="nav-link">マスタ管理</a>`
-      if (path == 'home') {
-        home.innerHTML = `<a href="/home?ver=1.0" class="nav-link active">ホーム</a>`;
-      }else if(path == 'daily_report'){
-        daily_report.innerHTML = `<a href="/daily_report/top?ver=1.0" class="nav-link active">日報管理</a>`;
-      }else if(path == 'summary'){
-        report_summary.innerHTML = `<a href="/summary?ver=1.0" class="nav-link active">集計表示</a>`;
-      }else if(path == 'master'){
-        master.innerHTML = `<a href="/master/top?ver=1.0" class="nav-link active">マスタ管理</a>`;
-      }
-
-    });
-
-    const decodeJwt = (token) => {                                        
-      const base64Url = token.split('.')[1];                             
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');    
-      return JSON.parse(decodeURIComponent(escape(window.atob(base64))));
-    };  
 
     var btn_sign_out = document.getElementById('btn_sign_out');
-    btn_sign_out.addEventListener('click', function(){
+    btn_sign_out.addEventListener('click', function () {
       sign_out();
     })
 
@@ -126,14 +91,17 @@
         },
         timeout: 5000,
       })
-      .done(function(data) {
-        document.cookie = "token=;";
-        window.location.href = "/"
-      })
-      .fail(function(data) {
-      });
+        .done(function (data) {
+          document.cookie = "token=;";
+          window.location.href = "/"
+        })
+        .fail(function (data) {
+        });
     };
   </script>
+  <div class="container-sm">
+  {% block body %}{% endblock %}
+  </div>
 </body>
 
 </html>

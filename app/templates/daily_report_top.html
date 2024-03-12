@@ -41,7 +41,7 @@
                     </button>
                     <ul id="worksite_names" class="dropdown-menu dropdown-menu-dark">
                     </ul>
-                    <input id="txt_worksite" type="text" class="form-control" aria-label="..." oninput="report_key_changed(this)">
+                    <input id="txt_worksite" type="text" class="form-control" aria-label="..." onChange="report_key_changed(this)">
                   </div>
                   <div id="invalid-feedback-worksite_name" class="text-danger">
                   </div>
@@ -949,27 +949,27 @@
       trash_input = get_trash_input();
       
       // Ajax通信を開始
-      $.ajax({
-        url: `/daily_report/${worksite}/${workdate}`,
-        type: 'POST',
-        dataType: 'json',
-        data: {
+      callApi(
+        `/daily_report/${worksite}/${workdate}`, 
+        {
           'head': {
             'customer': customer,
             'address': address,
             'memo': memo,
           },
-          'staff': JSON.stringify(staff_input),
-          'car': JSON.stringify(car_input),
-          'machine': JSON.stringify(machine_input),
-          'lease': JSON.stringify(lease_input),
-          'transport': JSON.stringify(transport_input),
-          'valuable': JSON.stringify(valuable_input),
-          'other': JSON.stringify(other_input),
-          'trash': JSON.stringify(trash_input)
+          'detail': {
+            'staffs': staff_input,
+            'cars': car_input,
+            'machines': machine_input,
+            'leases': lease_input,
+            'transports': transport_input,
+            'valuables': valuable_input,
+            'others': other_input,
+            'trashes': trash_input
+          }
         },
-        timeout: 5000
-      }).done(function(data) {
+        'POST'
+      ).done(function(data) {
         // 通信成功時の処理を記述
         showToast();
 
@@ -983,10 +983,15 @@
     };
 
     function get_staff_input(){
-      values = {}
+      values = []
       Array.from($('#stafflist')[0].children).forEach(tr => {
         if(tr.children[0].children[0].checked == true){
-          values[tr.children[1].innerText] = tr.children[2].innerText;
+          d = {
+            'name': tr.children[1].innerText,
+            'cost': tr.children[2].innerText
+          }
+          // values[tr.children[1].innerText] = tr.children[2].innerText;
+          values.push(d);
         };
       });
       return values
@@ -1023,7 +1028,7 @@
         d = {
           'name': name,
           'cost': cost,
-          'quant': quant
+          'quant': 1
         }
         values.push(d);
       });

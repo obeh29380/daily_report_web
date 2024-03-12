@@ -1,87 +1,164 @@
 {% extends "base.html" %}
-{% block title %}マスタ管理{% endblock %}
+{% block title %}ユーザ一覧{% endblock %}
 
 {% block body %}
-
   <div class="container">
   <div class="d-flex align-items-start">
     <div class="nav flex-column nav-pills flex-shrink-0 me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
       
-      {% for k, v in menu.items() %}
-      <button type="button" class="nav-link" id="v-pills-{{k}}-tab" data-bs-toggle="pill" data-bs-target="#v-pills-{{k}}" role="tab" aria-controls="v-pills-{{k}}" aria-selected="false">{{v.menu_name}}</button>
-      {% endfor %}
+      <button type="button" class="nav-link" id="v-pills-company01-tab" data-bs-toggle="pill" data-bs-target="#v-pills-company01" role="tab" aria-controls="v-pills-company01" aria-selected="false">会社01</button>
+      <button type="button" class="nav-link" id="v-pills-company02-tab" data-bs-toggle="pill" data-bs-target="#v-pills-company02" role="tab" aria-controls="v-pills-company02" aria-selected="false">会社02</button>
     </div>
     <div class="container">
     <div class="tab-content" id="v-pills-tabContent">
-      {% for k, v in menu.items() %}
-      <div class="tab-pane fade" id="v-pills-{{k}}" role="tabpanel" aria-labelledby="v-pills-{{k}}-tab" tabindex="0">
-        <div id="tab-{{k}}">
+
+      <div class="tab-pane fade" id="v-pills-company01" role="tabpanel" aria-labelledby="v-pills-company01-tab" tabindex="0">
+        <div id="tab-company01">
           <div class="container">
             <div class="py-5 text-center">
-              <h2>{{v.menu_name}}管理</h2>
+              <h2>company01 ユーザ一覧</h2>
             </div>
             
-            <form id="{{k}}RegForm">
+            <form id="company01RegForm">
             </form>
 
-            <form id="{{k}}Form">
+            <form id="company01Form">
             </form>
           </div>
         </div>
       </div>
-      {% endfor %}
+      <div class="tab-pane fade" id="v-pills-company02" role="tabpanel" aria-labelledby="v-pills-company02-tab" tabindex="0">
+        <div id="tab-company02">
+          <div class="container">
+            <div class="py-5 text-center">
+              <h2>company02 ユーザ一覧</h2>
+            </div>
+            
+            <form id="company02RegForm">
+            </form>
+
+            <form id="company02Form">
+            </form>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">ユーザ追加</button>
+      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">ユーザ追加</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="mb-3">
+                  <label for="user_id" class="col-form-label">ユーザID:</label>
+                  <input type="text" class="form-control" id="user_id">
+                  <button type="button" class="btn btn-primary" id="btn_search">検索</button>
+                </div>
+                <div class="mb-3">
+                  <label for="found_user" class="col-form-label">見つかったユーザ:</label>
+                  <div id="found_user">
+                    <div id="found_user_id"></div>
+                    <div id="found_user_fullname"></div>
+                  </div>
+                  <button type="button" class="btn btn-success" id="addUser">追加</button>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
     </div>
   </div>
   </div>
+
+
+
   <script>
     var current_tab = '';
     var loaded = false;
-    const table_name = {
-      'v-pills-staff-tab': 'staff',
-      'v-pills-car-tab': 'car',
-      'v-pills-machine-tab': 'machine',
-      'v-pills-lease-tab': 'lease',
-      'v-pills-trash-tab': 'trash',
-      'v-pills-customer-tab': 'customer',
-      'v-pills-dest-tab': 'dest',
-      'v-pills-item-tab': 'item',
-      'v-pills-work-tab': 'work'
-    };
-
-    const reg_btn_name = {
-      'reg_btn_staff': 'staff',
-      'reg_btn_car': 'car',
-      'reg_btn_machine': 'machine',
-      'reg_btn_lease': 'lease',
-      'reg_btn_trash': 'trash',
-      'reg_btn_customer': 'customer',
-      'reg_btn_dest': 'dest',
-      'reg_btn_item': 'item',
-      'reg_btn_work': 'work'
-    };
-
-    const form_name = {
-      'staffForm': 'staff',
-      'carForm': 'car',
-      'machineForm': 'machine',
-      'leaseForm': 'lease',
-      'trashForm': 'trash',
-      'customerForm': 'customer',
-      'destForm': 'dest',
-      'itemForm': 'item',
-      'workForm': 'work'
-    };
 
     {% autoescape off %}
-    menu = {{menu}}
+    const res_users = {{ users }};
     {% endautoescape %}
 
+    // table要素を生成 [{'id': 1, 'user_id': 'test', 'fullname': 'testtest', 'auth_type': 0}]
+    var table = document.createElement('table');
+    table.classList.add('table')
+    table.classList.add('table-striped')
+      
+    var thead = document.createElement('thead');
+    var tr = document.createElement('tr');
+    var th = document.createElement('th');
+    th.textContent = 'id'
+    tr.appendChild(th);
+    var th = document.createElement('th');
+    th.textContent = 'ユーザID'
+    tr.appendChild(th);
+    var th = document.createElement('th');
+    th.textContent = '名前'
+    tr.appendChild(th);
+    var th = document.createElement('th');
+    th.textContent = 'auth_type'
+    tr.appendChild(th);
+    thead.appendChild(tr);
+    // tr部分のループ
+    var tbody = document.createElement('tbody');
+    res_users.forEach((user) => {
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      td.textContent = user.id;
+      tr.appendChild(td);
+      var td = document.createElement('td');
+      td.textContent = user.user_id;
+      tr.appendChild(td);
+      var td = document.createElement('td');
+      td.textContent = user.fullname;
+      tr.appendChild(td);
+      var td = document.createElement('td');
+      td.textContent = user.auth_type;
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    
+    });
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    // 生成したtable要素を追加する
+    document.getElementById('company01RegForm').appendChild(table);
 
-    for (let key in menu) {
-      document.getElementById(`v-pills-${key}-tab`).addEventListener('click', tab_select, false);
+    function addUser(){
+      const user_id = document.getElementById('found_user_id').innerHTML;
+      const data = {
+        'uuid': user_id
+      }
+      callApi(`/account/${account_uuid}/user/add`, data, 'POST')
+      .done(function (data) {
+        location.href = `/account/${account_uuid}/setting`;
+      })
+      .fail(function (data) {
+      });
+
     };
+    document.getElementById('addUser').addEventListener('click', addUser);
 
+    function searchUser(){
+      const user_id = document.getElementById('user_id').value;
+      callApi(`/user/${user_id}`, {}, 'GET')
+      .done(function (data) {
+        document.getElementById('found_user_id').innerHTML = data.user.id;
+        document.getElementById('found_user_fullname').innerHTML = data.user.fullname;
+      })
+      .fail(function (data) {
+      });
+    };
+    document.querySelector('#btn_search').addEventListener('click', searchUser);
     function complete_change(e){
       if(e.checked){
         e.closest('tr').children[5].children[0].disabled = '';

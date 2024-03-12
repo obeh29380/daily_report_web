@@ -1,136 +1,139 @@
 <!doctype html>
 <html lang="ja">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>新規登録フォーム</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <title>ユーザ登録</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+    rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
+    crossorigin="anonymous">
   <!-- CSSの設定ファイル -->
   <link rel="stylesheet" href="static/css/sign-up.css">
 </head>
 
 <body class="bg-light">
-  <div class="container">
-    <main class="form-signin w-100 m-auto">
-      <div class="py-5 text-center">
-        <h2>新規登録フォーム</h2>
-      </div>
+  <main class="form-signin w-100 m-auto">
+    <form name="signupForm">
+      <h1 class="h3 mb-2 fw-normal text-center">ユーザ登録</h1>
 
       <div class="card mb-4 rounded-3 shadow-sm">
         <div class="card-body">
-          <div class="d-flex justify-content-xxl-center">
-            <form name="myform" class="needs-validation">
-    
-              <label for="ID" class="form-label">ID</label>
-              <input type="text" class="form-control" id="id" name="id" placeholder="" value="" required>
-              <div class="invalid-feedback">
-                  IDを入力してください
-              </div>
-              <div id="invalid_id" class="text-danger"></div>
-    
-              <label for="pwd" class="form-label">パスワード</label>
-              <input type="password" class="form-control" id="pwd" name="pwd" placeholder="" value="" required>
-              <div class="invalid-feedback">
-                  パスワードを入力してください
-              </div>
-              <div id="invalid_pwd" class="text-danger"></div>
-    
-              <label for="pwd" class="form-label">パスワード(確認)</label>
-              <input type="password" class="form-control" id="pwd2" placeholder="" value="" required>
-              <div class="invalid-feedback">
-                  パスワードを入力してください
-              </div>
-              <div id="invalid_pwd2" class="text-danger"></div>
-    
-              <label for="familyName" class="form-label">姓</label>
-              <input type="text" class="form-control" id="familyName" placeholder="" value="">
-              <div id="invalid_fname" class="text-danger"></div>
-    
-              <label for="givenName" class="form-label">名</label>
-              <input type="text" class="form-control" id="givenName" placeholder="" value="">
-              <div id="invalid_name" class="text-danger"></div>
-    
-              <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                <button id="reg_btn" class="btn btn-primary" type="submit">登録</button>
-              </div>
-              <div id="result" class="text-danger"></div>
-            </form>
+          <div class="form-floating mb-2">
+            <input type="text" class="form-control" id="username" placeholder="ユーザID" required>
+            <label for="username">ユーザID</label>
           </div>
+          <div class="invalid-feedback">
+          </div>
+          <div class="form-floating mb-2">
+            <input type="password" class="form-control" id="password" placeholder="パスワード" required>
+            <label for="password">パスワード</label>
+          </div>
+          <div class="invalid-feedback">
+          </div>
+          <div class="form-floating mb-2">
+            <input type="password" class="form-control" id="password2" placeholder="パスワード（確認）" required>
+            <label for="password2">パスワード（確認）</label>
+          </div>
+          <div class="invalid-feedback">
+          </div>
+          
+          <div class="form-floating mb-2">
+            <input type="text" class="form-control" id="familyname" placeholder="姓">
+            <label for="familyname">姓</label>
+          </div>
+          <div class="invalid-feedback">
+          </div>
+          <div class="form-floating mb-2">
+            <input type="text" class="form-control" id="givenname" placeholder="名">
+            <label for="givenname">名</label>
+          </div>
+          <div class="invalid-feedback">
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <button id="reg_btn" class="w-100 btn btn-lg btn-primary" type="submit">登録</button>
+          </div>
+
+          <div id="result"></div>
+
+          <p class="mt-5 mb-2 text-muted text-center">&copy; 2023</p>
         </div>
       </div>
-      <a href="/">ログイン画面に戻る</a>
+    </form>
+    <div class="text-center">
+      <a class="text-center" href="/sign_in">ログイン画面に戻る</a>
+    </div>
+  </main>
 
-      
-    </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+    crossorigin="anonymous"></script>
 
-    <footer class="my-5 pt-5 text-muted text-center text-small">
-      <p class="mb-1">&copy; 2023</p>
-      <ul class="list-inline">
-        <li class="list-inline-item"><a href="#">プライバシー</a></li>
-        <li class="list-inline-item"><a href="#">条項</a></li>
-        <li class="list-inline-item"><a href="#">サポート</a></li>
-      </ul>
-    </footer>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
-  <!-- JSの設定ファイル -->
-  <!-- 
-  <script src="static/js/form-validation.js"></script>
-   -->
-
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script src="/static/js/utils.js"></script>
   <script>
     var reg_btn = document.getElementById('reg_btn');
     var result = document.getElementById('result');
 
-    reg_btn.addEventListener('click', function(){
-        event.preventDefault();
-        $('#invalid_id').text('');
-        $('#invalid_pwd').text('');
-        $('#invalid_pwd2').text('');
-        $('#invalid_fname').text('');
-        $('#invalid_name').text('');
+    reg_btn.addEventListener('click', function () {
+      result.innerHTML = "";
 
-        if (document.myform.id.value == ''){
-          $('#invalid_id').text('IDを入力してください');
-          return
-        }
-        if (document.myform.pwd.value == ''){
-          $('#invalid_pwd').text('パスワードを入力してください');
-          return
-        }
-        if (document.myform.pwd2.value == ''){
-          $('#invalid_pwd2').text('パスワード(確認)を入力してください');
-          return
-        }
-        if (document.myform.pwd.value != document.myform.pwd2.value){
-          $('#invalid_pwd2').text('確認用のパスワードが一致しません');
-          return
-        }
-        // Ajax通信を開始
-        $.ajax({
-          url: '/sign_up',
-          type: 'POST',
-          dataType: 'json',
-          // フォーム要素の内容をハッシュ形式に変換
-          data: {
-            'id': document.myform.id.value,
-            'pwd': document.myform.pwd.value,
-            'name_last': document.myform.familyName.value,
-            'name_first': document.myform.givenName.value
-          },
-          timeout: 5000,
+      document.querySelectorAll('.form-floating').forEach(function(item) {
+        item.classList.remove('is-invalid');
+      });
+      document.querySelectorAll('.form-control').forEach(function(item) {
+        item.classList.remove('is-invalid');
+      });
+      document.querySelectorAll('.invalid-feedback').forEach(function(item) {
+        item.innerHTML = "";
+      });
+
+      event.preventDefault();
+      const form = document.signupForm;
+
+      if (form.username.value == ''){
+        form.username.parentElement.classList.toggle('is-invalid');
+        form.username.classList.toggle('is-invalid');
+        form.username.parentElement.nextSibling.nextSibling.innerHTML = 'IDを入力してください';
+        return
+      }
+      if (form.password.value == ''){
+        form.password.parentElement.classList.toggle('is-invalid');
+        form.password.classList.toggle('is-invalid');
+        form.password.parentElement.nextSibling.nextSibling.innerHTML = 'パスワードを入力してください';
+        return
+      }
+      if (form.password2.value == ''){
+        form.password2.parentElement.classList.toggle('is-invalid');
+        form.password2.classList.toggle('is-invalid');
+        form.password2.parentElement.nextSibling.nextSibling.innerHTML = 'パスワード（確認用）を入力してください';
+        return
+      }
+      if (form.password.value != form.password2.value){
+        form.password.parentElement.classList.toggle('is-invalid');
+        form.password.classList.toggle('is-invalid');
+        form.password2.parentElement.classList.toggle('is-invalid');
+        form.password2.classList.toggle('is-invalid');
+        form.password2.parentElement.nextSibling.nextSibling.innerHTML = 'パスワードが一致しません';
+        return
+      }
+
+      const data = {
+        'username': form.username.value,
+        'password': form.password.value,
+        'name_last': form.familyname.value,
+        'name_first': form.givenname.value
+      };
+      callApi('/user/create', data, 'POST')
+        .done(function (data) {
+          result.innerHTML = `<div class="alert alert-success text-center" role="alert">登録されました</div>`;
         })
-        .done(function(data) {
-            // 通信成功時の処理を記述
-            location.href = "/"
-        })
-        .fail(function(data) {
-            // 通信失敗時の処理を記述
-            result.innerHTML = data.responseJSON.message;
+        .fail(function (data) {
+          result.innerHTML = `<div class="alert alert-danger text-center" role="alert">${data.responseJSON.detail}</div>`;
         });
-      })
+    })
 
   </script>
 </body>

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}HOME{% endblock %}
+
+{% block body %}
+  <div class="container">
+    <main class="form-signin w-100">
+      <div class="py-5 text-center">
+        <h2>アカウント設定</h2>
+      </div>
+  <div class="container d-flex justify-content-center">
+    
+      <div class="card mb-2 rounded-3 shadow-smd text-center" style="width: 18rem;">
+        <div class="card-body">
+            <form name="myform" class="needs-validation">
+    
+              <label for="ID" class="form-label">会社ID</label>
+              <input type="text" class="form-control" id="id" name="id" placeholder="" value="" required>
+              <div class="invalid-feedback">
+                会社IDを入力してください
+              </div>
+              <div id="invalid_id" class="text-danger"></div>
+    
+              <label for="pwd" class="form-label">パスワード</label>
+              <input type="password" class="form-control" id="pwd" name="pwd" placeholder="" value="" required>
+              <div class="invalid-feedback">
+                  パスワードを入力してください
+              </div>
+              <div id="invalid_pwd" class="text-danger"></div>
+    
+              <label for="pwd" class="form-label">パスワード(確認)</label>
+              <input type="password" class="form-control" id="pwd2" placeholder="" value="" required>
+              <div class="invalid-feedback">
+                  パスワードを入力してください
+              </div>
+              <div id="invalid_pwd2" class="text-danger"></div>
+    
+              <label for="fullname" class="form-label">会社名</label>
+              <input type="text" class="form-control" id="fullname" placeholder="" value="">
+              <div id="invalid_fname" class="text-danger"></div>
+    
+              <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <button id="reg_btn" class="btn btn-primary" type="submit">登録</button>
+              </div>
+              <div id="result_ng" class="text-danger"></div>
+              <div id="result_ok" class="text-success"></div>
+            </form>
+        </div>
+      </div>
+    </div>
+    </main>
+
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+      <p class="mb-1">&copy; 2023</p>
+      <ul class="list-inline">
+        <li class="list-inline-item"><a href="#">プライバシー</a></li>
+        <li class="list-inline-item"><a href="#">条項</a></li>
+        <li class="list-inline-item"><a href="#">サポート</a></li>
+      </ul>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+  <script>
+    var reg_btn = document.getElementById('reg_btn');
+    var result_ng = document.getElementById('result_ng');
+    var result_ok = document.getElementById('result_ok');
+
+    reg_btn.addEventListener('click', function(){
+
+      result_ng.innerHTML = "";
+      result_ok.innerHTML = "";
+
+      event.preventDefault();
+      $('#invalid_id').text('');
+      $('#invalid_pwd').text('');
+      $('#invalid_pwd2').text('');
+      $('#invalid_fname').text('');
+      $('#invalid_name').text('');
+
+      if (document.myform.id.value == ''){
+        $('#invalid_id').text('IDを入力してください');
+        return
+      }
+      if (document.myform.pwd.value == ''){
+        $('#invalid_pwd').text('パスワードを入力してください');
+        return
+      }
+      if (document.myform.pwd2.value == ''){
+        $('#invalid_pwd2').text('パスワード(確認)を入力してください');
+        return
+      }
+      if (document.myform.pwd.value != document.myform.pwd2.value){
+        $('#invalid_pwd2').text('確認用のパスワードが一致しません');
+        return
+      }
+      // Ajax通信を開始
+      $.ajax({
+        url: `/account/${document.myform.id.value}`,
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        // フォーム要素の内容をハッシュ形式に変換
+        data: JSON.stringify({
+          'id': document.myform.id.value,
+          'pwd': document.myform.pwd.value,
+          'name': document.myform.fullname.value,
+        }),
+        timeout: 5000,
+        })
+        .done(function(data) {
+            // 通信成功時の処理を記述
+            // location.href = "/account"
+            // window.location.reload()
+            result_ok.innerHTML = '登録されました';
+        })
+        .fail(function(data) {
+            // 通信失敗時の処理を記述
+            result_ng.innerHTML = data.responseJSON.message;
+        });
+      })
+
+  </script>
+
+{% endblock %}
