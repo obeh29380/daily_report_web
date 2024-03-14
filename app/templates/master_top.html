@@ -122,18 +122,15 @@
         e.closest('tr').children[7].children[0].disabled = '';
         e.closest('tr').children[7].children[0].value = '';
       }
-      // Ajax通信を開始
-      $.ajax({
-        url: `/master/work/complete`,
-        type: 'POST',
-        dataType: 'json',
-        contentType: 'application/json',
-        data: JSON.stringify({
+      callApi(
+        '/master/work/complete',
+        {
           'id': e.closest('tr').children[1].innerText,
           'completed_date': e.closest('tr').children[7].children[0].value
-        }),
-        timeout: 5000,
-      })
+        },
+        'POST',
+        headers
+      )
       .done(function(data) {
       })
       .fail(function(data) {
@@ -150,15 +147,9 @@
 
       current_tab = e.target.id;
       type = table_name[e.target.id]
-      // Ajax通信を開始
-      $.ajax({
-        url: `/master/${type}`,
-        type: 'GET',
-        dataType: 'json',
-        // フォーム要素の内容をハッシュ形式に変換
-        data: {},
-        timeout: 5000,
-      })
+      callApi(
+        `/master/${type}`
+      )
       .done(function(data) {
         // 通信成功時の処理を記述
         // 登録フォーム
@@ -409,15 +400,12 @@
       });
       d = {};
       d['params'] = param;
-      // Ajax通信を開始
-      $.ajax({
-        url: `/master/${type}`,
-        type: 'POST',
-        dataType: 'json',
-        contentType: 'application/json',
-        data: JSON.stringify(d),
-        timeout: 5000,
-      })
+      callApi(
+        `/master/${type}`,
+        d,
+        'POST',
+        headers
+      )
       .done(function(data) {
           // 通信成功時の処理を記述
           $(`#${type}_data`).append(`<tr id=${type}${data.new_id}>`);
@@ -446,14 +434,12 @@
       id = tr.children[1].innerHTML;
       param = {};
       param['id'] = id;
-      $.ajax({
-        url: `/master/${type}`,
-        type: 'DELETE',
-        dataType: 'json',
-        contentType: 'application/json',
-        data: JSON.stringify(param),
-        timeout: 5000,
-      })
+      callApi(
+        `/master/${type}`,
+        param,
+        'DELETE',
+        headers
+      )
       .done(function(data) {
           // 通信成功時の処理を記述
           // 「tbody」の子ノード「tr」を削除

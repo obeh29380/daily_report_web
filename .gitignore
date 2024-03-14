@@ -20,4 +20,4 @@ memo
 sample.py
 test.py
 *.sqlite
-app/__pycache__/db_common.cpython-311.pyc
+app/__pycache__/*

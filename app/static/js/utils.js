@@ -14,10 +14,11 @@ const decodeJwt = (token) => {
     return JSON.parse(decodeURIComponent(escape(window.atob(base64))));
 };
 
-const callApi = (url, data, type) => {
+const callApi = (url, data, type, headers) => {
     return $.ajax({
         url: url,
         type: type,
+        headers: headers,
         dataType: 'json',
         contentType: 'application/json',
         data: JSON.stringify(data),
@@ -25,7 +26,7 @@ const callApi = (url, data, type) => {
     })
 };
 
-const callApiFromForm = (url, data, type, headers) => {
+const callApiFromForm = (url, data = {}, type = 'GET', headers = {}) => {
     return $.ajax({
         url: url,
         type: type,
@@ -34,4 +35,35 @@ const callApiFromForm = (url, data, type, headers) => {
         headers: headers,
         timeout: 5000,
     })
+};
+
+
+const togglePageButton = (current) => {
+
+    const nav_home = document.querySelector('#nav-home');
+    const nav_report = document.querySelector('#nav-report');
+    const nav_report_summary = document.querySelector('#nav-report-summary');
+    const nav_master = document.querySelector('#nav-master');
+
+    nav_home.classList.remove('active');
+    nav_report.classList.remove('active');
+    nav_report_summary.classList.remove('active');
+    nav_master.classList.remove('active');
+
+    switch (location.pathname) {
+        case '/home':
+            nav_home.classList.toggle('active');
+            break;
+        case '/daily_report/top':
+            nav_report.classList.toggle('active');
+            break;
+        case '/daily_report/summary':
+            nav_report_summary.classList.toggle('active');
+            break;
+        case '/master/top':
+            nav_master.classList.toggle('active');
+            break;
+        default:
+      }
+
 };

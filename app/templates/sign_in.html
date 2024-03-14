@@ -64,7 +64,9 @@
         'password': document.form.floatingPassword.value
       };
       const headers = { 'X-CSRF-Token': '{{ csrf_token }}' };
+      // OAuth2PasswordRequestFormを利用するため、JSONは受け付けられない
       callApiFromForm(url, req_data, 'POST', headers)
+      // callApi(url, req_data, 'POST', headers)
       .done(function(data) {
           const account_name = data.account_name ?? '会社名未選択（ゲスト機能のみ利用可）'
           document.cookie = `account_name=${account_name}`;

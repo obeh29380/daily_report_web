@@ -81,45 +81,34 @@
       if (document.myform.id.value == ''){
         $('#invalid_id').text('IDを入力してください');
         return
-      }
+      };
       if (document.myform.pwd.value == ''){
         $('#invalid_pwd').text('パスワードを入力してください');
         return
-      }
+      };
       if (document.myform.pwd2.value == ''){
         $('#invalid_pwd2').text('パスワード(確認)を入力してください');
         return
-      }
+      };
       if (document.myform.pwd.value != document.myform.pwd2.value){
         $('#invalid_pwd2').text('確認用のパスワードが一致しません');
         return
-      }
-      // Ajax通信を開始
-      $.ajax({
-        url: `/account/${document.myform.id.value}`,
-        type: 'POST',
-        dataType: 'json',
-        contentType: 'application/json',
-        // フォーム要素の内容をハッシュ形式に変換
-        data: JSON.stringify({
-          'id': document.myform.id.value,
-          'pwd': document.myform.pwd.value,
-          'name': document.myform.fullname.value,
-        }),
-        timeout: 5000,
-        })
-        .done(function(data) {
-            // 通信成功時の処理を記述
-            // location.href = "/account"
-            // window.location.reload()
-            result_ok.innerHTML = '登録されました';
-        })
-        .fail(function(data) {
-            // 通信失敗時の処理を記述
-            result_ng.innerHTML = data.responseJSON.message;
-        });
+      };
+      callApi(`/account/${document.myform.id.value}`, {
+        'id': document.myform.id.value,
+        'pwd': document.myform.pwd.value,
+        'name': document.myform.fullname.value,
+      },
+      'POST',
+      headers
+      )
+      .done(function(data) {
+          result_ok.innerHTML = '登録されました';
       })
-
+      .fail(function(data) {
+          result_ng.innerHTML = data.responseJSON.message;
+      });
+    });
   </script>
 
 {% endblock %}

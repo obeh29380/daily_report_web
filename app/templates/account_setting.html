@@ -7,41 +7,11 @@
     <div class="nav flex-column nav-pills flex-shrink-0 me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
       
       <button type="button" class="nav-link" id="v-pills-company01-tab" data-bs-toggle="pill" data-bs-target="#v-pills-company01" role="tab" aria-controls="v-pills-company01" aria-selected="false">会社01</button>
-      <button type="button" class="nav-link" id="v-pills-company02-tab" data-bs-toggle="pill" data-bs-target="#v-pills-company02" role="tab" aria-controls="v-pills-company02" aria-selected="false">会社02</button>
+      <!-- <button type="button" class="nav-link" id="v-pills-company02-tab" data-bs-toggle="pill" data-bs-target="#v-pills-company02" role="tab" aria-controls="v-pills-company02" aria-selected="false">会社02</button> -->
     </div>
     <div class="container">
     <div class="tab-content" id="v-pills-tabContent">
 
-      <div class="tab-pane fade" id="v-pills-company01" role="tabpanel" aria-labelledby="v-pills-company01-tab" tabindex="0">
-        <div id="tab-company01">
-          <div class="container">
-            <div class="py-5 text-center">
-              <h2>company01 ユーザ一覧</h2>
-            </div>
-            
-            <form id="company01RegForm">
-            </form>
-
-            <form id="company01Form">
-            </form>
-          </div>
-        </div>
-      </div>
-      <div class="tab-pane fade" id="v-pills-company02" role="tabpanel" aria-labelledby="v-pills-company02-tab" tabindex="0">
-        <div id="tab-company02">
-          <div class="container">
-            <div class="py-5 text-center">
-              <h2>company02 ユーザ一覧</h2>
-            </div>
-            
-            <form id="company02RegForm">
-            </form>
-
-            <form id="company02Form">
-            </form>
-          </div>
-        </div>
-      </div>
       <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">ユーザ追加</button>
       <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -79,66 +49,66 @@
   </div>
   </div>
 
-
-
   <script>
     var current_tab = '';
-    var loaded = false;
 
     {% autoescape off %}
     const res_users = {{ users }};
     {% endautoescape %}
+    create_account_block();
+    create_account_table();
 
-    // table要素を生成 [{'id': 1, 'user_id': 'test', 'fullname': 'testtest', 'auth_type': 0}]
-    var table = document.createElement('table');
-    table.classList.add('table')
-    table.classList.add('table-striped')
-      
-    var thead = document.createElement('thead');
-    var tr = document.createElement('tr');
-    var th = document.createElement('th');
-    th.textContent = 'id'
-    tr.appendChild(th);
-    var th = document.createElement('th');
-    th.textContent = 'ユーザID'
-    tr.appendChild(th);
-    var th = document.createElement('th');
-    th.textContent = '名前'
-    tr.appendChild(th);
-    var th = document.createElement('th');
-    th.textContent = 'auth_type'
-    tr.appendChild(th);
-    thead.appendChild(tr);
-    // tr部分のループ
-    var tbody = document.createElement('tbody');
-    res_users.forEach((user) => {
+    function create_account_table(){
+      var table = document.createElement('table');
+      table.classList.add('table')
+      table.classList.add('table-striped')
+        
+      var thead = document.createElement('thead');
       var tr = document.createElement('tr');
-      var td = document.createElement('td');
-      td.textContent = user.id;
-      tr.appendChild(td);
-      var td = document.createElement('td');
-      td.textContent = user.user_id;
-      tr.appendChild(td);
-      var td = document.createElement('td');
-      td.textContent = user.fullname;
-      tr.appendChild(td);
-      var td = document.createElement('td');
-      td.textContent = user.auth_type;
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-    
-    });
-    table.appendChild(thead);
-    table.appendChild(tbody);
-    // 生成したtable要素を追加する
-    document.getElementById('company01RegForm').appendChild(table);
+      var th = document.createElement('th');
+      th.textContent = 'id'
+      tr.appendChild(th);
+      var th = document.createElement('th');
+      th.textContent = 'ユーザID'
+      tr.appendChild(th);
+      var th = document.createElement('th');
+      th.textContent = '名前'
+      tr.appendChild(th);
+      var th = document.createElement('th');
+      th.textContent = 'auth_type'
+      tr.appendChild(th);
+      thead.appendChild(tr);
+      // tr部分のループ
+      var tbody = document.createElement('tbody');
+      res_users.forEach((user) => {
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.textContent = user.id;
+        tr.appendChild(td);
+        var td = document.createElement('td');
+        td.textContent = user.user_id;
+        tr.appendChild(td);
+        var td = document.createElement('td');
+        td.textContent = user.fullname;
+        tr.appendChild(td);
+        var td = document.createElement('td');
+        td.textContent = user.auth_type;
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      
+      });
+      table.appendChild(thead);
+      table.appendChild(tbody);
+      // 生成したtable要素を追加する
+      document.getElementById(`${cookie.account_uuid}Form`).appendChild(table);
+    };
 
     function addUser(){
       const user_id = document.getElementById('found_user_id').innerHTML;
       const data = {
         'uuid': user_id
       }
-      callApi(`/account/${account_uuid}/user/add`, data, 'POST')
+      callApi(`/account/${account_uuid}/user/add`, data, 'POST', headers)
       .done(function (data) {
         location.href = `/account/${account_uuid}/setting`;
       })
@@ -165,382 +135,35 @@
       } else {
         e.closest('tr').children[5].children[0].disabled = 'disabled';
       }
-    }
-
-    document.addEventListener('DOMContentLoaded', function(){
-      loaded = true;
-    });
-
-    window.addEventListener('unload',function(){
-      loaded = false;
-    });
-
-    function complete_change_view(e){
-      // 画面読み込み中の設定でイベントが走るのを防止
-      if (!loaded){
-        return 0;
-      };
-
-      // 登録フォームとは逆の動き。
-      // 日付を入力して完了チェックすることで、完了を登録し、完了日付のみの変更は不可。
-      if(e.checked){
-        if (e.closest('tr').children[7].children[0].value == ''){
-          alert('完了日付を入力してください');
-          e.checked = false;
-          return;
-        }
-        e.closest('tr').children[7].children[0].disabled = 'disabled';
-      } else {
-        confirm_yes = window.confirm('工事完了を取り消します。完了日もクリアされます。よろしいですか？');
-        if(!confirm_yes){
-          e.checked = true;
-          return 0;
-        };
-        e.closest('tr').children[7].children[0].disabled = '';
-        e.closest('tr').children[7].children[0].value = '';
-      }
-      // Ajax通信を開始
-      $.ajax({
-        url: `/master/work/complete`,
-        type: 'POST',
-        dataType: 'json',
-        contentType: 'application/json',
-        data: JSON.stringify({
-          'id': e.closest('tr').children[1].innerText,
-          'completed_date': e.closest('tr').children[7].children[0].value
-        }),
-        timeout: 5000,
-      })
-      .done(function(data) {
-      })
-      .fail(function(data) {
-      });
-    }
-
-    function tab_select(e){
-      if (current_tab == e.target.id) {
-          return 0;
-      };
-      // 変更前のタブをクリア(formの中身をidで取得（種別によらず共通のIdとする）するため、削除しないと重複する)
-      $(`#${table_name[current_tab]}RegForm`).html("");
-      $(`#${table_name[current_tab]}Form`).html("");
-
-      current_tab = e.target.id;
-      type = table_name[e.target.id]
-      // Ajax通信を開始
-      $.ajax({
-        url: `/master/${type}`,
-        type: 'GET',
-        dataType: 'json',
-        // フォーム要素の内容をハッシュ形式に変換
-        data: {},
-        timeout: 5000,
-      })
-      .done(function(data) {
-        // 通信成功時の処理を記述
-        // 登録フォーム
-        if (type == 'work'){
-          // 工事管理のみ形式が異なるため、別処理
-          $(`#${type}RegForm`).html("");
-          $(`#${type}RegForm`).append(`<table class="table align-middle">`);
-          $(`#${type}RegForm`).append('</table>');
-
-          $(`#${type}RegForm table`).append(`<thead class="text-center">`);
-          $(`#${type}RegForm table`).append(`</thead>`);
-
-          $(`#${type}RegForm table thead`).append(`<tr>`);
-          $(`#${type}RegForm table thead`).append(`</tr>`);
-          Object.keys(data.col_definitions).forEach(function(key) {
-            if (data.col_definitions[key]['readonly'] == true){
-              return;
-            }
-            $(`#${type}RegForm table thead tr`).append('<th>' + data.col_definitions[key]['colname'] + '</th>');
-          });
-
-          $(`#${type}RegForm table`).append(`<tbody>`);
-          $(`#${type}RegForm table`).append(`</tbody>`);
-
-          $(`#${type}RegForm table tbody`).append(`<tr>`);
-          $(`#${type}RegForm table tbody`).append(`</tr>`);
-
-          Object.keys(data.col_definitions).forEach(function(key) {
-            if (data.col_definitions[key]['readonly'] == true){
-              return;
-            }
-            if (data.col_definitions[key]['type'] == 'select'){
-              $(`#${type}RegForm table tbody tr`).append(`<td><select class="form-select" id="${key}" required></td>`);
-              
-              data.col_definitions[key]['selections'].forEach(function(s) {
-                $(`#${key}`).append(`<option value="${s.id}">${s.name}</option>`);
-              })
-            } else if (data.col_definitions[key]['type'] == 'boolean'){
-              $(`#${type}RegForm table tbody tr`).append(`<td><div class="form-check form-switch">
-                <input type="checkbox" class="form-check-input" id="${key}" role="switch" onclick="complete_change(this)"></div></td>`);
-            } else if (data.col_definitions[key]['type'] == 'date'){
-              $(`#${type}RegForm table tbody tr`).append(`<td class="col-sm-1"><input type="date" class="form-control col-sm-1" id="${key}" placeholder="" value="" disabled="disabled"></td>`);
-            } else {
-              $(`#${type}RegForm table tbody tr`).append(`<td><input type="text" class="form-control" id="${key}" placeholder="" value="" required></td>`);
-            }
-          });
-          $(`#${type}RegForm table tbody tr`).append(`<td><button id="reg_btn" class="btn btn-primary" type="submit">登録</button></td>`);
-          $(`#${type}RegForm`).append(`<div id="message_${type}" class="text-danger"></div>`);
-          $(`#${type}RegForm`).append(`<div id="result_${type}"></div>`);
-          
-          // 一覧フォーム
-          $(`#${type}data`).html("");
-          $(`#${type}Form`).append(`<table class="table align-middle">`);
-          $(`#${type}Form`).append('</table>');
-
-          $(`#${type}Form table`).append(`<thead>`);
-          $(`#${type}Form table`).append(`</thead>`);
-
-          $(`#${type}Form table thead`).append(`<tr>`);
-          $(`#${type}Form table thead`).append(`</tr>`);
-          $(`#${type}Form table thead tr`).append('<th>' + '#' + '</th>');
-          $(`#${type}Form table thead tr`).append('<th>' + 'id' + '</th>');
-          Object.keys(data.col_definitions).forEach(function(key) {
-            if (data.col_definitions[key]['readonly'] == true){
-              return;
-            }
-            $(`#${type}Form table thead tr`).append('<th scope="col">' + data.col_definitions[key]['colname'] + '</th>');
-          });
-
-          $(`#${type}Form table`).append(`<tbody id="${type}_data">`);
-          $(`#${type}Form table`).append(`</tbody>`);
-
-          data.col_values.forEach(function(elem, index) {
-            $(`#${type}_data`).append(`<tr id=${type}${elem.id}>`);
-            $(`#${type}_data`).append('</tr>');
-            $(`#${type}${elem.id}`).append('<th scope="row"></th>');
-            Object.keys(elem).forEach(function(key) {
-              if(key == 'complete'){
-                if (elem[key]){
-                  checked = 'checked';
-                } else {
-                  checked = '';
-                }
-                $(`#${type}${elem.id}`).append(`<td><div class="form-check form-switch"><input type="checkbox" class="form-check-input" id="${key}" role="switch" ${checked} onclick="complete_change_view(this)"></div></td>`);
-              } else if(key == 'completed_date') {
-                if (checked){
-                  $(`#${type}${elem.id}`).append(`<td><input type="date" class="form-control" id="${key}" value=${elem[key]} disabled="disabled"></td>`);
-                } else {
-                  $(`#${type}${elem.id}`).append(`<td><input type="date" class="form-control" id="${key}" value=${elem[key]}></td>`);
-                }
-              } else {
-                $(`#${type}${elem.id}`).append('<td>' + elem[key] + '</td>');
-              }
-            });
-          });
-          document.getElementById(`reg_btn`).addEventListener('click', register, false);
-
-        } else {
-
-          // 工事管理以外
-          $(`#${type}RegForm`).html("");
-          $(`#${type}RegForm`).append(`<table class="table">`);
-          $(`#${type}RegForm`).append('</table>');
-
-          $(`#${type}RegForm table`).append(`<thead class="text-center">`);
-          $(`#${type}RegForm table`).append(`</thead>`);
-
-          $(`#${type}RegForm table thead`).append(`<tr>`);
-          $(`#${type}RegForm table thead`).append(`</tr>`);
-          Object.keys(data.col_definitions).forEach(function(key) {
-            if (data.col_definitions[key]['readonly'] == true){
-              return;
-            }
-            $(`#${type}RegForm table thead tr`).append('<th>' + data.col_definitions[key]['colname'] + '</th>');
-          });
-
-          $(`#${type}RegForm table`).append(`<tbody>`);
-          $(`#${type}RegForm table`).append(`</tbody>`);
-
-          $(`#${type}RegForm table tbody`).append(`<tr>`);
-          $(`#${type}RegForm table tbody`).append(`</tr>`);
-
-          Object.keys(data.col_definitions).forEach(function(key) {
-            if (data.col_definitions[key]['readonly'] == true){
-              return;
-            }
-            if (data.col_definitions[key]['type'] == 'select'){
-              $(`#${type}RegForm table tbody tr`).append(`<td><select class="form-select" id="${key}" required></td>`);
-              
-              data.col_definitions[key]['selections'].forEach(function(s) {
-                $(`#${key}`).append(`<option value="${s.id}">${s.name}</option>`);
-              })
-            } else if (data.col_definitions[key]['type'] == 'boolean'){
-              $(`#${type}RegForm table tbody tr`).append(`<td><div class="form-check form-switch"><input type="checkbox" class="form-check-input" id="${key}" role="switch"></div></td>`);
-            } else if (data.col_definitions[key]['type'] == 'date'){
-              $(`#${type}RegForm table tbody tr`).append(`<td class="col-sm-2"><input type="date" class="form-control" id="${key}" placeholder="" value=""></td>`);
-            } else {
-              $(`#${type}RegForm table tbody tr`).append(`<td><input type="text" class="form-control" id="${key}" placeholder="" value="" required></td>`);
-            }
-          });
-          $(`#${type}RegForm table tbody tr`).append(`<td><button id="reg_btn" class="btn btn-primary" type="submit">登録</button></td>`);
-          $(`#${type}RegForm`).append(`<div id="message_${type}" class="text-danger"></div>`);
-          $(`#${type}RegForm`).append(`<div id="result_${type}"></div>`);
-          
-          // 一覧フォーム
-          $(`#${type}data`).html("");
-          $(`#${type}Form`).append(`<table class="table">`);
-          $(`#${type}Form`).append('</table>');
-
-          $(`#${type}Form table`).append(`<thead>`);
-          $(`#${type}Form table`).append(`</thead>`);
-
-          $(`#${type}Form table thead`).append(`<tr>`);
-          $(`#${type}Form table thead`).append(`</tr>`);
-          $(`#${type}Form table thead tr`).append('<th>' + '#' + '</th>');
-          $(`#${type}Form table thead tr`).append('<th>' + 'id' + '</th>');
-          Object.keys(data.col_definitions).forEach(function(key) {
-            if (data.col_definitions[key]['readonly'] == true){
-              return;
-            }
-            $(`#${type}Form table thead tr`).append('<th scope="col">' + data.col_definitions[key]['colname'] + '</th>');
-          });
-
-          $(`#${type}Form table`).append(`<tbody id="${type}_data">`);
-          $(`#${type}Form table`).append(`</tbody>`);
-
-          data.col_values.forEach(function(elem, index) {
-            $(`#${type}_data`).append(`<tr id=${type}${elem.id}>`);
-            $(`#${type}_data`).append('</tr>');
-            $(`#${type}${elem.id}`).append('<th scope="row"></th>');
-            Object.keys(elem).forEach(function(key) {
-              if(key == 'complete'){
-                if (elem[key]){
-                  checked = 'checked';
-                } else {
-                  checked = '';
-                }
-                $(`#${type}${elem.id}`).append(`<td><div class="form-check form-switch"><input type="checkbox" class="form-check-input" id="${key}" role="switch" ${checked}></div></td>`);
-              } else if(key == 'completed_date') {
-                $(`#${type}${elem.id}`).append(`<td><input type="date" class="form-control" id="${key}" value=${elem[key]}></td>`);
-              } else {
-                $(`#${type}${elem.id}`).append('<td>' + elem[key] + '</td>');
-              }
-            });
-            $(`#${type}${elem.id}`).append('<td><button id="del_btn" onclick="removeList(this);" class="btn btn-danger" type="submit">削除</button></td>');
-          });
-          document.getElementById(`reg_btn`).addEventListener('click', register, false);
-        }
-      })
-      .fail(function(data) {
-          // 通信失敗時の処理を記述
-          $(`#result_${type}`).innerText = '通信失敗'
-      });
     };
 
-    function register(e){
-      $(`#result_${type}`).innerText = ''
-      event.preventDefault();
-      type = table_name[current_tab]
-      form = document.getElementById(`${type}RegForm`);
-      values = {}
+    function create_account_block(){
+      let i = 0;
+      const block = $("<div>", {"class": 'container', id: `tab-${cookie.account_uuid}`});
+      const tab = $(`<div id=v-pills-${cookie.account_uuid}></div>`);
 
-      if(type=='work'){
-        // 工事名のみ必須入力
-        if (form[0].value == ''){
-          $(`#message_${type}`).text('工事名を入力してください');
-          return 0;
-        };
+      $('#v-pills-tabContent').prepend(tab);
 
-        for (var i = 0, iLen = form.length; i < iLen; i++) {
-          if(form[i].localName == 'input'){
-            if (form[i].id == 'complete'){
-              values[form[i].id] = [form[i].checked]
-            }else{
-              values[form[i].id] = [form[i].value]
-            }
-          } else if(form[i].localName == 'select'){
-            values[form[i].id] = [form[i].value, form[i].selectedOptions[0].innerText]
-          }
-        }
-
-      } else {
-        // values = {col_id: [id,name]} or {col_id: [name]}
-        // POSTしてDBに登録する際は、常に0番目の要素を参照すればよい。登録後、画面の一覧に追加するとき、
-        // 1番目の要素があればこれを、なければ0番目要素を表示する。
-        for (var i = 0, iLen = form.length; i < iLen; i++) {
-          if(form[i].localName == 'input'){
-            if (form[i].value == ''){
-              $(`#message_${type}`).text(form.children[0].tHead.rows[0].cells[i].innerText + 'を入力してください');
-              return 0;
-            };
-            values[form[i].id] = [form[i].value]
-          } else if(form[i].localName == 'select'){
-            if (form[i].value == ''){
-              $(`#message_${type}`).text(form.children[0].tHead.rows[0].cells[i].innerText + 'を選択してください');
-              return 0;
-            };
-            values[form[i].id] = [form[i].value, form[i].selectedOptions[0].innerText]
-          }
-        }
-      }
-
-      // postのパラメータ用に変換
-      param = {}
-      Object.keys(values).forEach(function(key) {
-        // selectの場合0番目にはid,1番目に表示名が入っているため、常に一番後ろの要素を取得する。
-        param[key] = values[key][0];
-      });
-      d = {};
-      d['params'] = param;
-      // Ajax通信を開始
-      $.ajax({
-        url: `/master/${type}`,
-        type: 'POST',
-        dataType: 'json',
-        contentType: 'application/json',
-        data: JSON.stringify(d),
-        timeout: 5000,
-      })
-      .done(function(data) {
-          // 通信成功時の処理を記述
-          $(`#${type}_data`).append(`<tr id=${type}${data.new_id}>`);
-          $(`#${type}_data`).append('</tr>');
-          $(`#${type}${data.new_id}`).append('<th scope="row"></th>');
-          $(`#${type}${data.new_id}`).append('<td>' + data.new_id + '</td>');
-          Object.keys(values).forEach(function(key) {
-              // selectの場合0番目にはid,1番目に表示名が入っているため、常に一番後ろの要素を取得する。
-              $(`#${type}${data.new_id}`).append('<td>' + values[key][values[key].length - 1] + '</td>');
-          });
-          $(`#${type}${data.new_id}`).append('<td><button id="del_btn" onclick="removeList(this);" class="btn btn-danger" type="submit">削除</button></td>');
-          $(`#message_${type}`).text('');
+      tab.append(block);
+      block.append(
+        $("<div>", {
+          class: 'py-5 text-center'
         })
-      .fail(function(data) {
-          $(`#message_${type}`).text(data.responseJSON.detail);
-      });
+      ).append(
+        $("<h2>", {
+          text: `${cookie.account_name} ユーザ一覧`
+        })
+      );
+
+      block.append(
+        $("<form>", {
+          id: `${cookie.account_uuid}Form`
+        })
+      );
+
+      
     };
 
-    function removeList(obj) {
-      $(`#result_${type}`).innerText = ''
-      event.preventDefault();
-      type = form_name[obj.form.id]
-      form = document.getElementById(`${type}_data`);
-    // objの親の親のノードを取得し（つまりtr要素）、変数「tr」に代入
-      var tr = obj.parentNode.parentNode;
-      id = tr.children[1].innerHTML;
-      param = {};
-      param['id'] = id;
-      $.ajax({
-        url: `/master/${type}`,
-        type: 'DELETE',
-        dataType: 'json',
-        contentType: 'application/json',
-        data: JSON.stringify(param),
-        timeout: 5000,
-      })
-      .done(function(data) {
-          // 通信成功時の処理を記述
-          // 「tbody」の子ノード「tr」を削除
-          form.removeChild(tr); 
-        })
-      .fail(function(data) {
-          // 通信失敗時の処理を記述
-          $(`#result_${type}`).innerText = '通信失敗'
-      });
-    };
   </script>
 
 {% endblock %}

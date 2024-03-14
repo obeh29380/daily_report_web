@@ -95,7 +95,8 @@
 
               <div class="row g-3">
                 <div class="col">
-                  <label for="givenName" class="form-label">備考</label>
+                  <!-- <label for="givenName" class="form-label">備考</label> -->
+                  <label class="form-label">備考</label>
                   <input id='txt_memo' type="text" class="form-control" aria-label="a">
                 </div>
               </div>
@@ -192,7 +193,7 @@
                       <th style="width: 30%;" class="text-center">単価</th>
                     </tr>
                   </thead>
-      
+
                   <tbody id="stafflist">
                   </tbody>
                 </table>
@@ -551,46 +552,6 @@
       return new bootstrap.Toast(toastEl);
     });
 
-    var ws = new WebSocket("ws://localhost:80/ws/register_report");
-
-    $(function(){
-      // WebSocket作成
-
-      // WebSocket open時のイベントハンドラ登録
-      ws.onopen = function(){
-        $("#log").prepend("&lt;onopen&gt; " + "<br/>");
-      }
-
-      // WebSocket message受信時のイベントハンドラ登録
-      ws.onmessage = function(message){
-        $("#log").prepend(message.data + "<br/>");
-        showToast();
-      }
-
-      // WebSocket error時のイベントハンドラ登録
-      ws.onerror = function(){
-        $("#log").prepend("&lt;onerror&gt; " + "<br/>");
-      }
-
-      // WebSocket close時のイベントハンドラ登録
-      ws.onclose = function(){
-        $("#log").prepend("&lt;onclose&gt; " + "<br/>");
-      }
-
-      // Windowが閉じられた(例：ブラウザを閉じた)時のイベントを設定
-      $(window).unload(function() {
-        ws.onclose(); // WebSocket close
-      })
-
-      // キー入力時のイベントを設定
-      $("#wstest").onclick(function(e){
-        ws.send($("#wstext").val()); // WebSocketを使いサーバにメッセージを送信
-      });
-
-      
-
-    })
-
     function showToast() {
       // トーストを表示する
       toastList[0].show();
@@ -854,14 +815,9 @@
             return
           }
           
-          $.ajax({
-            url: `/master/trash/${dest_id}/${item_id}`,
-            type: 'GET',
-            dataType: 'json',
-            // フォーム要素の内容をハッシュ形式に変換
-            data: {},
-            timeout: 5000,
-          })
+          callApi(
+            `/master/trash/${dest_id}/${item_id}`
+          )
           .done(function(data) {
             e.target.closest('tr').children[2].children[0].value = data.cost
             e.target.closest('tr').children[3].children[0].value = data.unit_type
@@ -947,15 +903,14 @@
       valuable_input = get_valuable_input();
       other_input = get_other_input();
       trash_input = get_trash_input();
-      
-      // Ajax通信を開始
+
       callApi(
-        `/daily_report/${worksite}/${workdate}`, 
+        `/daily_report/${worksite}/work_date/${workdate}`, 
         {
           'head': {
             'customer': customer,
             'address': address,
-            'memo': memo,
+            'memo': memo
           },
           'detail': {
             'staffs': staff_input,
@@ -968,13 +923,11 @@
             'trashes': trash_input
           }
         },
-        'POST'
+        'POST',
+        headers
       ).done(function(data) {
-        // 通信成功時の処理を記述
         showToast();
-
       }).fail(function(jqXHR, textStatus, errorThrown, XMLHttPRequest) {
-        // 通信失敗時の処理を記述
         console.log("jqXHR          : " + jqXHR.status); // HTTPステータスが取得
         console.log("textStatus     : " + textStatus);    // タイムアウト、パースエラー
         console.log("errorThrown    : " + errorThrown.message); // 例外情報
@@ -1177,20 +1130,14 @@
         return;
       }
 
-      $.ajax({
-        url: `https://apis.postcode-jp.com/api/v5/postcodes/${address_num}`,
-        type: 'GET',
-        dataType: 'json',
-        data: {
-          "apikey": "uJvHA9Oi0ALu2FHpUXIpowPOQv5QMQn5YPkg2Ry"
-        },
-        timeout: 5000,
-      })
+      callApi(
+        `https://apis.postcode-jp.com/api/v5/postcodes/${address_num}`,
+        {"apikey": "uJvHA9Oi0ALu2FHpUXIpowPOQv5QMQn5YPkg2Ry"}
+      )
       .done(function(data) {
         $('#txt_address')[0].value = data[0]['allAddress'];
       })
       .fail(function(data) {
-          
       });
     }
 
@@ -1219,15 +1166,9 @@
       worksite = $('#txt_worksite')[0].value;
       workdate = $('#date')[0].value;
 
-
-      $.ajax({
-        url: `/daily_report/${worksite}/${workdate}`,
-        type: 'GET',
-        dataType: 'json',
-        // フォーム要素の内容をハッシュ形式に変換
-        data: {},
-        timeout: 5000,
-      })
+      callApi(
+        `/daily_report/${worksite}/work_date/${workdate}`
+      )
       .done(function(data) {
         clear_form(data);
         set_registered_data(data);
@@ -1352,7 +1293,6 @@
           re_calc($('#otherlist')[0].children[last_idx].childNodes[2].firstChild);
           add_new_row_no_select($('#otherlist'))
         }
-
       }
     }
 

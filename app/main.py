@@ -87,8 +87,8 @@ https://www.stackhawk.com/blog/csrf-protection-in-fastapi/
 https://github.com/aekasitt/fastapi-csrf-protect
 """
 app = FastAPI()
-app.mount(path="/static", app=StaticFiles(directory="/etc/drw/app/static"), name="static")
-templates = Jinja2Templates(directory="/etc/drw/app/templates")
+app.mount(path="/static", app=StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # token expire seconds(default: 1 hour)
 token_exp = float(os.getenv('token_exp', 3600))
@@ -263,12 +263,15 @@ def sign_in_view(request: Request, csrf_protect: CsrfProtect = Depends()):
 
 
 @app.get("/sign_up")
-def sign_up(request: Request):
-    return templates.TemplateResponse(
+def sign_up(request: Request, csrf_protect: CsrfProtect = Depends()):
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(
         "sign_up.html", {
             "request": request
         }
     )
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @app.get("/user/{user_id}")
@@ -345,7 +348,7 @@ async def sign_out(request: Request, response: Response):
 
 @app.get("/home")
 @auth_required
-def home(request: Request):
+def home(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     decoded_token = get_decoded_token(
         request.cookies.get('token'), key=token_key)
@@ -358,23 +361,24 @@ def home(request: Request):
             },
             status_code=403
         )
-
-    return templates.TemplateResponse(
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(
         "home.html", {
             "request": request
         }
     )
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @app.get("/account")
 @auth_required
-def get_accounts(request: Request):
+def get_accounts(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     decoded_token = get_decoded_token(
         request.cookies.get('token'), key=token_key)
 
     if decoded_token is None:
-        # return Response(status_code=403)
         return templates.TemplateResponse(
             "invalid.html", {
                 "request": request
@@ -382,22 +386,24 @@ def get_accounts(request: Request):
             status_code=403
         )
 
-    return templates.TemplateResponse(
-        "account_settings.html", {
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(
+        "account_register.html", {
             "request": request
         }
     )
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @app.get("/account/{account_uuid}/setting")
 @auth_required
-def get_account_users(request: Request, account_uuid: int):
+def get_account_users(request: Request, account_uuid: int, csrf_protect: CsrfProtect = Depends()):
 
     decoded_token = get_decoded_token(
         request.cookies.get('token'), key=token_key)
     
-    # token = validate_token(decoded_token)
-
+    token = validate_token(decoded_token, ['account_uuid'])
 
     if decoded_token is None:
         return templates.TemplateResponse(
@@ -406,6 +412,8 @@ def get_account_users(request: Request, account_uuid: int):
             },
             status_code=403
         )
+
+    # TODO 自分が管理権限を持つアカウントを全て返す対応
     res_users = list()
     with Session(get_engine()) as session:
         try:
@@ -423,12 +431,15 @@ def get_account_users(request: Request, account_uuid: int):
         except NoResultFound as e:
             pass
 
-    return templates.TemplateResponse(
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(
         "account_setting.html", {
             "request": request,
             "users": res_users,
         }
     )
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @app.post("/account/{account_id}")
@@ -505,7 +516,7 @@ async def add_user_to_account(request: Request, account_uuid: int, user_in: User
 # -- master
 @app.get("/master/top")
 @auth_required
-def master_menu(request: Request):
+def master_menu(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     param = dict()
     param['menu'] = {
@@ -537,13 +548,15 @@ def master_menu(request: Request):
             'menu_name': '工事進捗'
         },
     }
-
-    return templates.TemplateResponse(
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(
         "master_top.html", {
             "request": request,
             "menu": param['menu'],
         }
     )
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 MAP_MASTER = {
@@ -678,7 +691,7 @@ async def on_get(request: Request, dest_id: int, item_id: int):
 
 # report
 @app.get("/daily_report/top")
-async def daily_report_top_page(request: Request):
+async def daily_report_top_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
@@ -721,18 +734,21 @@ async def daily_report_top_page(request: Request):
         param['unit_type'] = UNIT_TYPE
 
         param['request'] = request
-
-    return templates.TemplateResponse(
+    
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(
         "daily_report_top.html", param
     )
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
-@app.get("/daily_report/{work_name}/{work_date}")
+
+@app.get("/daily_report/{work_name}/work_date/{work_date}")
 async def get_daily_report(request: Request, work_name: str, work_date: str):
 
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
     date = datetime.datetime.strptime(work_date, '%Y-%m-%d')
-
 
     content = dict()
     with Session(get_engine()) as session:
@@ -783,7 +799,7 @@ async def get_daily_report(request: Request, work_name: str, work_date: str):
     return JSONResponse(content=content)
 
 
-@app.post("/daily_report/{work_name}/{work_date}")
+@app.post("/daily_report/{work_name}/work_date/{work_date}")
 async def register_daily_report(request: Request, work_name: str, work_date: str, report: Report):
 
     token = get_decoded_token(request.cookies['token'], key=token_key)
@@ -871,10 +887,10 @@ async def register_daily_report(request: Request, work_name: str, work_date: str
         session.add_all(new_details)
         session.commit()
 
-    return Response()
+    return JSONResponse(content={'detail': 'ok'})
 
-@app.get("/summary")
-async def get_summary_top_page(request: Request):
+@app.get("/daily_report/summary")
+async def get_summary_top_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
@@ -884,17 +900,19 @@ async def get_summary_top_page(request: Request):
             ReportHead.account_id == token['account_uuid']))
 
         worksite_names = list({'id': x.id, 'name': x.worksite_name} for x in head)
-
-    return templates.TemplateResponse(
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(
         "daily_report_summary.html", {
             "request": request,
             "worksite_names": worksite_names,
         }
     )
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
-@app.get("/summary/{work_id}")
-async def get_summary_with_workid(request: Request, work_id: int):
+@app.get("/daily_report/{work_name}/summary/{work_id}")
+async def get_summary_with_workid(request: Request, work_name: str, work_id: int):
 
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])

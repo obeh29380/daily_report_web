@@ -236,14 +236,9 @@
       $('#worksite_name')[0].innerText = e.innerText;
       work_id = e.id;
 
-      $.ajax({
-        url: `/summary/${work_id}`,
-        type: 'GET',
-        dataType: 'json',
-        // フォーム要素の内容をハッシュ形式に変換
-        data: {},
-        timeout: 5000,
-      })
+      callApi(
+        `/daily_report/${e.innerText}/summary/${work_id}`,
+      )
       .done(function(data) {
         if(data['details'].length == 0){
           return;
@@ -337,7 +332,6 @@
           }
 
           $('#total')[0].innerHTML = to_currency(currency_to_int($('#total')[0].innerHTML) + Number(data['details'][i]['total']))
-            
         };
 
         // 小計
@@ -367,6 +361,5 @@
       });
     }
   </script>
-
 
 {% endblock %}
