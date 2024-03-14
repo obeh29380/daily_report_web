@@ -76,6 +76,7 @@
   <script>
     var reg_btn = document.getElementById('reg_btn');
     var result = document.getElementById('result');
+    let headers = { 'X-CSRF-Token': '{{ csrf_token }}' };
 
     reg_btn.addEventListener('click', function () {
       result.innerHTML = "";
@@ -126,7 +127,7 @@
         'name_last': form.familyname.value,
         'name_first': form.givenname.value
       };
-      callApi('/user/create', data, 'POST')
+      callApi('/user/create', data, 'POST', headers)
         .done(function (data) {
           result.innerHTML = `<div class="alert alert-success text-center" role="alert">登録されました</div>`;
         })

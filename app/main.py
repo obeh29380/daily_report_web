@@ -167,7 +167,7 @@ async def login_for_access_token_with_account(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     account_id: Union[str, None] = None,
-    csrf_protect:CsrfProtect = Depends(),
+    csrf_protect: CsrfProtect = Depends(),
 ) -> JSONResponse:
 
     await csrf_protect.validate_csrf(request)
@@ -251,6 +251,7 @@ async def login_for_access_token(
 
 @app.get("/sign_in")
 def sign_in_view(request: Request, csrf_protect: CsrfProtect = Depends()):
+
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
     response = templates.TemplateResponse(
         "sign_in.html", {
@@ -264,10 +265,12 @@ def sign_in_view(request: Request, csrf_protect: CsrfProtect = Depends()):
 
 @app.get("/sign_up")
 def sign_up(request: Request, csrf_protect: CsrfProtect = Depends()):
+
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
     response = templates.TemplateResponse(
         "sign_up.html", {
-            "request": request
+            "request": request,
+            "csrf_token": csrf_token,
         }
     )
     csrf_protect.set_csrf_cookie(signed_token, response)
@@ -295,10 +298,10 @@ async def get_user_info(request: Request, user_id: str):
 
 
 @app.post("/user/create")
-async def create_user(new_user: NewUser):
+async def create_user(request: Request, new_user: NewUser, csrf_protect: CsrfProtect = Depends()):
 
-    fullname = ensure_str(new_user.name_last, "") + \
-        ensure_str(new_user.name_first, "")
+    await csrf_protect.validate_csrf(request)
+    fullname = ensure_str(new_user.name_last, "") + ensure_str(new_user.name_first, "")
     if fullname is None or fullname == "":
         fullname = USER_DEFAULT_FULLNAME
 
@@ -331,8 +334,9 @@ async def create_user(new_user: NewUser):
 
 
 @app.post("/sign_out")
-async def sign_out(request: Request, response: Response):
+async def sign_out(request: Request, response: Response, csrf_protect: CsrfProtect = Depends()):
 
+    await csrf_protect.validate_csrf(request)
     token = get_decoded_token(request.cookies['token'], key=token_key)
 
     if token is None:
@@ -364,7 +368,8 @@ def home(request: Request, csrf_protect: CsrfProtect = Depends()):
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
     response = templates.TemplateResponse(
         "home.html", {
-            "request": request
+            "request": request,
+            "csrf_token": csrf_token,
         }
     )
     csrf_protect.set_csrf_cookie(signed_token, response)
@@ -389,7 +394,8 @@ def get_accounts(request: Request, csrf_protect: CsrfProtect = Depends()):
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
     response = templates.TemplateResponse(
         "account_register.html", {
-            "request": request
+            "request": request,
+            "csrf_token": csrf_token,
         }
     )
     csrf_protect.set_csrf_cookie(signed_token, response)
@@ -436,6 +442,7 @@ def get_account_users(request: Request, account_uuid: int, csrf_protect: CsrfPro
         "account_setting.html", {
             "request": request,
             "users": res_users,
+            "csrf_token": csrf_token,
         }
     )
     csrf_protect.set_csrf_cookie(signed_token, response)
@@ -444,8 +451,9 @@ def get_account_users(request: Request, account_uuid: int, csrf_protect: CsrfPro
 
 @app.post("/account/{account_id}")
 # @auth_required # うまく動かないので後回し
-async def add_account(request: Request, account_id: str, account: AccountModel):
+async def add_account(request: Request, account_id: str, account: AccountModel, csrf_protect: CsrfProtect = Depends()):
 
+    await csrf_protect.validate_csrf(request)
     token = get_decoded_token(
         request.cookies['token'], key=token_key, algorithms=ALGORITHM)
 
@@ -477,8 +485,9 @@ async def add_account(request: Request, account_id: str, account: AccountModel):
 
 @app.post("/account/{account_uuid}/user/add")
 # @auth_required # うまく動かないので後回し
-async def add_user_to_account(request: Request, account_uuid: int, user_in: UserInvitation):
+async def add_user_to_account(request: Request, account_uuid: int, user_in: UserInvitation, csrf_protect: CsrfProtect = Depends()):
 
+    await csrf_protect.validate_csrf(request)
     token = get_decoded_token(
         request.cookies['token'], key=token_key, algorithms=ALGORITHM)
 
@@ -518,6 +527,18 @@ async def add_user_to_account(request: Request, account_uuid: int, user_in: User
 @auth_required
 def master_menu(request: Request, csrf_protect: CsrfProtect = Depends()):
 
+    decoded_token = get_decoded_token(
+        request.cookies.get('token'), key=token_key)
+
+    if decoded_token is None:
+        # return Response(status_code=403)
+        return templates.TemplateResponse(
+            "invalid.html", {
+                "request": request
+            },
+            status_code=403
+        )
+
     param = dict()
     param['menu'] = {
         'staff': {
@@ -553,6 +574,7 @@ def master_menu(request: Request, csrf_protect: CsrfProtect = Depends()):
         "master_top.html", {
             "request": request,
             "menu": param['menu'],
+            "csrf_token": csrf_token,
         }
     )
     csrf_protect.set_csrf_cookie(signed_token, response)
@@ -593,12 +615,13 @@ def get_master(request: Request, master_type):
 
 @app.post("/master/{master_type}")
 # @auth_required # うまく動かないので後回し
-async def add_master(request: Request, params: MasterParams, master_type):
+async def add_master(request: Request, params: MasterParams, master_type, csrf_protect: CsrfProtect = Depends()):
     """
     TODO API仕様を見ても、各マスターのparamはわからない。マスタ毎のIFに分けるべき。
     現状は、ブラウザから利用する前提とする。
     """
 
+    await csrf_protect.validate_csrf(request)
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
 
@@ -620,8 +643,9 @@ async def add_master(request: Request, params: MasterParams, master_type):
 
 @app.delete("/master/{master_type}")
 # @auth_required
-async def delete_master(request: Request, target: DeleteTarget, master_type):
+async def delete_master(request: Request, target: DeleteTarget, master_type, csrf_protect: CsrfProtect = Depends()):
 
+    await csrf_protect.validate_csrf(request)
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
 
@@ -640,8 +664,9 @@ async def delete_master(request: Request, target: DeleteTarget, master_type):
 
 
 @app.post("/master/work/complete")
-async def add_master(request: Request, report: CompleteReport):
+async def add_master(request: Request, report: CompleteReport, csrf_protect: CsrfProtect = Depends()):
 
+    await csrf_protect.validate_csrf(request)
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
     
@@ -696,6 +721,15 @@ async def daily_report_top_page(request: Request, csrf_protect: CsrfProtect = De
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
 
+    if token is None:
+        # return Response(status_code=403)
+        return templates.TemplateResponse(
+            "invalid.html", {
+                "request": request
+            },
+            status_code=403
+        )
+
     param = dict()
     with Session(get_engine()) as session:
 
@@ -722,7 +756,7 @@ async def daily_report_top_page(request: Request, csrf_protect: CsrfProtect = De
                 ReportHead.account_id == token['account_uuid']
             )
         )
-        
+
         param['staffs'] = list(x.to_dict() for x in staffs)
         param['cars'] = list(x.to_dict() for x in cars)
         param['machines'] = list(x.to_dict() for x in machines)
@@ -736,8 +770,10 @@ async def daily_report_top_page(request: Request, csrf_protect: CsrfProtect = De
         param['request'] = request
     
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    param['csrf_token'] = csrf_token
     response = templates.TemplateResponse(
-        "daily_report_top.html", param
+        "daily_report_top.html",
+        param,
     )
     csrf_protect.set_csrf_cookie(signed_token, response)
     return response
@@ -800,8 +836,9 @@ async def get_daily_report(request: Request, work_name: str, work_date: str):
 
 
 @app.post("/daily_report/{work_name}/work_date/{work_date}")
-async def register_daily_report(request: Request, work_name: str, work_date: str, report: Report):
+async def register_daily_report(request: Request, work_name: str, work_date: str, report: Report, csrf_protect: CsrfProtect = Depends()):
 
+    await csrf_protect.validate_csrf(request)
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
 
@@ -894,6 +931,16 @@ async def get_summary_top_page(request: Request, csrf_protect: CsrfProtect = Dep
 
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
+
+    if token is None:
+        # return Response(status_code=403)
+        return templates.TemplateResponse(
+            "invalid.html", {
+                "request": request
+            },
+            status_code=403
+        )
+
     content = dict()
     with Session(get_engine()) as session:
         head = session.scalars(select(ReportHead).where(
@@ -905,6 +952,7 @@ async def get_summary_top_page(request: Request, csrf_protect: CsrfProtect = Dep
         "daily_report_summary.html", {
             "request": request,
             "worksite_names": worksite_names,
+            "csrf_token": csrf_token
         }
     )
     csrf_protect.set_csrf_cookie(signed_token, response)

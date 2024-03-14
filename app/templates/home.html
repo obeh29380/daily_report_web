@@ -3,11 +3,9 @@
 
 {% block body %}
 
-  {{data}}{{csrf_token}}
   <button id="btnAccount">アカウント設定</button>
 
   <script>
-    
     btnAccountSettings = document.getElementById('btnAccount');
     btnAccountSettings.addEventListener('click', function(){
       location.href = `/account/${account_uuid}/setting`;
