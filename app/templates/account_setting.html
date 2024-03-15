@@ -1,169 +1,173 @@
-{% extends "base.html" %}
+{% extends "base_user.html" %}
 {% block title %}ユーザ一覧{% endblock %}
 
 {% block body %}
-  <div class="container">
+<div class="container">
   <div class="d-flex align-items-start">
-    <div class="nav flex-column nav-pills flex-shrink-0 me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-      
-      <button type="button" class="nav-link" id="v-pills-company01-tab" data-bs-toggle="pill" data-bs-target="#v-pills-company01" role="tab" aria-controls="v-pills-company01" aria-selected="false">会社01</button>
+    <div class="nav flex-column nav-pills flex-shrink-0 me-3" id="v-pills-tab" role="tablist"
+      aria-orientation="vertical">
+
+      <button type="button" class="nav-link" id="v-pills-company01-tab" data-bs-toggle="pill"
+        data-bs-target="#v-pills-company01" role="tab" aria-controls="v-pills-company01"
+        aria-selected="false">会社01</button>
       <!-- <button type="button" class="nav-link" id="v-pills-company02-tab" data-bs-toggle="pill" data-bs-target="#v-pills-company02" role="tab" aria-controls="v-pills-company02" aria-selected="false">会社02</button> -->
     </div>
     <div class="container">
-    <div class="tab-content" id="v-pills-tabContent">
+      <div class="tab-content" id="v-pills-tabContent">
 
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo">ユーザ追加</button>
-      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">ユーザ追加</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <form>
-                <div class="mb-3">
-                  <label for="user_id" class="col-form-label">ユーザID:</label>
-                  <input type="text" class="form-control" id="user_id">
-                  <button type="button" class="btn btn-primary" id="btn_search">検索</button>
-                </div>
-                <div class="mb-3">
-                  <label for="found_user" class="col-form-label">見つかったユーザ:</label>
-                  <div id="found_user">
-                    <div id="found_user_id"></div>
-                    <div id="found_user_fullname"></div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
+          data-bs-whatever="@mdo">ユーザ追加</button>
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">ユーザ追加</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form>
+                  <div class="mb-3">
+                    <label for="user_id" class="col-form-label">ユーザID:</label>
+                    <input type="text" class="form-control" id="user_id">
+                    <button type="button" class="btn btn-primary" id="btn_search">検索</button>
                   </div>
-                  <button type="button" class="btn btn-success" id="addUser">追加</button>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <div class="mb-3">
+                    <label for="found_user" class="col-form-label">見つかったユーザ:</label>
+                    <div id="found_user">
+                      <div id="found_user_id"></div>
+                      <div id="found_user_fullname"></div>
+                    </div>
+                    <button type="button" class="btn btn-success" id="addUser">追加</button>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
-
-    </div>
     </div>
   </div>
-  </div>
+</div>
 
-  <script>
-    var current_tab = '';
+<script>
+  var current_tab = '';
 
-    {% autoescape off %}
-    const res_users = {{ users }};
-    {% endautoescape %}
-    create_account_block();
-    create_account_table();
+  {% autoescape off %}
+  const res_users = {{ users }};
+  {% endautoescape %}
+  create_account_block();
+  create_account_table();
 
-    function create_account_table(){
-      var table = document.createElement('table');
-      table.classList.add('table')
-      table.classList.add('table-striped')
-        
-      var thead = document.createElement('thead');
+  function create_account_table() {
+    var table = document.createElement('table');
+    table.classList.add('table')
+    table.classList.add('table-striped')
+
+    var thead = document.createElement('thead');
+    var tr = document.createElement('tr');
+    var th = document.createElement('th');
+    th.textContent = 'id'
+    tr.appendChild(th);
+    var th = document.createElement('th');
+    th.textContent = 'ユーザID'
+    tr.appendChild(th);
+    var th = document.createElement('th');
+    th.textContent = '名前'
+    tr.appendChild(th);
+    var th = document.createElement('th');
+    th.textContent = 'auth_type'
+    tr.appendChild(th);
+    thead.appendChild(tr);
+    // tr部分のループ
+    var tbody = document.createElement('tbody');
+    res_users.forEach((user) => {
       var tr = document.createElement('tr');
-      var th = document.createElement('th');
-      th.textContent = 'id'
-      tr.appendChild(th);
-      var th = document.createElement('th');
-      th.textContent = 'ユーザID'
-      tr.appendChild(th);
-      var th = document.createElement('th');
-      th.textContent = '名前'
-      tr.appendChild(th);
-      var th = document.createElement('th');
-      th.textContent = 'auth_type'
-      tr.appendChild(th);
-      thead.appendChild(tr);
-      // tr部分のループ
-      var tbody = document.createElement('tbody');
-      res_users.forEach((user) => {
-        var tr = document.createElement('tr');
-        var td = document.createElement('td');
-        td.textContent = user.id;
-        tr.appendChild(td);
-        var td = document.createElement('td');
-        td.textContent = user.user_id;
-        tr.appendChild(td);
-        var td = document.createElement('td');
-        td.textContent = user.fullname;
-        tr.appendChild(td);
-        var td = document.createElement('td');
-        td.textContent = user.auth_type;
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-      
-      });
-      table.appendChild(thead);
-      table.appendChild(tbody);
-      // 生成したtable要素を追加する
-      document.getElementById(`${cookie.account_uuid}Form`).appendChild(table);
-    };
+      var td = document.createElement('td');
+      td.textContent = user.id;
+      tr.appendChild(td);
+      var td = document.createElement('td');
+      td.textContent = user.user_id;
+      tr.appendChild(td);
+      var td = document.createElement('td');
+      td.textContent = user.fullname;
+      tr.appendChild(td);
+      var td = document.createElement('td');
+      td.textContent = user.auth_type;
+      tr.appendChild(td);
+      tbody.appendChild(tr);
 
-    function addUser(){
-      const user_id = document.getElementById('found_user_id').innerHTML;
-      const data = {
-        'uuid': user_id
-      }
-      callApi(`/account/${account_uuid}/user/add`, data, 'POST', headers)
+    });
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    // 生成したtable要素を追加する
+    document.getElementById(`${cookie.account_uuid}Form`).appendChild(table);
+  };
+
+  function addUser() {
+    const user_id = document.getElementById('found_user_id').innerHTML;
+    const data = {
+      'uuid': user_id
+    }
+    callApi(`/account/${account_uuid}/user/add`, data, 'POST', headers)
       .done(function (data) {
         location.href = `/account/${account_uuid}/setting`;
       })
       .fail(function (data) {
       });
 
-    };
-    document.getElementById('addUser').addEventListener('click', addUser);
+  };
+  document.getElementById('addUser').addEventListener('click', addUser);
 
-    function searchUser(){
-      const user_id = document.getElementById('user_id').value;
-      callApi(`/user/${user_id}`, {}, 'GET')
+  function searchUser() {
+    const user_id = document.getElementById('user_id').value;
+    callApi(`/user/${user_id}`, {}, 'GET')
       .done(function (data) {
         document.getElementById('found_user_id').innerHTML = data.user.id;
         document.getElementById('found_user_fullname').innerHTML = data.user.fullname;
       })
       .fail(function (data) {
       });
-    };
-    document.querySelector('#btn_search').addEventListener('click', searchUser);
-    function complete_change(e){
-      if(e.checked){
-        e.closest('tr').children[5].children[0].disabled = '';
-      } else {
-        e.closest('tr').children[5].children[0].disabled = 'disabled';
-      }
-    };
+  };
+  document.querySelector('#btn_search').addEventListener('click', searchUser);
+  function complete_change(e) {
+    if (e.checked) {
+      e.closest('tr').children[5].children[0].disabled = '';
+    } else {
+      e.closest('tr').children[5].children[0].disabled = 'disabled';
+    }
+  };
 
-    function create_account_block(){
-      let i = 0;
-      const block = $("<div>", {"class": 'container', id: `tab-${cookie.account_uuid}`});
-      const tab = $(`<div id=v-pills-${cookie.account_uuid}></div>`);
+  function create_account_block() {
+    let i = 0;
+    const block = $("<div>", { "class": 'container', id: `tab-${cookie.account_uuid}` });
+    const tab = $(`<div id=v-pills-${cookie.account_uuid}></div>`);
 
-      $('#v-pills-tabContent').prepend(tab);
+    $('#v-pills-tabContent').prepend(tab);
 
-      tab.append(block);
-      block.append(
-        $("<div>", {
-          class: 'py-5 text-center'
-        })
-      ).append(
-        $("<h2>", {
-          text: `${cookie.account_name} ユーザ一覧`
-        })
-      );
+    tab.append(block);
+    block.append(
+      $("<div>", {
+        class: 'py-5 text-center'
+      })
+    ).append(
+      $("<h2>", {
+        text: `${cookie.account_name} ユーザ一覧`
+      })
+    );
 
-      block.append(
-        $("<form>", {
-          id: `${cookie.account_uuid}Form`
-        })
-      );
+    block.append(
+      $("<form>", {
+        id: `${cookie.account_uuid}Form`
+      })
+    );
 
-      
-    };
 
-  </script>
+  };
+
+</script>
 
 {% endblock %}

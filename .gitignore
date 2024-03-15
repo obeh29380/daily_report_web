@@ -21,3 +21,4 @@ sample.py
 test.py
 *.sqlite
 app/__pycache__/*
+app/__pycache__/
