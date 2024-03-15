@@ -1,0 +1,52 @@
+[
+    {
+        "dest_id": 1,
+        "item_id": 1,
+        "cost": 1100
+    },
+    {
+        "dest_id": 1,
+        "item_id": 2,
+        "cost": 1200
+    },
+    {
+        "dest_id": 1,
+        "item_id": 3,
+        "cost": 1300
+    },
+    {
+        "dest_id": 1,
+        "item_id": 4,
+        "cost": 1400
+    },
+    {
+        "dest_id": 1,
+        "item_id": 5,
+        "cost": 1500
+    },
+    {
+        "dest_id": 2,
+        "item_id": 1,
+        "cost": 2100
+    },
+    {
+        "dest_id": 2,
+        "item_id": 2,
+        "cost": 2200
+    },
+    {
+        "dest_id": 2,
+        "item_id": 3,
+        "cost": 2300
+    },
+    {
+        "dest_id": 2,
+        "item_id": 4,
+        "cost": 2400
+    },
+    {
+        "dest_id": 2,
+        "item_id": 5,
+        "cost": 2500
+    }
+]

@@ -55,13 +55,14 @@ from schemas import (
     DeleteTarget,
     ItemType,
     MasterParams,
+    MAP_MASTER,
     NewUser,
     Report,
     Token,
     UNIT_TYPE,
     UserInvitation,
 )
-from utils import (
+from app_utils import (
     authenticate_user,
     create_access_token,
     ensure_str,
@@ -580,18 +581,6 @@ def master_menu(request: Request, csrf_protect: CsrfProtect = Depends()):
     csrf_protect.set_csrf_cookie(signed_token, response)
     return response
 
-
-MAP_MASTER = {
-    'staff': StaffMaster,
-    'car': CarMaster,
-    'lease': LeaseMaster,
-    'machine': MachineMaster,
-    'trash': TrashMaster,
-    'customer': CustomerMaster,
-    'dest': DestMaster,
-    'item': ItemMaster,
-    'work': ReportHead,
-}
 
 # == Master 品目＆費用 のもの以外は追加処理が必要
 

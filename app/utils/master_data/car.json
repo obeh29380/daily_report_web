@@ -1,0 +1,22 @@
+[
+    {
+        "name": "4tトラック",
+        "cost": 10000,
+        "account_id": 1
+    },
+    {
+        "name": "2tトラック",
+        "cost": 10000,
+        "account_id": 1
+    },
+    {
+        "name": "軽バン",
+        "cost": 10000,
+        "account_id": 2
+    },
+    {
+        "name": "軽トラ",
+        "cost": 10000,
+        "account_id": 2
+    }
+]

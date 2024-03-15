@@ -1,0 +1,47 @@
+[
+    {
+        "name": "重機１",
+        "cost": 10000,
+        "account_id": 1
+    },
+    {
+        "name": "重機２",
+        "cost": 10000,
+        "account_id": 2
+    },
+    {
+        "name": "重機３",
+        "cost": 10000,
+        "account_id": 3
+    },
+    {
+        "name": "重機４",
+        "cost": 10000,
+        "account_id": 1
+    },
+    {
+        "name": "重機５",
+        "cost": 10000,
+        "account_id": 2
+    },
+    {
+        "name": "重機６",
+        "cost": 10000,
+        "account_id": 3
+    },
+    {
+        "name": "重機７",
+        "cost": 10000,
+        "account_id": 1
+    },
+    {
+        "name": "重機８",
+        "cost": 10000,
+        "account_id": 2
+    },
+    {
+        "name": "重機９",
+        "cost": 10000,
+        "account_id": 3
+    }
+]

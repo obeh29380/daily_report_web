@@ -266,6 +266,7 @@ class ItemMaster(AccountBase, Base):
     __tablename__ = 'item_master'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(128), unique=True)
+    cost: Mapped[int] = mapped_column(default=0)
     memo: Mapped[Optional[str]] = mapped_column(String(512), default=None)
 
     __table_args__ = (UniqueConstraint(
@@ -283,7 +284,7 @@ class ItemMaster(AccountBase, Base):
         }
 
 
-class TrashMaster(AccountBase, Base):
+class TrashMaster(Base):
     # dest_master, item_master を参照する
     __tablename__ = 'trash_master'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -293,11 +294,11 @@ class TrashMaster(AccountBase, Base):
     item_id: Mapped[ItemMaster] = mapped_column(ForeignKey('item_master.id'))
     item: Mapped[ItemMaster] = relationship()
     cost: Mapped[int] = mapped_column(default=0)
-    unit_type: Mapped[str] = mapped_column(String(32))
+    unit_type: Mapped[int] = mapped_column(default=0)
     memo: Mapped[Optional[str]] = mapped_column(String(512), default=None)
 
     __table_args__ = (UniqueConstraint(
-        'account_id', 'dest_id', 'item_id', 'unit_type'),)
+        'dest_id', 'item_id', 'unit_type'),)
 
     def __repr__(self) -> str:
         return f"TrashMaster(id={self.id!r}, cost={self.cost!r}, "\

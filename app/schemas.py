@@ -3,6 +3,20 @@ from typing import Union
 
 from pydantic import BaseModel, ValidationError
 
+from tables import (
+    CarMaster,
+    CustomerMaster,
+    DestMaster,
+    ItemMaster,
+    LeaseMaster,
+    MachineMaster,
+    ReportHead,
+    StaffMaster,
+    TrashMaster,
+    Account,
+    User,
+)
+
 class ItemType(Enum):
     OTHER = 0
     STAFF = 1
@@ -20,6 +34,21 @@ class ItemType(Enum):
                 return e
         else:
             raise ValueError('{} is not valid item'.format(target_value))
+
+
+MAP_MASTER = {
+    'staff': StaffMaster,
+    'car': CarMaster,
+    'lease': LeaseMaster,
+    'machine': MachineMaster,
+    'trash': TrashMaster,
+    'customer': CustomerMaster,
+    'dest': DestMaster,
+    'item': ItemMaster,
+    'work': ReportHead,
+    'account': Account,
+    'user': User,
+}
 
 
 UNIT_TYPE = [

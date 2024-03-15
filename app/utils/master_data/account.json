@@ -1,0 +1,22 @@
+[
+    {
+        "account_id": "company01",
+        "account_pwd": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "fullname": "株式会社０１"
+    },
+    {
+        "account_id": "company02",
+        "account_pwd": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "fullname": "株式会社０２"
+    },
+    {
+        "account_id": "company03",
+        "account_pwd": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "fullname": "株式会社０３"
+    },
+    {
+        "account_id": "company04",
+        "account_pwd": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "fullname": "株式会社０４"
+    }
+]

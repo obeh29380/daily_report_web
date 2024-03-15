@@ -1,0 +1,67 @@
+[
+    {
+        "name": "広瀬",
+        "cost": 11000,
+        "account_id": 1
+    },
+    {
+        "name": "足立",
+        "cost": 12000,
+        "account_id": 1
+    },
+    {
+        "name": "杉本",
+        "cost": 13000,
+        "account_id": 1
+    },
+    {
+        "name": "菅原",
+        "cost": 14000,
+        "account_id": 1
+    },
+    {
+        "name": "小林",
+        "cost": 15000,
+        "account_id": 2
+    },
+    {
+        "name": "和田",
+        "cost": 16000,
+        "account_id": 2
+    },
+    {
+        "name": "星野",
+        "cost": 17000,
+        "account_id": 2
+    },
+    {
+        "name": "中山",
+        "cost": 18000,
+        "account_id": 2
+    },
+    {
+        "name": "高田",
+        "cost": 18000,
+        "account_id": 3
+    },
+    {
+        "name": "関根",
+        "cost": 18000,
+        "account_id": 3
+    },
+    {
+        "name": "川上",
+        "cost": 18000,
+        "account_id": 3
+    },
+    {
+        "name": "尾崎",
+        "cost": 18000,
+        "account_id": 3
+    },
+    {
+        "name": "多田",
+        "cost": 18000,
+        "account_id": 3
+    }
+]
