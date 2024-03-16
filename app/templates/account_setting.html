@@ -48,6 +48,28 @@
           </div>
         </div>
 
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imgUploadModal"
+          data-bs-whatever="@mdo">会社プロフィール画像変更</button>
+        <div class="modal fade" id="imgUploadModal" tabindex="-1" aria-labelledby="imgUploadModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h1 class="modal-title fs-5" id="imgUploadModalLabel">会社プロフィール画像変更</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form action="#" enctype="multipart/form-data" id="uploadFileForm">
+                  <input name="file" type="file" multiple id="uploadFile" accept=".jpg, .jpeg, .png, .webp, .bmp">
+                  <button type="button" class="btn btn-success" id="btnUploadFile">適用</button>
+                </form>
+                </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -117,10 +139,29 @@
         location.href = `/account/${account_uuid}/setting`;
       })
       .fail(function (data) {
+        console.log(data);
       });
-
   };
   document.getElementById('addUser').addEventListener('click', addUser);
+
+  function UploadFile(){
+    // const file = document.getElementById('uploadFile').value;
+    // let $form = $('#uploadFileForm');
+    // let fd = new FormData($form.get(2));
+
+    // file = document.querySelector('#uploadFile').files[0];
+    // form = document.querySelector('#uploadFileForm');
+    let $form = $('#uploadFileForm');
+    let fd = new FormData($form.get(0));
+
+    postFormData(`/account/${account_uuid}/profimage`, fd, headers)
+      .done(function (data) {
+        location.href = `/account/${account_uuid}/setting`;
+      })
+      .fail(function (data) {
+      });
+  };
+  document.getElementById('btnUploadFile').addEventListener('click', UploadFile);
 
   function searchUser() {
     const user_id = document.getElementById('user_id').value;

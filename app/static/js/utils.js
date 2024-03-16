@@ -34,6 +34,22 @@ const callApiFromForm = (url, data = {}, type = 'GET', headers = {}) => {
         data: data,
         headers: headers,
         timeout: 5000,
+        // processData: false,
+    })
+};
+
+
+const postFormData = (url, data = {}, headers = {}) => {
+    return $.ajax({
+        url: url,
+        type: "POST",
+        dataType: 'json',
+        data: data,
+        headers: headers,
+        contentType: false,
+        cache: false,
+        processData: false,
+        enctype: "multipart/form-data",
     })
 };
 

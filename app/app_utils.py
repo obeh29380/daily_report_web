@@ -3,6 +3,8 @@ from jose import JWTError, jwt
 import pytz
 import random
 import string
+import shutil
+import hashlib
 from typing import Union
 from typing import Annotated
 
@@ -12,7 +14,12 @@ from fastapi import (
     Depends,
     status,
 )
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Request,
+    UploadFile,
+)
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import (
     NoResultFound,
@@ -25,6 +32,7 @@ from fastapi.security import OAuth2PasswordBearer
 from db_common import get_engine
 from tables import (
     User,
+    Account,
 )
 from schemas import(
     MasterParams,
@@ -435,6 +443,26 @@ def create_access_token(user_uuid: str, token_key: str,
     return encoded_jwt
 
 
+def get_hashed_file_name(file_name, enc_key):
+    salted_filename = file_name + enc_key
+    # SHA-256ハッシュオブジェクトを作成し、ファイル名をハッシュ化します
+    hasher = hashlib.sha256()
+    hasher.update(salted_filename.encode('utf-8'))
+    return hasher.hexdigest()
+
+
+def get_account_logo(account_uuid):
+    with Session(get_engine()) as session:
+        try:
+            stmt = select(Account.logo_name).where(Account.id == account_uuid)
+            d = session.scalars(stmt).one()
+        except NoResultFound:
+            # return JSONResponse(status_code=403, content=dict(message='User not found'))
+            return
+        
+        return d
+
+
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -467,3 +495,8 @@ async def get_current_active_user(current_user: SUser = Depends(get_current_user
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+def save_uploaded_file(file: UploadFile, file_path: str):
+    with open(file_path, mode='bw') as buffer:
+        shutil.copyfileobj(file.file, buffer)

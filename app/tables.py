@@ -51,6 +51,7 @@ class Account(Base):
     account_id: Mapped[str] = mapped_column(String(128), unique=True)
     account_pwd: Mapped[str] = mapped_column(String(256))
     fullname: Mapped[Optional[str]]
+    logo_name: Mapped[str] = mapped_column(String(256), nullable=True)
     reg_dtime: Mapped[DateTime] = mapped_column(
         DateTime,
         nullable=False,

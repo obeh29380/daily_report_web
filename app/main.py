@@ -2,7 +2,12 @@ import datetime
 import hashlib
 import logging
 import os
-from typing import Union
+from pathlib import Path
+import shutil
+from typing import (
+    Union,
+    Annotated,
+)
 
 from fastapi import (
     Depends,
@@ -11,11 +16,16 @@ from fastapi import (
     Request,
     Response,
     status,
+    File,
+    UploadFile,
 )
 from fastapi_csrf_protect import CsrfProtect
 from fastapi_csrf_protect.exceptions import CsrfProtectError
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import (
+    JSONResponse,
+    FileResponse,
+)
 from fastapi.security import (
     OAuth2PasswordBearer,
     OAuth2PasswordRequestForm,
@@ -70,6 +80,9 @@ from app_utils import (
     get_master_data,
     get_password_hash,
     validate_token,
+    save_uploaded_file,
+    get_hashed_file_name,
+    get_account_logo,
 )
 
 
@@ -89,6 +102,7 @@ https://github.com/aekasitt/fastapi-csrf-protect
 """
 app = FastAPI()
 app.mount(path="/static", app=StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
+app.mount(path="/userdata", app=StaticFiles(directory=os.path.join(os.path.dirname(__file__), "userdata")), name="userdata")
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # token expire seconds(default: 1 hour)
@@ -96,10 +110,16 @@ token_exp = float(os.getenv('token_exp', 3600))
 # openssl rand -hex 32 的な奴で事前に作ったほうが良い。毎回ランダムだとトラブって再起動したら複合できない
 # token_key = os.getenv('token_key', random_str())
 token_key = os.getenv('token_key', 'token_dev')
+
+# ロゴの画像名用 これは固定にする（再起動時にまた登録が必要になってしまう）
+LOGO_NAME_SALT = os.getenv('logo_name_salt', 'logo_salt')
 cookie_max_age = os.getenv('token_exp', 3600)
 ALGORITHM = "HS256"
 ISS = os.getenv('iss', None)
 USER_DEFAULT_FULLNAME = os.getenv('USER_DEFAULT_FULLNAME', None)
+LOGO_DIR = os.path.join(os.path.dirname(__file__), "userdata", "images")
+LOGO_DIR_ON_CLIENT = os.path.join("/userdata", "images")
+LOGO_DILE_EXT = '.png'
 
 # logger
 logger = logging.getLogger(__name__)
@@ -484,6 +504,31 @@ async def add_account(request: Request, account_id: str, account: AccountModel, 
     return JSONResponse(status_code=200, content={'dummy': 'dummy'})
 
 
+@app.get("/account/{account_uuid}/account_logo")
+def get_account_users(request: Request, account_uuid: int):
+
+    decoded_token = get_decoded_token(
+        request.cookies.get('token'), key=token_key)
+
+    if decoded_token is None:
+        Response(status_code=403)
+    
+    token = validate_token(decoded_token, ['account_uuid'])
+    if token is None or account_uuid != token['account_uuid']:
+        return Response(status_code=403)
+    
+    file_name = get_account_logo(account_uuid)
+
+    file_path = os.path.join(LOGO_DIR, 'account', file_name+LOGO_DILE_EXT)
+    file_path_rtn = os.path.join(LOGO_DIR_ON_CLIENT, 'account', file_name+LOGO_DILE_EXT)
+
+    if not os.path.exists(file_path):
+        return Response(status_code=404)
+
+    # return FileResponse(file_path, )
+    return Response(content=file_path_rtn, media_type="/image/png")
+
+
 @app.post("/account/{account_uuid}/user/add")
 # @auth_required # うまく動かないので後回し
 async def add_user_to_account(request: Request, account_uuid: int, user_in: UserInvitation, csrf_protect: CsrfProtect = Depends()):
@@ -521,6 +566,36 @@ async def add_user_to_account(request: Request, account_uuid: int, user_in: User
         session.commit()
 
     return JSONResponse(status_code=200, content={'dummy': 'dummy'})
+
+
+@app.post("/account/{account_uuid}/profimage")
+async def upload_account_logo(account_uuid: int,
+                             request: Request,
+                             file: UploadFile,
+                             csrf_protect: CsrfProtect = Depends()
+                             ):
+
+    await csrf_protect.validate_csrf(request)
+    token = get_decoded_token(
+        request.cookies['token'], key=token_key, algorithms=ALGORITHM)
+    if token is None:
+        Response(status_code=403)
+
+    token = validate_token(token, ['account_uuid'])
+    if token['account_uuid'] != account_uuid:
+        Response(status_code=403)
+
+    file_name = get_hashed_file_name(str(account_uuid), LOGO_NAME_SALT)
+    save_path = os.path.join(LOGO_DIR, 'account', file_name)
+    save_uploaded_file(file, save_path + LOGO_DILE_EXT)
+
+    with Session(get_engine()) as session:
+        stmt = select(Account).where(Account.id == account_uuid)
+        d = session.scalars(stmt).one()
+        d.logo_name = file_name
+        session.commit()
+
+    return {"filename": file.filename}
 
 
 # -- master

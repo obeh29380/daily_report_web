@@ -5,11 +5,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from db_common import get_engine
-from tables import (
-    ItemMaster,
-    DestMaster,
-    TrashMaster,
-)
 from schemas import (
     MAP_MASTER,
 )

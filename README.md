@@ -9,7 +9,7 @@ With [daily_report_web](https://github.com/obeh29380/daily_report_web) you can c
 - docker  
 - docker compose  
 
-note: Can install docker, docker compose by execute `init_docker.sh`.
+Tips: Docker install scripts included: `init_docker.sh`.
 
 ### deploy settings
 
@@ -28,16 +28,16 @@ note: Can install docker, docker compose by execute `init_docker.sh`.
 docker compose up -d
 ```
 
-Then, DB will be migrated and app server will be started.
+Then, App server will be started.
 
 ### register sample data(optional)
 
-In app container, execute
+1. To create db, execute command below.
 ```
-sh /etc/drw/db/register_sample_data.sh
+python /etc/drw/app/table.py
 ```
 
-or out of container (on host)
+1. To register sample data, execute command below.
 ```
-docker exec drw-app sh /etc/drw/db/register_sample_data.sh
+python /etc/drw/app/utils/json2db.py
 ```

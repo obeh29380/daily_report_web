@@ -11,7 +11,7 @@
     <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
       <li class="nav-item px-2">
         <a href="/home" class="d-inline-flex link-body-emphasis text-decoration-none">
-          <img src="/static/image/default_account_logo.jpg" alt="mdo" width="40" height="40" class="align-self-center">
+          <img src="" id="account_logo" loading="lazy" alt="mdo" width="40" height="40" class="align-self-center">
         </a>
       </li>
       <li class="nav-item">
@@ -50,6 +50,18 @@
 
 <script>
   const account_uuid = cookie2json(document)['account_uuid'] ?? 0;
+
+  callApi(
+    `/account/${account_uuid}/account_logo`
+  ).done(function (data) {
+    // location.href = `/account/${account_uuid}/setting`;
+    document.querySelector('#account_logo').setAttribute('src', data);
+  })
+  .fail(function (data) {
+    // const reader = new FileReader();
+    // reader.readAsDataURL(data.responseText);
+    document.querySelector('#account_logo').setAttribute('src', data.responseText);
+  });
 
   togglePageButton();
   $(document).ready(function () {
