@@ -451,7 +451,7 @@ def get_hashed_file_name(file_name, enc_key):
     return hasher.hexdigest()
 
 
-def get_account_logo(account_uuid):
+def get_account_logo(account_uuid: int) -> str | None:
     with Session(get_engine()) as session:
         try:
             stmt = select(Account.logo_name).where(Account.id == account_uuid)

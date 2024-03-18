@@ -22,3 +22,4 @@ test.py
 *.sqlite
 app/__pycache__/*
 app/__pycache__/
+token.key

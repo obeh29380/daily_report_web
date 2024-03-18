@@ -2,11 +2,8 @@ import datetime
 import hashlib
 import logging
 import os
-from pathlib import Path
-import shutil
 from typing import (
     Union,
-    Annotated,
 )
 
 from fastapi import (
@@ -24,7 +21,7 @@ from fastapi_csrf_protect.exceptions import CsrfProtectError
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import (
     JSONResponse,
-    FileResponse,
+    HTMLResponse,
 )
 from fastapi.security import (
     OAuth2PasswordBearer,
@@ -33,6 +30,7 @@ from fastapi.security import (
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from functools import wraps
+from jose.exceptions import JWTError
 from sqlalchemy import (
     func,
     select,
@@ -80,6 +78,7 @@ from app_utils import (
     get_master_data,
     get_password_hash,
     validate_token,
+    random_str,
     save_uploaded_file,
     get_hashed_file_name,
     get_account_logo,
@@ -105,21 +104,27 @@ app.mount(path="/static", app=StaticFiles(directory=os.path.join(os.path.dirname
 app.mount(path="/userdata", app=StaticFiles(directory=os.path.join(os.path.dirname(__file__), "userdata")), name="userdata")
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-# token expire seconds(default: 1 hour)
-token_exp = float(os.getenv('token_exp', 3600))
-# openssl rand -hex 32 的な奴で事前に作ったほうが良い。毎回ランダムだとトラブって再起動したら複合できない
-# token_key = os.getenv('token_key', random_str())
-token_key = os.getenv('token_key', 'token_dev')
+
 
 # ロゴの画像名用 これは固定にする（再起動時にまた登録が必要になってしまう）
 LOGO_NAME_SALT = os.getenv('logo_name_salt', 'logo_salt')
-cookie_max_age = os.getenv('token_exp', 3600)
 ALGORITHM = "HS256"
 ISS = os.getenv('iss', None)
 USER_DEFAULT_FULLNAME = os.getenv('USER_DEFAULT_FULLNAME', None)
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "userdata", "images")
 LOGO_DIR_ON_CLIENT = os.path.join("/userdata", "images")
-LOGO_DILE_EXT = '.png'
+LOGO_FILE_EXT = '.png'
+token_exp = float(os.getenv('token_exp', 3600))
+cookie_max_age = os.getenv('token_exp', 3600)
+
+TOKEN_KEY_FILE = os.path.join(os.path.dirname(__file__), "token.key")
+if os.path.isfile(TOKEN_KEY_FILE):
+    with open(TOKEN_KEY_FILE, 'r') as f:
+        token_key = f.read()
+else:
+    with open(TOKEN_KEY_FILE, 'w') as f:
+        token_key = random_str(50)
+        f.write(token_key)
 
 # logger
 logger = logging.getLogger(__name__)
@@ -154,8 +159,17 @@ def csrf_protect_exception_handler(request: Request, exc: CsrfProtectError):
 def auth_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        decoded_token = get_decoded_token(
-            kwargs['request'].cookies['token'], key=token_key)
+
+        try:
+            decoded_token = get_decoded_token(
+                kwargs['request'].cookies['token'], key=token_key)
+        except JWTError as e:
+            return templates.TemplateResponse(
+                "invalid.html", {
+                    "request": kwargs.get('request')
+                },
+                status_code=403
+            )
         if decoded_token is None:
             return templates.TemplateResponse(
                 "invalid.html", {
@@ -167,7 +181,7 @@ def auth_required(func):
     return wrapper
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def top_page(request: Request):
     return templates.TemplateResponse(
         "index.html", {
@@ -270,8 +284,8 @@ async def login_for_access_token(
     return response
 
 
-@app.get("/sign_in")
-def sign_in_view(request: Request, csrf_protect: CsrfProtect = Depends()):
+@app.get("/sign_in", response_class=HTMLResponse)
+def sign_in_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
     response = templates.TemplateResponse(
@@ -284,8 +298,8 @@ def sign_in_view(request: Request, csrf_protect: CsrfProtect = Depends()):
     return response
 
 
-@app.get("/sign_up")
-def sign_up(request: Request, csrf_protect: CsrfProtect = Depends()):
+@app.get("/sign_up", response_class=HTMLResponse)
+def sign_up_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
     response = templates.TemplateResponse(
@@ -371,9 +385,9 @@ async def sign_out(request: Request, response: Response, csrf_protect: CsrfProte
     return JSONResponse(content={'dummy': 'dummy'})
 
 
-@app.get("/home")
+@app.get("/home", response_class=HTMLResponse)
 @auth_required
-def home(request: Request, csrf_protect: CsrfProtect = Depends()):
+def home_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     decoded_token = get_decoded_token(
         request.cookies.get('token'), key=token_key)
@@ -397,9 +411,9 @@ def home(request: Request, csrf_protect: CsrfProtect = Depends()):
     return response
 
 
-@app.get("/account")
+@app.get("/account", response_class=HTMLResponse)
 @auth_required
-def get_accounts(request: Request, csrf_protect: CsrfProtect = Depends()):
+def account_register_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     decoded_token = get_decoded_token(
         request.cookies.get('token'), key=token_key)
@@ -423,9 +437,9 @@ def get_accounts(request: Request, csrf_protect: CsrfProtect = Depends()):
     return response
 
 
-@app.get("/account/{account_uuid}/setting")
+@app.get("/account/{account_uuid}/setting", response_class=HTMLResponse)
 @auth_required
-def get_account_users(request: Request, account_uuid: int, csrf_protect: CsrfProtect = Depends()):
+def account_setting_page(request: Request, account_uuid: int, csrf_protect: CsrfProtect = Depends()):
 
     decoded_token = get_decoded_token(
         request.cookies.get('token'), key=token_key)
@@ -518,9 +532,11 @@ def get_account_users(request: Request, account_uuid: int):
         return Response(status_code=403)
     
     file_name = get_account_logo(account_uuid)
+    if file_name is None:
+        return Response(status_code=404)
 
-    file_path = os.path.join(LOGO_DIR, 'account', file_name+LOGO_DILE_EXT)
-    file_path_rtn = os.path.join(LOGO_DIR_ON_CLIENT, 'account', file_name+LOGO_DILE_EXT)
+    file_path = os.path.join(LOGO_DIR, 'account', file_name+LOGO_FILE_EXT)
+    file_path_rtn = os.path.join(LOGO_DIR_ON_CLIENT, 'account', file_name+LOGO_FILE_EXT)
 
     if not os.path.exists(file_path):
         return Response(status_code=404)
@@ -587,7 +603,7 @@ async def upload_account_logo(account_uuid: int,
 
     file_name = get_hashed_file_name(str(account_uuid), LOGO_NAME_SALT)
     save_path = os.path.join(LOGO_DIR, 'account', file_name)
-    save_uploaded_file(file, save_path + LOGO_DILE_EXT)
+    save_uploaded_file(file, save_path + LOGO_FILE_EXT)
 
     with Session(get_engine()) as session:
         stmt = select(Account).where(Account.id == account_uuid)
@@ -599,9 +615,9 @@ async def upload_account_logo(account_uuid: int,
 
 
 # -- master
-@app.get("/master/top")
+@app.get("/master/top", response_class=HTMLResponse)
 @auth_required
-def master_menu(request: Request, csrf_protect: CsrfProtect = Depends()):
+def master_top_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     decoded_token = get_decoded_token(
         request.cookies.get('token'), key=token_key)
@@ -779,7 +795,7 @@ async def on_get(request: Request, dest_id: int, item_id: int):
 
 
 # report
-@app.get("/daily_report/top")
+@app.get("/daily_report/top", response_class=HTMLResponse)
 async def daily_report_top_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     token = get_decoded_token(request.cookies['token'], key=token_key)
@@ -990,8 +1006,8 @@ async def register_daily_report(request: Request, work_name: str, work_date: str
 
     return JSONResponse(content={'detail': 'ok'})
 
-@app.get("/daily_report/summary")
-async def get_summary_top_page(request: Request, csrf_protect: CsrfProtect = Depends()):
+@app.get("/daily_report/summary", response_class=HTMLResponse)
+async def summary_top_page(request: Request, csrf_protect: CsrfProtect = Depends()):
 
     token = get_decoded_token(request.cookies['token'], key=token_key)
     token = validate_token(token, ['account_uuid'])
