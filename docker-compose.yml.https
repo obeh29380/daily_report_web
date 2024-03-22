@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  web:
+    container_name: drw-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:/etc/drw/app
+    tty: true
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/etc/drw/app/
+    command: /bin/bash -c "uvicorn main:app --host=0.0.0.0 --port=8000"
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "443:443"
+    environment:
+      - ${FQDN:-localhost}
+    volumes:
+      - type: bind
+        source: "./nginx/default.conf.https"
+        target: "/etc/nginx/conf.d/default.conf"
+      - type: bind
+        source: "./nginx/nginx.conf"
+        target: "/etc/nginx/nginx.conf"
+      - type: bind
+        source: "./nginx/allowip.conf"
+        target: "/etc/nginx/allowip.conf"
+      - type: bind
+        source: "./nginx/allowlogip.conf"
+        target: "/etc/nginx/allowlogip.conf"
+      - type: bind
+        source: "/etc/letsencrypt/live/${FQDN:-localhost}/fullchain.pem"
+        target: "/etc/nginx/conf.d/fullchain.pem"
+      - type: bind
+        source: "/etc/letsencrypt/live/${FQDN:-localhost}/privkey.pem"
+        target: "/etc/nginx/conf.d/privkey.pem"

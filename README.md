@@ -13,14 +13,15 @@ Tips: Docker install scripts included: `init_docker.sh`.
 
 ### deploy settings
 
-1. Specify Host name if use
-    - In `.env`, set `FQDN` (default: `localhost`)
-    - Set environment env `FQDN` (This setting has the highest priority)
+1. If connect with https
+    1. Specify Host name
+        - In `.env`, set `FQDN` (default: `localhost`)
+        - Set environment env `FQDN` (This setting has the highest priority)
+    1. Setup docker-compose.yml
+        - rename docker-compose.yml.https to docker-compose.yml
 
-2. Https settings
-    - If use https, edit default.conf and docker-compose.yml to accept access by domain name.
-        - maybe, all you have to do is uncomment it out.
-    - Also, set hostname by follow step 1.
+2. If connect with http
+    - rename docker-compose.yml.http to docker-compose.yml.
 
 ### deploy application
 
@@ -41,3 +42,10 @@ python /etc/drw/app/table.py
 ```
 python /etc/drw/app/utils/json2db.py
 ```
+
+### Informations
+
+1. Access restriction
+    - This application allow domestic(Japan) access only.
+    - Setting in nginx.
+        - `allowip.conf`
