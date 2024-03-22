@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import logging
 import os
+import re
 from typing import (
     Union,
 )
@@ -114,6 +115,7 @@ USER_DEFAULT_FULLNAME = os.getenv('USER_DEFAULT_FULLNAME', None)
 LOGO_DIR = os.path.join(os.path.dirname(__file__), "userdata", "images")
 LOGO_DIR_ON_CLIENT = os.path.join("/userdata", "images")
 LOGO_FILE_EXT = '.png'
+MIN_PASS_LEN = 10
 token_exp = float(os.getenv('token_exp', 3600))
 cookie_max_age = os.getenv('token_exp', 3600)
 
@@ -179,6 +181,15 @@ def auth_required(func):
             )
         return func(*args, **kwargs)
     return wrapper
+
+
+def is_valid_password(password):
+    # パスワードは8文字以上、大文字・小文字・数字・特殊文字を含む
+    if re.fullmatch(
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$', password):
+        return True
+    else:
+        return False
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -336,6 +347,12 @@ async def get_user_info(request: Request, user_id: str):
 async def create_user(request: Request, new_user: NewUser, csrf_protect: CsrfProtect = Depends()):
 
     await csrf_protect.validate_csrf(request)
+    if not is_valid_password(new_user.password):
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=f"パスワードは8文字以上、大文字・小文字・数字・記号を含むようにしてください",
+        )
+
     fullname = ensure_str(new_user.name_last, "") + ensure_str(new_user.name_first, "")
     if fullname is None or fullname == "":
         fullname = USER_DEFAULT_FULLNAME
@@ -494,6 +511,12 @@ async def add_account(request: Request, account_id: str, account: AccountModel, 
 
     if token is None:
         Response(status_code=403)
+    
+    if not is_valid_password(account.pwd):
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=f"パスワードは8文字以上、大文字・小文字・数字・記号を含むようにしてください",
+        )
 
     with Session(get_engine()) as session:
         # 登録済みチェック
